@@ -1,0 +1,55 @@
+/* --- LAYOUT CONTAINER --- */
+.pageContainer {
+  display: flex;        /* Side-by-side layout */
+  height: 100vh;        /* Full viewport height */
+  width: 100%;
+  overflow-x: hidden;   /* Prevents scrollbar from the overlapping image */
+}
+
+/* --- LEFT SIDE (Branding) --- */
+/* This targets the div inside your BrandingSection component */
+.brandingSection {
+  flex: 1;              /* Takes 50% width */
+  background-color: #f3f4f6; /* Light gray background */
+  position: relative;   /* CRITICAL: Anchor for the overlapping image */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+/* --- OVERLAPPING IMAGE TRICK --- */
+/* This targets the specific image class you wrote in BrandingSection */
+.GarbageBinSmall {
+  position: absolute;   /* Float freely */
+  bottom: 10%;          /* Adjust vertical position */
+  right: -40px;         /* Push it 40px into the Right Section */
+  width: 80px;          /* Adjust size as needed */
+  z-index: 20;          /* Sit on top of everything */
+}
+
+/* --- RIGHT SIDE (Form) --- */
+.formSection {
+  flex: 1;              /* Takes remaining 50% width */
+  background-color: white;
+  display: flex;
+  justify-content: center; /* Center the card horizontally */
+  align-items: center;     /* Center the card vertically */
+  z-index: 5;
+}
+
+/* --- MOBILE RESPONSIVENESS (< 768px) --- */
+@media (max-width: 768px) {
+  
+  /* Hide the entire Left Side (including the overlapping image) */
+  .brandingSection {
+    display: none;
+  }
+
+  /* Form takes the full screen */
+  .formSection {
+    flex: none;
+    width: 100%;
+  }
+}
