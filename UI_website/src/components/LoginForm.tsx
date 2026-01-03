@@ -1,6 +1,8 @@
-import React from "react";
 import { useState } from "react";
-
+import Google from "../assets/google.png"
+import Apple from "../assets/apple-logo.png"
+import Facebook from "../assets/facebook.png"
+import "../style/LoginForm.css"
 function LoginForm(){
     //States to store user inputs
     const [phoneNumber,setPhoneNumber]=useState("")
@@ -39,7 +41,7 @@ function LoginForm(){
             <h3>No Account yet?</h3>
             <button>Sign Up</button>
         </div>
-        <div className="form-cantainer">
+        <div className="form-container">
             <div className="Greetings">
                 <h2>Welcome to </h2>
                 <h1>NitollWaat</h1>
@@ -72,9 +74,9 @@ function LoginForm(){
                         <div className="otherMethods">
                             <p>Or do it via other accounts</p>
                             <div className="methods">
-                                <a href=""><img src="" alt="Google" /></a>
-                                <a href=""><img src="" alt="Apple" /></a>
-                                <a href=""><img src="" alt="Facebook" /></a>
+                                <a href="#"><img src={Google} alt="Google" /></a>
+                                <a href="#"><img src={Apple} alt="Apple" /></a>
+                                <a href="#"><img src={Facebook} alt="Facebook" /></a>
                             </div>
                         </div>
                 </div>
@@ -83,3 +85,5 @@ function LoginForm(){
     </div>
     )
 }
+
+export default LoginForm

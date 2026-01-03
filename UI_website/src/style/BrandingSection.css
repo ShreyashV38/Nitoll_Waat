@@ -1,0 +1,51 @@
+.brandingSection {
+  flex: 1;
+  background-color: #e8f5e9;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.BrandLogo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 60%;
+  height: auto;
+}
+
+.GarbageBin {
+  position: absolute;
+  bottom: 0;
+  left: 20px;
+  width: 200px;
+  height: 200px;
+}
+
+.GarbageBinSmall {
+  position: absolute;
+  bottom: 0;
+  right: 20px;
+  width: 150px;
+  height: 150px;
+}
+
+/* Mobile */
+@media (max-width: 1023px) {
+  .brandingSection {
+    display: none;
+  }
+
+  .BrandLogo {
+    display: none;
+  }
+
+  .GarbageBin {
+    display: none;
+  }
+
+  .GarbageBinSmall {
+    display: none;
+  }
+}
