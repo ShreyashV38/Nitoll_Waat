@@ -4,7 +4,9 @@ function LoginPage(){
     return(
         <div className="Login-container">
             <BrandingSection/>
-            <div className="FormSection"></div>
+            <div className="FormSection">
+                
+            </div>
         </div>
     )
 }
