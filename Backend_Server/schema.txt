@@ -1,0 +1,25 @@
+-- bins table
+CREATE TABLE bins (
+  id UUID PRIMARY KEY,
+  area_id UUID,
+  status TEXT DEFAULT 'active'
+);
+
+-- sensor_readings table
+CREATE TABLE sensor_readings (
+  id UUID PRIMARY KEY,
+  bin_id UUID REFERENCES bins(id),
+  recorded_at TIMESTAMP,
+  fill_percent INT,
+  weight_kg FLOAT,
+  battery_voltage FLOAT
+);
+
+-- bin_state table (derived)
+CREATE TABLE bin_state (
+  bin_id UUID PRIMARY KEY,
+  state TEXT,
+  confidence TEXT,
+  last_updated TIMESTAMP,
+  reason TEXT
+);

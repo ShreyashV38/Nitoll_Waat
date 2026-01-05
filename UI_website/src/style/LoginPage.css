@@ -4,28 +4,30 @@
   width: 100%;
 }
 
+/* LEFT */
+.Login-container > :first-child {
+  flex: 1;
+}
+
+/* RIGHT */
 .FormSection {
   flex: 1;
-  background-color: white;
+  background-color: #1f1f1f; /* dark desktop background */
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
   position: relative;
 }
 
-/* Mobile */
+/* MOBILE */
 @media (max-width: 1023px) {
   .Login-container {
     flex-direction: column;
-    height: auto;
-    min-height: 100vh;
+    background-color: #1f1f1f;
   }
 
   .FormSection {
-    flex: 1;
     width: 100%;
-    padding: 20px;
+    padding: 0;
   }
 }
-

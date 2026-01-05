@@ -8,12 +8,13 @@
 
 .BrandLogo {
   position: absolute;
-  top: 50%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
-  max-width: 60%;
+  max-width: 65%;
   height: auto;
 }
+
 
 .GarbageBin {
   position: absolute;
