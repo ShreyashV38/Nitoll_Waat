@@ -1,23 +1,44 @@
-.Login-container {
+.Login-container{
   display: flex;
-  height: 100vh;
-  width: 100%;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: normal;
+  align-content: normal;
 }
 
-/* LEFT */
+.BrandSection {
+  display: block;
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+  align-self: auto;
+  order: 0;
+}
+
+.FormSection{
+  display: block;
+  flex-grow: 0;
+  flex-shrink: 1;
+  flex-basis: auto;
+  align-self: auto;
+  order: 0;
+}
+/* LEFT
 .Login-container > :first-child {
-  flex: 1;
+  flex:content;
+  size:100%;
 }
 
 /* RIGHT */
-.FormSection {
+/* .FormSection {
   flex: 1;
   background-color: #1f1f1f; /* dark desktop background */
-  display: flex;
+  /*display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-}
+}  */
 
 /* MOBILE */
 @media (max-width: 1023px) {

@@ -4,7 +4,9 @@ import "../style/LoginPage.css"
 function LoginPage(){
     return(
         <div className="Login-container">
-            <BrandingSection/>
+            <div className="BrandSection">
+                <BrandingSection/>
+            </div>
             <div className="FormSection">
             <LoginForm/>
             </div>
