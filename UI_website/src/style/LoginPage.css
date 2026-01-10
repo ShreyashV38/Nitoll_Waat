@@ -1,54 +1,41 @@
-.Login-container{
+.Login-container {
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: normal;
-  align-content: normal;
+  width: 100%;       /* Ensure container fills width */
+  height: 100vh;     /* Ensure container fills height */
+
 }
 
 .BrandSection {
-  display: block;
-  flex-grow: 0;
-  flex-shrink: 1;
-  flex-basis: auto;
-  align-self: auto;
-  order: 0;
+  /* CHANGE THIS: Allow it to grow to fill space */
+  flex: 0.8;           
+  position: relative; /* Keep absolute children contained */
 }
 
-.FormSection{
-  display: block;
-  flex-grow: 0;
-  flex-shrink: 1;
-  flex-basis: auto;
-  align-self: auto;
-  order: 0;
-}
-/* LEFT
-.Login-container > :first-child {
-  flex:content;
-  size:100%;
-}
-
-/* RIGHT */
-/* .FormSection {
-  flex: 1;
-  background-color: #1f1f1f; /* dark desktop background */
-  /*display: flex;
+.FormSection {
+  /* CHANGE THIS: Allow it to grow to fill space */
+  flex: 1.2;
+  display: flex;     /* Needed to center the login form inside */
   justify-content: center;
   align-items: center;
-  position: relative;
-}  */
+  background-color: #1f1f1f;
+}
 
 /* MOBILE */
-@media (max-width: 1023px) {
+@media (max-width: 1020px) {
   .Login-container {
     flex-direction: column;
-    background-color: #1f1f1f;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .BrandSection {
+    display: none; /* Hide branding on mobile as per your original CSS */
   }
 
   .FormSection {
     width: 100%;
-    padding: 0;
+    padding: 20px;
+    flex: 1;
   }
 }
