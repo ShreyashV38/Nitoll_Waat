@@ -1,0 +1,43 @@
+com.example.bincollector.app-pngs-0 C:\Nitoll_Waat\UI_App\app\build\generated\res\pngs\debug
+com.example.bincollector.app-resValues-1 C:\Nitoll_Waat\UI_App\app\build\generated\res\resValues\debug
+com.example.bincollector.app-packageDebugResources-2 C:\Nitoll_Waat\UI_App\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.example.bincollector.app-packageDebugResources-3 C:\Nitoll_Waat\UI_App\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.example.bincollector.app-merged_res-4 C:\Nitoll_Waat\UI_App\app\build\intermediates\merged_res\debug
+com.example.bincollector.app-debug-5 C:\Nitoll_Waat\UI_App\app\src\debug\res
+com.example.bincollector.app-main-6 C:\Nitoll_Waat\UI_App\app\src\main\res
+com.example.bincollector.app-jetified-core-ktx-1.9.0-7 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\0442e09638968e8ab0b70f9b2ed9ba7a\transformed\jetified-core-ktx-1.9.0\res
+com.example.bincollector.app-coordinatorlayout-1.1.0-8 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\06766ed0676347fa5b8bee0d814ca59c\transformed\coordinatorlayout-1.1.0\res
+com.example.bincollector.app-jetified-savedstate-ktx-1.2.1-9 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\081d129b871da4aef57c5615a018cf25\transformed\jetified-savedstate-ktx-1.2.1\res
+com.example.bincollector.app-jetified-annotation-experimental-1.3.0-10 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\13f30f57626ab1ae1acd72981a76cafb\transformed\jetified-annotation-experimental-1.3.0\res
+com.example.bincollector.app-slidingpanelayout-1.2.0-11 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\18d56fbb8f9f7b7101aa9e1249ad14b2\transformed\slidingpanelayout-1.2.0\res
+com.example.bincollector.app-lifecycle-viewmodel-2.6.1-12 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\23cb4c24cc5baba48d161abcc3f5176f\transformed\lifecycle-viewmodel-2.6.1\res
+com.example.bincollector.app-jetified-startup-runtime-1.1.1-13 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\337a40d7d0a3fce27951e027b4df500f\transformed\jetified-startup-runtime-1.1.1\res
+com.example.bincollector.app-lifecycle-runtime-2.6.1-14 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\382787d2fc4b1a0b5be2b6d8cf8a9e94\transformed\lifecycle-runtime-2.6.1\res
+com.example.bincollector.app-drawerlayout-1.1.1-15 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\3bc3f70cb7166e121689fdf14645a069\transformed\drawerlayout-1.1.1\res
+com.example.bincollector.app-jetified-osmdroid-android-6.1.18-16 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\res
+com.example.bincollector.app-jetified-activity-ktx-1.8.0-17 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\46f316998d9c372c59a06785d0ebb58f\transformed\jetified-activity-ktx-1.8.0\res
+com.example.bincollector.app-core-runtime-2.2.0-18 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\48f20ff7b831bc0a1427ff32e213c855\transformed\core-runtime-2.2.0\res
+com.example.bincollector.app-jetified-viewpager2-1.0.0-19 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\4d79ba174063f5d1ad62c9af6e0a7f09\transformed\jetified-viewpager2-1.0.0\res
+com.example.bincollector.app-lifecycle-livedata-core-2.6.1-20 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\5495a0b7fb74b4e49c633034778a7e5f\transformed\lifecycle-livedata-core-2.6.1\res
+com.example.bincollector.app-jetified-lifecycle-livedata-core-ktx-2.6.1-21 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\5e7709b80e72dcdc1c2dc7db477ec2a7\transformed\jetified-lifecycle-livedata-core-ktx-2.6.1\res
+com.example.bincollector.app-jetified-lifecycle-viewmodel-savedstate-2.6.1-22 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\683ee64780e38dc7efdbf4c08cfd4ee4\transformed\jetified-lifecycle-viewmodel-savedstate-2.6.1\res
+com.example.bincollector.app-jetified-appcompat-resources-1.6.1-23 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\829837e31b68da62f65cc5c20d0d5f47\transformed\jetified-appcompat-resources-1.6.1\res
+com.example.bincollector.app-preference-1.2.1-24 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\853e31c7a7f4d1e9a0b8006837776f8b\transformed\preference-1.2.1\res
+com.example.bincollector.app-jetified-lifecycle-viewmodel-ktx-2.6.1-25 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\87a7677e7b62d680b27e71644e3e387e\transformed\jetified-lifecycle-viewmodel-ktx-2.6.1\res
+com.example.bincollector.app-recyclerview-1.1.0-26 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\90eded3accb66d4fff364163c8eef5ba\transformed\recyclerview-1.1.0\res
+com.example.bincollector.app-jetified-profileinstaller-1.3.0-27 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\res
+com.example.bincollector.app-jetified-activity-1.8.0-28 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\9bb7277aeb6bd0367ef67c564d4ed037\transformed\jetified-activity-1.8.0\res
+com.example.bincollector.app-lifecycle-livedata-2.6.1-29 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\9c261fdaa7dab5b26e3ba29bfed99887\transformed\lifecycle-livedata-2.6.1\res
+com.example.bincollector.app-jetified-lifecycle-process-2.6.1-30 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\9dc1b9ad4ca79ffca8789187805f019d\transformed\jetified-lifecycle-process-2.6.1\res
+com.example.bincollector.app-jetified-savedstate-1.2.1-31 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\a6ff8df257162c1a5f8c02c7d407aef5\transformed\jetified-savedstate-1.2.1\res
+com.example.bincollector.app-cardview-1.0.0-32 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\aa0748a6f18c5e3f3db9a6a14a1a6305\transformed\cardview-1.0.0\res
+com.example.bincollector.app-material-1.11.0-33 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\abfa0d7bae730bb72326f8321dff44b2\transformed\material-1.11.0\res
+com.example.bincollector.app-jetified-lifecycle-runtime-ktx-2.6.1-34 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\bc63c0305d98360937804e0de6265735\transformed\jetified-lifecycle-runtime-ktx-2.6.1\res
+com.example.bincollector.app-constraintlayout-2.1.4-35 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\bd5d8e3f132045ba3da6f189e8de3e69\transformed\constraintlayout-2.1.4\res
+com.example.bincollector.app-core-1.9.0-36 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\c5de34b7964143a69bc267aa510b2bde\transformed\core-1.9.0\res
+com.example.bincollector.app-jetified-window-1.0.0-37 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\d0465f0d5c6830644a866448155a08a0\transformed\jetified-window-1.0.0\res
+com.example.bincollector.app-transition-1.4.1-38 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\e71c564461088f17d1c23bb57b4afa0f\transformed\transition-1.4.1\res
+com.example.bincollector.app-appcompat-1.6.1-39 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\e9b69d038b5c74e7893f6f60cced3a94\transformed\appcompat-1.6.1\res
+com.example.bincollector.app-jetified-emoji2-1.2.0-40 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\ec6944884f33d422e7423ad771bef303\transformed\jetified-emoji2-1.2.0\res
+com.example.bincollector.app-jetified-emoji2-views-helper-1.2.0-41 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\fcb0e01858d25cab9d85e94bdfb15e03\transformed\jetified-emoji2-views-helper-1.2.0\res
+com.example.bincollector.app-fragment-1.3.6-42 C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\fe9c6647044fe7061b72f8091544dc1c\transformed\fragment-1.3.6\res

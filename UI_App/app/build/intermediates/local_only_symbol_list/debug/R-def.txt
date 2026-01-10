@@ -1,0 +1,33 @@
+R_DEF: Internal format may change without notice
+local
+drawable bin_ic
+id bottomNav
+id btnGetStarted
+id btnLogout
+id btnSubmit
+id cbCollected
+id etFirstName
+id etLastName
+id etOtp
+id etPhone
+id fragmentContainer
+id map
+id nav_home
+id nav_map
+id nav_profile
+id recyclerWards
+id switchAuth
+id tvGenerateOtp
+id tvName
+id tvOpenMap
+id tvPhone
+id tvWard
+layout activity_auth
+layout activity_landing
+layout activity_main
+layout fragment_home
+layout fragment_map
+layout fragment_profile
+layout item_ward
+menu bottom_nav_menu
+style Theme.BinCollector

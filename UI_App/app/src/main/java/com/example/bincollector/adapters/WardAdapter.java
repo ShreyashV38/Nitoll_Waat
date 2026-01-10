@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.bincollector.R;
 import com.example.bincollector.models.Ward;
 import java.util.List;
+import com.example.bincollector.MainActivity;
 
 public class WardAdapter extends RecyclerView.Adapter<WardAdapter.ViewHolder> {
 
@@ -36,6 +37,13 @@ public class WardAdapter extends RecyclerView.Adapter<WardAdapter.ViewHolder> {
         holder.tvWard.setText(ward.getWardNo());
         holder.cbCollected.setChecked(ward.isCollected());
 
+        holder.tvOpenMap.setOnClickListener(v -> {
+            // This checks if the context is the MainActivity so we can call its methods
+            if (context instanceof MainActivity) {
+                ((MainActivity) context).openMapWithRoute();
+            }
+        });
+
         // Handle checkbox logic here later
     }
 
@@ -48,11 +56,13 @@ public class WardAdapter extends RecyclerView.Adapter<WardAdapter.ViewHolder> {
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvWard;
         CheckBox cbCollected;
+        TextView tvOpenMap;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvWard = itemView.findViewById(R.id.tvWard);
             cbCollected = itemView.findViewById(R.id.cbCollected);
+            tvOpenMap = itemView.findViewById(R.id.tvOpenMap);
         }
     }
 }

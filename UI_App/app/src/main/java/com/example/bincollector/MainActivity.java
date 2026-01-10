@@ -11,6 +11,21 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
+    public void openMapWithRoute() {
+        MapFragment mapFragment = new MapFragment();
+
+        // Pass a signal to the fragment using Arguments
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("draw_route", true);
+        mapFragment.setArguments(bundle);
+
+        loadFragment(mapFragment);
+
+        // Update Bottom Nav selection visually
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        bottomNav.setSelectedItemId(R.id.nav_map);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

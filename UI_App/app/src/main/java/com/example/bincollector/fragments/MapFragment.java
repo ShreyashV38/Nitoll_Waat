@@ -1,5 +1,6 @@
 package com.example.bincollector.fragments;
 
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,6 +19,9 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+
+import org.osmdroid.views.overlay.Polyline;
+import android.graphics.Color;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +46,40 @@ public class MapFragment extends Fragment {
         GeoPoint goaCenter = new GeoPoint(15.4909, 73.8278); // Centered near Panjim
         mapController.setCenter(goaCenter);
 
+        if (getArguments() != null && getArguments().getBoolean("draw_route")) {
+            drawWardRoute();
+        }
         // Add Specific Bin Locations
         addSpecificMarkers();
 
         return view;
     }
 
+    private void drawWardRoute() {
+        Polyline line = new Polyline(map);
+        line.setTitle("Ward 10 Route");
+
+        // Styling the line to look like GMaps
+        line.getOutlinePaint().setColor(Color.parseColor("#1A73E8")); // GMaps Blue
+        line.getOutlinePaint().setStrokeWidth(15f); // Thicker for better visibility
+        line.getOutlinePaint().setStrokeCap(android.graphics.Paint.Cap.ROUND); // Makes ends rounded
+        line.getOutlinePaint().setStrokeJoin(Paint.Join.ROUND); // Makes corners smooth
+
+        List<GeoPoint> routePoints = new ArrayList<>();
+        routePoints.add(new GeoPoint(15.4612, 73.8325)); // GU
+        routePoints.add(new GeoPoint(15.4643, 73.8584)); // GMC
+        routePoints.add(new GeoPoint(15.460, 73.824));   // GBS
+
+        line.setPoints(routePoints);
+        // 3. Clear old lines before adding new one (optional, prevents overlap)
+        map.getOverlays().removeIf(overlay -> overlay instanceof Polyline);
+        map.getOverlays().add(line);
+
+        // Zoom into the route
+        map.getController().animateTo(routePoints.get(0));
+        map.getController().setZoom(14.0);
+        map.invalidate();
+    }
     private void addSpecificMarkers() {
         // Create a list of your specific coordinates
         List<GeoPoint> points = new ArrayList<>();
