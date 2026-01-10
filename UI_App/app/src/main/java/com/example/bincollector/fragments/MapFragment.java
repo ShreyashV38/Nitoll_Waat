@@ -1,6 +1,9 @@
 package com.example.bincollector.fragments;
 
+<<<<<<< HEAD
 import android.graphics.Paint;
+=======
+>>>>>>> cef0e403baf70c3149252becbd7d3f5b075ac772
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -20,9 +23,12 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+<<<<<<< HEAD
 import org.osmdroid.views.overlay.Polyline;
 import android.graphics.Color;
 
+=======
+>>>>>>> cef0e403baf70c3149252becbd7d3f5b075ac772
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,15 +52,19 @@ public class MapFragment extends Fragment {
         GeoPoint goaCenter = new GeoPoint(15.4909, 73.8278); // Centered near Panjim
         mapController.setCenter(goaCenter);
 
+<<<<<<< HEAD
         if (getArguments() != null && getArguments().getBoolean("draw_route")) {
             drawWardRoute();
         }
+=======
+>>>>>>> cef0e403baf70c3149252becbd7d3f5b075ac772
         // Add Specific Bin Locations
         addSpecificMarkers();
 
         return view;
     }
 
+<<<<<<< HEAD
     private void drawWardRoute() {
         Polyline line = new Polyline(map);
         line.setTitle("Ward 10 Route");
@@ -80,6 +90,8 @@ public class MapFragment extends Fragment {
         map.getController().setZoom(14.0);
         map.invalidate();
     }
+=======
+>>>>>>> cef0e403baf70c3149252becbd7d3f5b075ac772
     private void addSpecificMarkers() {
         // Create a list of your specific coordinates
         List<GeoPoint> points = new ArrayList<>();

@@ -11,6 +11,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
+<<<<<<< HEAD
     public void openMapWithRoute() {
         MapFragment mapFragment = new MapFragment();
 
@@ -26,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
         bottomNav.setSelectedItemId(R.id.nav_map);
     }
 
+=======
+>>>>>>> cef0e403baf70c3149252becbd7d3f5b075ac772
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
