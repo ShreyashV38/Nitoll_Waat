@@ -30,12 +30,16 @@ function LoginForm(){
         console.log("Login with:", { phoneNumber, otp });   
     }
 
+    const handleSingUp=()=>{
+        window.location.href='/signup'
+    }
+
     return (
     <div className="login-page-wrapper">
         {/* Top Section: Sign Up Button */}
         <div className="switchToSignUp">
             <h3>No Account yet?</h3>
-            <button>Sign Up</button>
+            <button onClick={handleSingUp}>Sign Up</button>
         </div>
         
         {/* Middle Section: Centered Form */}

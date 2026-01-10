@@ -1,63 +1,52 @@
+/* UI_website/src/style/BrandingSection.css */
+
 .brandingSection {
-  /* flex: 1; */
   width: 100%;
   height: 100%;
-  background-color: #e8f5e9;
-  min-height: 100vh;
   position: relative;
   overflow: hidden;
+
+  /* Background Map Settings */
+  background-color: #12db0040;           /* Fallback color */
   background-image: url('../assets/Goa.png');
-  background-size:contain;     
-  background-position:center; 
-  background-repeat: no-repeat; 
-
-
+  background-size: cover;              /* CRITICAL: Makes image fill the entire space */
+  background-position: center center;  /* Centers the map */
+  background-repeat: no-repeat;
 }
 
 .BrandLogo {
-  size: 100;
   position: absolute;
-  top: 40%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  max-width: 100%;
-  height: auto;
-  z-index: 1;
+  z-index: 10;
+  max-width: 80%;
 }
 
-
+/* Garbage Bins Styling (Overlays) */
 .GarbageBin {
-  position: absolute ;
-  transform: scaleX(-1);
+  position: absolute;
+  transform: scaleX(-1); /* Flips the image horizontally */
   bottom: 0;
-  left: -70px;
-  width: 250px;
-  height: 250px;
+  left: -40px;
+  width: 280px;  /* Slightly larger */
+  height: 280px;
+  z-index: 5;
+  filter: drop-shadow(10px 10px 20px rgba(0,0,0,0.3)); /* Adds depth */
 }
 
 .GarbageBinSmall {
   position: absolute;
-  bottom: 0;
-  right: -50px;
-  width: 200px;
-  height: 200px;
+  bottom: -20px;
+  right: -20px;
+  width: 220px;
+  height: 220px;
+  z-index: 6;
+  filter: drop-shadow(-10px 10px 20px rgba(0,0,0,0.3));
 }
 
-/* Mobile */
 @media (max-width: 1023px) {
   .brandingSection {
-    display: none;
-  }
-
-  .BrandLogo {
-    display: none;
-  }
-
-  .GarbageBin {
-    display: none;
-  }
-
-  .GarbageBinSmall {
     display: none;
   }
 }

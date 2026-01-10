@@ -1,41 +1,47 @@
+/* UI_website/src/style/LoginPage.css */
+
 .Login-container {
   display: flex;
   flex-direction: row;
-  width: 100%;       /* Ensure container fills width */
-  height: 100vh;     /* Ensure container fills height */
-
+  width: 100%;
+  height: 100vh;       /* Forces the container to fill the entire screen height */
+  overflow: hidden;    /* Prevents scrollbars on the main page */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif; /* Modern font stack */
 }
 
 .BrandSection {
-  /* CHANGE THIS: Allow it to grow to fill space */
-  flex: 0.8;           
-  position: relative; /* Keep absolute children contained */
+  flex: 0.9;           /* Map takes up slightly more space (55%) */
+  position: relative;
+  height: 100%;
+    border: black 1px solid;
+
 }
 
 .FormSection {
-  /* CHANGE THIS: Allow it to grow to fill space */
-  flex: 1.2;
-  display: flex;     /* Needed to center the login form inside */
-  justify-content: center;
-  align-items: center;
-  background-color: #1f1f1f;
+  flex: 1.1;           /* Form takes up slightly less space (45%) */
+  height: 100%;
+  background-color: #f3f8fd; /* Clean White Background */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: black 1px solid;
 }
 
-/* MOBILE */
-@media (max-width: 1020px) {
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 1023px) {
   .Login-container {
     flex-direction: column;
     height: auto;
     min-height: 100vh;
+    overflow-y: auto;
   }
 
   .BrandSection {
-    display: none; /* Hide branding on mobile as per your original CSS */
+    display: none; /* Hide map on mobile to focus on login */
   }
 
   .FormSection {
-    width: 100%;
-    padding: 20px;
     flex: 1;
+    width: 100%;
   }
 }
