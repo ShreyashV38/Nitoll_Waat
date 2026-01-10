@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Google from "../assets/google.png"
 import Apple from "../assets/apple-logo.png"
 import Facebook from "../assets/facebook.png"
@@ -10,6 +11,8 @@ function SignupForm() {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [otp, setOtp] = useState("");
     const [isOtpSent, setIsOtpSent] = useState(false);
+    const navigate = useNavigate();
+
 
     // 1. Simulate Sending OTP
     const handleSendOtp = () => {
@@ -29,6 +32,7 @@ function SignupForm() {
         }
         console.log("Signing up with:", { name, phoneNumber, otp });
         alert("Account Created Successfully!");
+        navigate('/area');
     };
 
     return (
@@ -36,7 +40,7 @@ function SignupForm() {
             {/* Top Bar: Switch to Login */}
             <div className="switchToSignUp">
                 <h3>Already have an account?</h3>
-                <button onClick={() => window.location.href = '/'}>Sign In</button>
+                <button onClick={() => navigate('/')}>LogIn</button>
             </div>
 
             {/* Center Form Section */}

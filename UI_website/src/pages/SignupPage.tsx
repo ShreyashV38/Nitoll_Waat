@@ -1,4 +1,5 @@
 import BrandingSection from "../components/BrandingSection"
+import SignupForm from "../components/SignupForm"
 import LoginForm from "../components/SignupForm"
 import "../style/LoginPage.css"
 function SignupPage(){
@@ -8,7 +9,7 @@ function SignupPage(){
                 <BrandingSection/>
             </div>
             <div className="FormSection">
-            <LoginForm/>
+            <SignupForm/>
             </div>
         </div>
     )

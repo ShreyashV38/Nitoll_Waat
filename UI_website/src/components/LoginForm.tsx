@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { use, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Google from "../assets/google.png"
 import Apple from "../assets/apple-logo.png"
 import Facebook from "../assets/facebook.png"
@@ -30,16 +31,16 @@ function LoginForm(){
         console.log("Login with:", { phoneNumber, otp });   
     }
 
-    const handleSingUp=()=>{
-        window.location.href='/signup'
-    }
+    const navigate=useNavigate()
+        
+    
 
     return (
     <div className="login-page-wrapper">
         {/* Top Section: Sign Up Button */}
         <div className="switchToSignUp">
             <h3>No Account yet?</h3>
-            <button onClick={handleSingUp}>Sign Up</button>
+            <button onClick={()=> navigate('/signup')}>Sign Up</button>
         </div>
         
         {/* Middle Section: Centered Form */}
