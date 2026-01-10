@@ -1,115 +1,79 @@
 package com.example.bincollector;
 
-<<<<<<< HEAD
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SwitchCompat;
-import com.google.android.material.button.MaterialButton;
 
 public class AuthActivity extends AppCompatActivity {
+    private boolean isRegisterMode = false;
     private String hardcodedOtp = "1234";
-=======
-import android.os.Bundle;
-import androidx.appcompat.widget.SwitchCompat; // Change Switch to SwitchCompat
-import com.google.android.material.button.MaterialButton; // Change Button to MaterialButton
-import androidx.appcompat.app.AppCompatActivity;
-import android.content.Intent;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import androidx.appcompat.widget.SwitchCompat;
-public class AuthActivity extends AppCompatActivity {
-    private String generatedOtp = "1234";
->>>>>>> cef0e403baf70c3149252becbd7d3f5b075ac772
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
 
-        SwitchCompat switchAuth = findViewById(R.id.switchAuth);
+        // 1. Find Views
+        Button btnTabLogin = findViewById(R.id.btnTabLogin);
+        Button btnTabRegister = findViewById(R.id.btnTabRegister);
         EditText etFirstName = findViewById(R.id.etFirstName);
         EditText etLastName = findViewById(R.id.etLastName);
-<<<<<<< HEAD
         EditText etPhone = findViewById(R.id.etPhone);
         EditText etOtp = findViewById(R.id.etOtp);
-        TextView tvGenerateOtp = findViewById(R.id.tvGenerateOtp);
-        MaterialButton btnSubmit = findViewById(R.id.btnSubmit);
-
-        // Toggle Visibility
-=======
-        EditText etOtp = findViewById(R.id.etOtp);
+        TextView tvAuthSubtext = findViewById(R.id.tvAuthSubtext);
         Button btnSubmit = findViewById(R.id.btnSubmit);
 
-        // Toggle Visibility in Java
->>>>>>> cef0e403baf70c3149252becbd7d3f5b075ac772
-        switchAuth.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            int visibility = isChecked ? View.VISIBLE : View.GONE;
-            etFirstName.setVisibility(visibility);
-            etLastName.setVisibility(visibility);
-<<<<<<< HEAD
-            btnSubmit.setText(isChecked ? "Sign Up" : "Login");
+        // 2. Tab Toggle Logic
+        btnTabLogin.setOnClickListener(v -> {
+            isRegisterMode = false;
+            toggleUI(btnTabLogin, btnTabRegister, etFirstName, etLastName, tvAuthSubtext, btnSubmit);
         });
 
-        // Generate OTP Click
-        tvGenerateOtp.setOnClickListener(v -> {
-            String phone = etPhone.getText().toString();
-            if (isValidIndianPhone(phone)) {
-                Toast.makeText(this, "OTP Sent to " + phone, Toast.LENGTH_SHORT).show();
-            } else {
-                etPhone.setError("Enter valid 10-digit Indian number");
-            }
+        btnTabRegister.setOnClickListener(v -> {
+            isRegisterMode = true;
+            toggleUI(btnTabRegister, btnTabLogin, etFirstName, etLastName, tvAuthSubtext, btnSubmit);
         });
 
-        // Final Submit Validation
+        // 3. Submit with Indian Phone Validation
         btnSubmit.setOnClickListener(v -> {
-            String firstName = etFirstName.getText().toString();
             String phone = etPhone.getText().toString();
             String otp = etOtp.getText().toString();
 
-            // 1. Mandatory First Name (Only if Registering)
-            if (switchAuth.isChecked() && TextUtils.isEmpty(firstName)) {
-                etFirstName.setError("First name is mandatory");
+            if (isRegisterMode && etFirstName.getText().toString().isEmpty()) {
+                etFirstName.setError("Required");
                 return;
             }
 
-            // 2. Phone Validation
-            if (!isValidIndianPhone(phone)) {
-                etPhone.setError("Invalid Phone Number");
+            if (!phone.matches("[6-9][0-9]{9}")) {
+                etPhone.setError("Invalid Indian Phone");
                 return;
             }
 
-            // 3. OTP Validation
             if (otp.equals(hardcodedOtp)) {
-                startActivity(new Intent(AuthActivity.this, MainActivity.class));
+                startActivity(new Intent(this, MainActivity.class));
                 finish();
             } else {
-                etOtp.setError("Wrong OTP. Hint: 1234");
+                etOtp.setError("Wrong OTP");
             }
         });
     }
 
-    private boolean isValidIndianPhone(String phone) {
-        // Regex: Starts with 6,7,8,9 and exactly 10 digits
-        return phone != null && phone.matches("[6-9][0-9]{9}");
-    }
-=======
-        });
+    private void toggleUI(Button active, Button inactive, View fName, View lName, TextView sub, Button submit) {
+        active.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.WHITE));
+        active.setTextColor(Color.BLACK);
 
-        btnSubmit.setOnClickListener(v -> {
-            if (etOtp.getText().toString().equals(generatedOtp)) {
-                // Redirect to the NEW MainActivity (the one with Bottom Nav)
-                Intent intent = new Intent(AuthActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
+        inactive.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.TRANSPARENT));
+        inactive.setTextColor(Color.GRAY);
+
+        fName.setVisibility(isRegisterMode ? View.VISIBLE : View.GONE);
+        lName.setVisibility(isRegisterMode ? View.VISIBLE : View.GONE);
+        sub.setText(isRegisterMode ? "Please enter details to begin" : "Please log in to continue");
+        submit.setText(isRegisterMode ? "Register" : "Login");
     }
->>>>>>> cef0e403baf70c3149252becbd7d3f5b075ac772
 }
