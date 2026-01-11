@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">NitollWaat</string>
+    <string name="assigned_trips">Assigned Trips</string>
+    <string name="enter_otp">Enter OTP</string>
+    <string name="generate_otp">Generate OTP</string>
+    <string name="get_started">Get Started</string>
+    <string name="login">Login</string>
+    <string name="nitollwaat">NitollWaat</string>
+    <string name="past_trips">Past Trips</string>
+    <string name="phone_no">Phone Number</string>
+    <string name="register">Register</string>
+    <string name="welcome_again_please_log_in">Welcome again, please log in.</string>
+    <string name="welcome_to">Welcome to</string>
     <style name="Theme.BinCollector" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@android:color/holo_green_dark</item>
         <item name="colorSecondary">@android:color/holo_blue_dark</item>

@@ -1,3 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">NitollWaat</string>
+
+    <string name="nitollwaat">NitollWaat</string>
+    <string name="get_started">Get Started</string>
+    <string name="welcome_to">Welcome to</string>
+    <string name="welcome_again_please_log_in">Welcome again, please log in.</string>
+
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="phone_no">Phone Number</string>
+    <string name="generate_otp">Generate OTP</string>
+    <string name="enter_otp">Enter OTP</string>
+
+    <string name="assigned_trips">Assigned Trips</string>
+    <string name="past_trips">Past Trips</string>
 </resources>
