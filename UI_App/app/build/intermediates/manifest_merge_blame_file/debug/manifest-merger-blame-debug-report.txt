@@ -1,0 +1,192 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.example.bincollector"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="34" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:5:5-66
+11-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:5:22-64
+12    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+12-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:6:5-78
+12-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:6:22-76
+13    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+13-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:7:5-80
+13-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:7:22-78
+14
+15    <supports-screens
+15-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:9:5-12:40
+16        android:anyDensity="true"
+16-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:10:9-34
+17        android:largeScreens="true"
+17-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:11:9-36
+18        android:normalScreens="true" />
+18-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:12:9-37
+19
+20    <uses-feature
+20-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:14:5-16:36
+21        android:name="android.hardware.location.network"
+21-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:15:9-57
+22        android:required="false" />
+22-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:16:9-33
+23    <uses-feature
+23-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:17:5-19:36
+24        android:name="android.hardware.location.gps"
+24-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:18:9-53
+25        android:required="false" />
+25-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:19:9-33
+26    <uses-feature
+26-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:20:5-22:36
+27        android:name="android.hardware.telephony"
+27-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:21:9-50
+28        android:required="false" />
+28-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:22:9-33
+29    <uses-feature
+29-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:23:5-25:36
+30        android:name="android.hardware.wifi"
+30-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:24:9-45
+31        android:required="false" />
+31-->[org.osmdroid:osmdroid-android:6.1.18] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\450fd270eaca7faf26084553a4b77d5e\transformed\jetified-osmdroid-android-6.1.18\AndroidManifest.xml:25:9-33
+32
+33    <permission
+33-->[androidx.core:core:1.9.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\c5de34b7964143a69bc267aa510b2bde\transformed\core-1.9.0\AndroidManifest.xml:22:5-24:47
+34        android:name="com.example.bincollector.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+34-->[androidx.core:core:1.9.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\c5de34b7964143a69bc267aa510b2bde\transformed\core-1.9.0\AndroidManifest.xml:23:9-81
+35        android:protectionLevel="signature" />
+35-->[androidx.core:core:1.9.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\c5de34b7964143a69bc267aa510b2bde\transformed\core-1.9.0\AndroidManifest.xml:24:9-44
+36
+37    <uses-permission android:name="com.example.bincollector.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+37-->[androidx.core:core:1.9.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\c5de34b7964143a69bc267aa510b2bde\transformed\core-1.9.0\AndroidManifest.xml:26:5-97
+37-->[androidx.core:core:1.9.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\c5de34b7964143a69bc267aa510b2bde\transformed\core-1.9.0\AndroidManifest.xml:26:22-94
+38
+39    <application
+39-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:9:5-33:19
+40        android:allowBackup="true"
+40-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:10:9-35
+41        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+41-->[androidx.core:core:1.9.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\c5de34b7964143a69bc267aa510b2bde\transformed\core-1.9.0\AndroidManifest.xml:28:18-86
+42        android:debuggable="true"
+43        android:extractNativeLibs="false"
+44        android:label="Bin Collector"
+44-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:11:9-38
+45        android:theme="@style/Theme.BinCollector"
+45-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:12:9-50
+46        android:usesCleartextTraffic="true" >
+46-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:13:9-44
+47        <activity
+47-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:15:9-22:20
+48            android:name="com.example.bincollector.LandingActivity"
+48-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:16:13-44
+49            android:exported="true" >
+49-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:17:13-36
+50            <intent-filter>
+50-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:18:13-21:29
+51                <action android:name="android.intent.action.MAIN" />
+51-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:19:17-68
+51-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:19:25-66
+52
+53                <category android:name="android.intent.category.LAUNCHER" />
+53-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:20:17-76
+53-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:20:27-74
+54            </intent-filter>
+55        </activity>
+56        <activity
+56-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:24:9-26:40
+57            android:name="com.example.bincollector.AuthActivity"
+57-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:25:13-41
+58            android:exported="false" />
+58-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:26:13-37
+59        <activity
+59-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:28:9-31:40
+60            android:name="com.example.bincollector.MainActivity"
+60-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:29:13-41
+61            android:exported="false"
+61-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:31:13-37
+62            android:windowSoftInputMode="adjustPan" />
+62-->C:\Nitoll_Waat\UI_App\app\src\main\AndroidManifest.xml:30:13-52
+63
+64        <provider
+64-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\ec6944884f33d422e7423ad771bef303\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+65            android:name="androidx.startup.InitializationProvider"
+65-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\ec6944884f33d422e7423ad771bef303\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+66            android:authorities="com.example.bincollector.androidx-startup"
+66-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\ec6944884f33d422e7423ad771bef303\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+67            android:exported="false" >
+67-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\ec6944884f33d422e7423ad771bef303\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+68            <meta-data
+68-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\ec6944884f33d422e7423ad771bef303\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+69                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+69-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\ec6944884f33d422e7423ad771bef303\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+70                android:value="androidx.startup" />
+70-->[androidx.emoji2:emoji2:1.2.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\ec6944884f33d422e7423ad771bef303\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+71            <meta-data
+71-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\9dc1b9ad4ca79ffca8789187805f019d\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:29:13-31:52
+72                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+72-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\9dc1b9ad4ca79ffca8789187805f019d\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:30:17-78
+73                android:value="androidx.startup" />
+73-->[androidx.lifecycle:lifecycle-process:2.6.1] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\9dc1b9ad4ca79ffca8789187805f019d\transformed\jetified-lifecycle-process-2.6.1\AndroidManifest.xml:31:17-49
+74            <meta-data
+74-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+75                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+75-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+76                android:value="androidx.startup" />
+76-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+77        </provider>
+78
+79        <uses-library
+79-->[androidx.window:window:1.0.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\d0465f0d5c6830644a866448155a08a0\transformed\jetified-window-1.0.0\AndroidManifest.xml:25:9-27:40
+80            android:name="androidx.window.extensions"
+80-->[androidx.window:window:1.0.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\d0465f0d5c6830644a866448155a08a0\transformed\jetified-window-1.0.0\AndroidManifest.xml:26:13-54
+81            android:required="false" />
+81-->[androidx.window:window:1.0.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\d0465f0d5c6830644a866448155a08a0\transformed\jetified-window-1.0.0\AndroidManifest.xml:27:13-37
+82        <uses-library
+82-->[androidx.window:window:1.0.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\d0465f0d5c6830644a866448155a08a0\transformed\jetified-window-1.0.0\AndroidManifest.xml:28:9-30:40
+83            android:name="androidx.window.sidecar"
+83-->[androidx.window:window:1.0.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\d0465f0d5c6830644a866448155a08a0\transformed\jetified-window-1.0.0\AndroidManifest.xml:29:13-51
+84            android:required="false" />
+84-->[androidx.window:window:1.0.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\d0465f0d5c6830644a866448155a08a0\transformed\jetified-window-1.0.0\AndroidManifest.xml:30:13-37
+85
+86        <receiver
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+87            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+87-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+88            android:directBootAware="false"
+88-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+89            android:enabled="true"
+89-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+90            android:exported="true"
+90-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+91            android:permission="android.permission.DUMP" >
+91-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+92            <intent-filter>
+92-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+93                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+93-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+93-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+94            </intent-filter>
+95            <intent-filter>
+95-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+96                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+96-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+96-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+97            </intent-filter>
+98            <intent-filter>
+98-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+99                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+99-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+99-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+100            </intent-filter>
+101            <intent-filter>
+101-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+102                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+102-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+102-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\Kishore Gaonkar\.gradle\caches\8.9\transforms\976c9f2432ba44116298a29fface60b2\transformed\jetified-profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+103            </intent-filter>
+104        </receiver>
+105    </application>
+106
+107</manifest>

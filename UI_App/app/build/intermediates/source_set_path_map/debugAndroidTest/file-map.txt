@@ -1,0 +1,4 @@
+com.example.bincollector.test.app-androidTest-0 C:\Nitoll_Waat\UI_App\app\build\generated\res\resValues\androidTest\debug
+com.example.bincollector.test.app-mergeDebugAndroidTestResources-1 C:\Nitoll_Waat\UI_App\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+com.example.bincollector.test.app-mergeDebugAndroidTestResources-2 C:\Nitoll_Waat\UI_App\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+com.example.bincollector.test.app-merged_res-3 C:\Nitoll_Waat\UI_App\app\build\intermediates\merged_res\debugAndroidTest

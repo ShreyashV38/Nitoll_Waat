@@ -1,0 +1,74 @@
+[
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_rounded_card_bg.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/rounded_card_bg.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/layout_fragment_map.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/layout/fragment_map.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_nitoll_logo.png.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/nitoll_logo.png"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_floating_btn_bg.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/floating_btn_bg.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_app_background.png.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/app_background.png"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/layout_fragment_home.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/menu_bottom_nav_menu.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/menu/bottom_nav_menu.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_bin_ic.png.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/bin_ic.png"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/layout_activity_main.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/layout_item_ward.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/layout/item_ward.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_past_trips_bg.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/past_trips_bg.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_login_card_bg.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/login_card_bg.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_card_bg.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/card_bg.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/layout_activity_start.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/layout/activity_start.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_bin_item_bg.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/bin_item_bg.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/layout_activity_auth.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/layout/activity_auth.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/drawable_toggle_bg.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/drawable/toggle_bg.xml"
+    },
+    {
+        "merged": "com.example.bincollector.app-merged_res-4:/layout_fragment_profile.xml.flat",
+        "source": "com.example.bincollector.app-main-6:/layout/fragment_profile.xml"
+    }
+]
