@@ -4,15 +4,16 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bincollector.R;
 import com.example.bincollector.models.Ward;
-import java.util.List;
 import com.example.bincollector.MainActivity;
+
+import java.util.List;
 
 public class WardAdapter extends RecyclerView.Adapter<WardAdapter.ViewHolder> {
 
@@ -27,6 +28,7 @@ public class WardAdapter extends RecyclerView.Adapter<WardAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Inflates the white card item_ward.xml design
         View view = LayoutInflater.from(context).inflate(R.layout.item_ward, parent, false);
         return new ViewHolder(view);
     }
@@ -34,35 +36,40 @@ public class WardAdapter extends RecyclerView.Adapter<WardAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Ward ward = wardList.get(position);
-        holder.tvWard.setText(ward.getWardNo());
-        holder.cbCollected.setChecked(ward.isCollected());
 
-        holder.tvOpenMap.setOnClickListener(v -> {
-            // This checks if the context is the MainActivity so we can call its methods
+        // Bind data to the modern UI elements as seen in Homepage.pdf
+        holder.tvWardName.setText(ward.getWardNo()); // e.g., "Ward 12" [cite: 30]
+        holder.tvBinCount.setText("Total bins: " + ward.getTotalBins()); // [cite: 31]
+
+        // Use a dynamic value for pending bins if your model has it, or a placeholder for now
+        holder.tvPendingStatus.setText("Pending: " + ward.getPendingBins()); //
+
+        holder.btnOpenMap.setOnClickListener(v -> {
+            // Check if context is MainActivity to call fragment switching logic
             if (context instanceof MainActivity) {
-                ((MainActivity) context).openMapWithRoute();
+                ((MainActivity) context).openMapWithRoute(); // [cite: 32]
             }
         });
-
-        // Handle checkbox logic here later
     }
 
     @Override
     public int getItemCount() {
-        return wardList.size(); // This fixes the "does not override getItemCount" error
+        return wardList.size();
     }
 
-    // This MUST be inside the WardAdapter class braces to fix "cannot find symbol"
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvWard;
-        CheckBox cbCollected;
-        TextView tvOpenMap;
+        TextView tvWardName;
+        TextView tvBinCount;
+        TextView tvPendingStatus; // Matches the new ID in XML
+        Button btnOpenMap;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvWard = itemView.findViewById(R.id.tvWard);
-            cbCollected = itemView.findViewById(R.id.cbCollected);
-            tvOpenMap = itemView.findViewById(R.id.tvOpenMap);
+            // These IDs must match your item_ward.xml exactly to prevent crashes
+            tvWardName = itemView.findViewById(R.id.tvWardName);
+            tvBinCount = itemView.findViewById(R.id.tvBinCount);
+            tvPendingStatus = itemView.findViewById(R.id.tvPendingStatus); // Fixed the typo from 'Satus'
+            btnOpenMap = itemView.findViewById(R.id.btnOpenMap);
         }
     }
 }

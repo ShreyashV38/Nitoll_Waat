@@ -14,10 +14,10 @@ id bottomNav
 id btnFinishRoute
 id btnGetStarted
 id btnLogout
+id btnOpenMap
 id btnSubmit
 id btnTabLogin
 id btnTabRegister
-id cbCollected
 id etFirstName
 id etLastName
 id etOtp
@@ -37,10 +37,11 @@ id profile_background
 id recyclerWards
 id start_background
 id tvAuthSubtext
+id tvBinCount
 id tvGenerateOtp
-id tvOpenMap
+id tvPendingStatus
 id tvRouteInfo
-id tvWard
+id tvWardName
 layout activity_auth
 layout activity_main
 layout activity_start

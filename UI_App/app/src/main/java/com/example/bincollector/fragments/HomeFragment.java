@@ -31,11 +31,13 @@ public class HomeFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerWards);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Mock Data
+        // FIX: Initialize the list BEFORE adding data to it
         wardList = new ArrayList<>();
-        wardList.add(new Ward("Ward 01", 15, false));
-        wardList.add(new Ward("Ward 02", 8, true));
-        wardList.add(new Ward("Ward 03", 20, false));
+
+        // Now you can safely add your Ward objects
+        // Format: new Ward(WardNumber, TotalBins, PendingBins, isCollected)
+        wardList.add(new Ward("Ward 12", 6, 4, false)); // Matches Homepage.pdf [cite: 30, 31, 36]
+        wardList.add(new Ward("Ward 14", 5, 0, true));  // Example completed trip [cite: 39]
 
         adapter = new WardAdapter(wardList, getContext());
         recyclerView.setAdapter(adapter);

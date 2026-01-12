@@ -25,14 +25,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Welcome to"
+                android:textColor="#333333"
                 android:textSize="16sp" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="NitollWaat"
                 android:textColor="#333333"
-                android:textSize="28sp"
-                android:textStyle="bold" />
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-black" />
         </LinearLayout>
     </LinearLayout>
 
@@ -42,107 +44,137 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingBottom="20dp"
-        android:text="Please log in to continue"
-        android:textColor="#666666" />
+        android:text="Welcome again! Please log in."
+        android:textColor="#333333" />
 
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/login_card_bg"
-        android:elevation="8dp"
-        android:orientation="vertical"
-        android:padding="30dp">
+        android:layout_marginHorizontal="8dp"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="12dp"
+        app:cardBackgroundColor="#E3F2FD"
+        app:strokeWidth="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="#D1D1D1"
-            android:orientation="horizontal"
-            android:padding="4dp">
-            <Button
-                android:id="@+id/btnTabLogin"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:backgroundTint="#FFFFFF"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="30dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                app:cardCornerRadius="28dp"
+                app:cardBackgroundColor="#F1F1F1"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTabLogin"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="Login"
+                        android:textSize="20dp"
+                        android:textAllCaps="false"
+                        android:textColor="#333333"
+                        app:cornerRadius="24dp"
+                        app:backgroundTint="#4CAF50" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTabRegister"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="Register"
+                        android:textSize="20dp"
+                        android:textAllCaps="false"
+                        android:textColor="#666666"
+                        app:cornerRadius="24dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <EditText
+                android:id="@+id/etFirstName"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
+                android:background="@android:drawable/editbox_background"
+                android:hint="First Name"
+                android:textColor="#000000"
+                android:textColorHint="#333333"
+                android:padding="12dp"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/etLastName"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@android:drawable/editbox_background"
+                android:hint="Last Name"
+                android:textColor="#000000"
+                android:textColorHint="#333333"
+                android:padding="12dp"
+                android:visibility="gone" />
+
+            <EditText
+                android:id="@+id/etPhone"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
+                android:background="@android:drawable/editbox_background"
+                android:hint="Phone No."
+                android:textColor="#000000"
+                android:textColorHint="#333333"
+                android:inputType="phone"
+                android:maxLength="10"
+                android:padding="12dp" />
+
+            <TextView
+                android:id="@+id/tvGenerateOtp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Generate OTP"
+                android:textColor="#1976D2"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:clickable="true" />
+
+            <EditText
+                android:id="@+id/etOtp"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@android:drawable/editbox_background"
+                android:hint="Enter OTP"
+                android:textColor="#000000"
+                android:textColorHint="#333333"
+                android:inputType="number"
+                android:maxLength="4"
+                android:padding="12dp"
+                android:visibility="gone"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="40dp"
                 android:text="Login"
                 android:textAllCaps="false"
-                android:textColor="#000000" />
-            <Button
-                android:id="@+id/btnTabRegister"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:backgroundTint="@android:color/transparent"
-                android:text="Register"
-                android:textAllCaps="false"
-                android:textColor="#666666" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="#4CAF50"
+                app:cornerRadius="32dp" />
+
         </LinearLayout>
-
-        <EditText
-            android:id="@+id/etFirstName"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="20dp"
-            android:background="@android:drawable/editbox_background"
-            android:hint="First Name *"
-            android:padding="12dp"
-            android:visibility="gone" />
-
-        <EditText
-            android:id="@+id/etLastName"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="10dp"
-            android:background="@android:drawable/editbox_background"
-            android:hint="Last Name"
-            android:padding="12dp"
-            android:visibility="gone" />
-
-        <EditText
-            android:id="@+id/etPhone"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="20dp"
-            android:background="@android:drawable/editbox_background"
-            android:hint="Phone Number (+91)"
-            android:inputType="phone"
-            android:maxLength="10"
-            android:padding="12dp" />
-
-        <TextView
-            android:id="@+id/tvGenerateOtp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Generate OTP"
-            android:textColor="#2196F3"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:clickable="true" />
-
-        <EditText
-            android:id="@+id/etOtp"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_marginTop="10dp"
-            android:background="@android:drawable/editbox_background"
-            android:hint="Enter OTP (1234)"
-            android:inputType="number"
-            android:maxLength="4"
-            android:padding="12dp" />
-
-        <Button
-            android:id="@+id/btnSubmit"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="30dp"
-            android:backgroundTint="#4CAF50"
-            android:text="Login"
-            android:textAllCaps="false"
-            android:textSize="18sp" />
-
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

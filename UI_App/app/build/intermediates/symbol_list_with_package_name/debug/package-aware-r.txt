@@ -3284,6 +3284,7 @@ id bounceStart
 id btnFinishRoute
 id btnGetStarted
 id btnLogout
+id btnOpenMap
 id btnSubmit
 id btnTabLogin
 id btnTabRegister
@@ -3297,7 +3298,6 @@ id cache_measures
 id callMeasure
 id cancel_button
 id carryVelocity
-id cbCollected
 id center
 id centerCrop
 id centerInside
@@ -3697,10 +3697,11 @@ id transition_scene_layoutid_cache
 id transition_transform
 id triangle
 id tvAuthSubtext
+id tvBinCount
 id tvGenerateOtp
-id tvOpenMap
+id tvPendingStatus
 id tvRouteInfo
-id tvWard
+id tvWardName
 id unchecked
 id uniform
 id unlabeled

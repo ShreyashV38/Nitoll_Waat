@@ -1,41 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    android:elevation="4dp">
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:strokeWidth="0dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <TextView
-            android:id="@+id/tvWard"
+            android:id="@+id/tvWardName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ward Name"
-            android:textSize="18sp"
+            android:text="Ward 12"
+            android:textColor="#333333"
+            android:textSize="20sp"
             android:textStyle="bold" />
 
-        <CheckBox
-            android:id="@+id/cbCollected"
+        <TextView
+            android:id="@+id/tvBinCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Collected" />
+            android:layout_below="@id/tvWardName"
+            android:layout_marginTop="4dp"
+            android:text="Total bins: 6"
+            android:textColor="#666666"
+            android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/tvOpenMap"
+            android:id="@+id/tvPendingStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Open Map"
-            android:textColor="@android:color/holo_blue_dark"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="false"
+            android:text="Pending: 4"
+            android:textColor="#F44336"
             android:textStyle="bold"
-            android:padding="5dp" />
+            android:textSize="14sp" />
 
-    </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOpenMap"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:layout_below="@id/tvBinCount"
+            android:layout_marginTop="16dp"
+            android:text="Open Map"
+            android:textAllCaps="false"
+            android:textColor="#4CAF50"
+            app:backgroundTint="#E8F5E9"
+            app:cornerRadius="28dp"
+            app:icon="@android:drawable/ic_dialog_map"
+            app:iconTint="#4CAF50" />
 
-</androidx.cardview.widget.CardView>
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>
