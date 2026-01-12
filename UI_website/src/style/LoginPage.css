@@ -1,33 +1,49 @@
-.Login-container {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-}
+/* style/LoginPage.css */
 
-/* LEFT */
-.Login-container > :first-child {
-  flex: 1;
-}
-
-/* RIGHT */
-.FormSection {
-  flex: 1;
-  background-color: #1f1f1f; /* dark desktop background */
+.form-column {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Align headers and toggle to the right */
   justify-content: center;
-  align-items: center;
-  position: relative;
+  padding: 0 10%; /* Provide breathing room on desktop */
 }
 
-/* MOBILE */
-@media (max-width: 1023px) {
-  .Login-container {
-    flex-direction: column;
-    background-color: #1f1f1f;
-  }
+.auth-content-wrapper {
+  width: 100%;
+  max-width: 500px; /* Limits card width on large screens */
+}
 
-  .FormSection {
-    width: 100%;
-    padding: 0;
-  }
+.page-header {
+  text-align: right; /* Match the design */
+  margin-bottom: 20px;
+}
+
+/* Area Selection Grid Layout */
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Creates 3 equal columns for the dropdowns */
+  gap: 15px;
+  margin-bottom: 25px;
+  text-align: left;
+}
+
+.select-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.select-group label {
+  font-size: 14px;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.vehicle-section {
+  text-align: left;
+  margin-bottom: 30px;
+}
+
+.form-input.small {
+  width: 180px; /* Limits the width of the vehicle number field [cite: 29] */
 }
