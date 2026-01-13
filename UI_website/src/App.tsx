@@ -12,6 +12,7 @@ import Vehicles from './pages/Vehicles';
 import RoutesPage from './pages/RoutesPage';
 import Reports from './pages/Reports';
 import Messages from "./pages/Messages";
+import Profile from "./pages/Profile";
 >>>>>>> f2a4db6e964d766c90e959994cbda633cba31382
 
 function App() {
@@ -35,7 +36,7 @@ function App() {
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/messages" element={<Messages />} />
-        <Route path="/profile" element={<div>Profile Page</div>} />
+         <Route path="/profile" element={<Profile />} />
 >>>>>>> f2a4db6e964d766c90e959994cbda633cba31382
       </Routes>
     </BrowserRouter>
