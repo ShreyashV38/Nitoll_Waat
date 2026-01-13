@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Vehicles from './pages/Vehicles';
 import RoutesPage from './pages/RoutesPage';
 import Reports from './pages/Reports';
+import Messages from "./pages/Messages";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
          <Route path="/routes" element={<RoutesPage />} />
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/messages" element={<Messages />} />
         <Route path="/profile" element={<div>Profile Page</div>} />
       </Routes>
     </BrowserRouter>
