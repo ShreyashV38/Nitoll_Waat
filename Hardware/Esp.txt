@@ -1,0 +1,215 @@
+#include <ESP8266WiFi.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <ESP8266HTTPClient.h> 
+#include <WiFiClient.h>        
+#include "Adafruit_VL53L0X.h"
+
+// ------------------- CONFIGURATION -------------------
+const char* ssid = "wifi";
+const char* password = "87654321";
+
+// SERVER SETTINGS
+// REPLACE with your Laptop IP
+const char* serverUrl = "http://10.135.254.166:3000/api/bins/update"; 
+const char* binID = "11111111-1111-1111-1111-111111111111"; 
+
+// Potentiometer Settings (Lid)
+const int potPin = A0;
+const int rawClosed = 280; 
+const int rawOpen = 18;    
+const int angleThreshold = 25; 
+
+// Bin Fill Settings (Distance in mm)
+const int emptyDistance = 205; 
+const int fullDistance = 40;   
+// -----------------------------------------------------
+
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
+AsyncWebServer server(80);
+
+// Global Variables (Declared ONLY ONCE)
+float currentDistance = 0.0;
+float currentAngle = 0.0;
+int fillPercent = 0;
+String currentLidState = "CLOSED";
+
+// Tracking Variables for Logic
+unsigned long lastSendTime = 0;
+String lastSentLidState = "UNKNOWN";
+int lastSentFill = -1;
+
+// HTML & JavaScript Website
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE HTML><html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Bin Monitor</title>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; background-color: #f4f4f4; margin: 0; padding: 20px; }
+    .container { max-width: 400px; margin: 0 auto; }
+    .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    h2 { color: #333; margin-top: 0; }
+    .label { color: #666; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .value { font-size: 2.5rem; font-weight: bold; color: #333; }
+    .unit { font-size: 1.2rem; color: #777; font-weight: normal; }
+    .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; color: white; margin-top: 10px; }
+    .status-open { background-color: #dc3545; } 
+    .status-closed { background-color: #28a745; } 
+    .progress-container { background-color: #e9ecef; border-radius: 10px; height: 25px; width: 100%; margin-top: 15px; overflow: hidden; }
+    .progress-bar { background-color: #007bff; height: 100%; width: 0%; transition: width 0.5s ease-in-out; text-align: center; line-height: 25px; color: white; font-size: 0.8rem; font-weight: bold; }
+  </style>
+  <script>
+    setInterval(function() {
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var data = JSON.parse(this.responseText);
+          document.getElementById("angle").innerHTML = data.angle;
+          document.getElementById("percent").innerHTML = data.fillPercent;
+          var lidEl = document.getElementById("lidState");
+          lidEl.innerHTML = data.lidState;
+          lidEl.className = (data.lidState == "OPEN") ? "status-badge status-open" : "status-badge status-closed";
+          var bar = document.getElementById("fillBar");
+          bar.style.width = data.fillPercent + "%";
+          if(data.fillPercent > 90) {
+             bar.style.backgroundColor = "#dc3545"; 
+          } else {
+             bar.style.backgroundColor = "#007bff"; 
+          }
+        }
+      };
+      xhttp.open("GET", "/data", true);
+      xhttp.send();
+    }, 1000); 
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h2>Smart Bin Monitor</h2>
+    <div class="card">
+      <div class="label">Fill Level</div>
+      <div class="value"><span id="percent">0</span><span class="unit">%</span></div>
+      <div class="progress-container">
+        <div id="fillBar" class="progress-bar"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">Lid Angle</div>
+      <div class="value"><span id="angle">0</span><span class="unit">&deg;</span></div>
+      <div id="lidState" class="status-badge status-closed">Checking...</div>
+    </div>
+  </div>
+</body>
+</html>)rawliteral";
+
+void setup() {
+  Serial.begin(115200);
+
+  // Initialize VL53L0X
+  if (!lox.begin()) {
+    Serial.println(F("Failed to boot VL53L0X"));
+    while(1);
+  }
+
+  // Connect WiFi
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+  }
+  Serial.println(WiFi.localIP());
+
+  // Web Server Routes
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/html", index_html);
+  });
+
+  server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request){
+    String json = "{";
+    json += "\"fillPercent\":" + String(fillPercent) + ",";
+    json += "\"angle\":" + String(currentAngle, 1) + ","; 
+    json += "\"lidState\":\"" + currentLidState + "\"";
+    json += "}";
+    request->send(200, "application/json", json);
+  });
+
+  server.begin();
+}
+
+void loop() {
+  // --- 1. SENSOR LOGIC ---
+  int rawValue = analogRead(potPin);
+  float angle = (rawValue - rawClosed) * (90.0 - 0.0) / (rawOpen - rawClosed) + 0.0;
+  
+  if (angle < 0) angle = 0;
+  if (angle > 90) angle = 90;
+  currentAngle = angle;
+
+  if (currentAngle > angleThreshold) {
+    currentLidState = "OPEN";
+  } else {
+    currentLidState = "CLOSED";
+  }
+
+  VL53L0X_RangingMeasurementData_t measure;
+  lox.rangingTest(&measure, false); 
+
+  if (measure.RangeStatus != 4) {
+    currentDistance = measure.RangeMilliMeter;
+    int constrainedDist = constrain(currentDistance, fullDistance, emptyDistance);
+    fillPercent = map(constrainedDist, emptyDistance, fullDistance, 0, 100);
+  }
+
+  // --- 2. EVENT-DRIVEN SEND LOGIC ---
+  
+  // Check A: Lid Changed?
+  bool lidChanged = (currentLidState != lastSentLidState);
+
+  // Check B: Fill Level Changed (> 2%)?
+  bool fillChanged = (abs(fillPercent - lastSentFill) > 2);
+
+  // Check C: Heartbeat (Every 5 minutes)
+  bool isHeartbeat = (millis() - lastSendTime > 300000); 
+
+  if (lidChanged || fillChanged || isHeartbeat) {
+    
+    if (WiFi.status() == WL_CONNECTED) {
+      WiFiClient client;
+      HTTPClient http;
+
+      http.begin(client, serverUrl);
+      http.addHeader("Content-Type", "application/json");
+
+      String jsonPayload = "{";
+      jsonPayload += "\"bin_id\":\"" + String(binID) + "\",";
+      jsonPayload += "\"fill_percent\":" + String(fillPercent) + ",";
+      jsonPayload += "\"lid_status\":\"" + currentLidState + "\",";
+      jsonPayload += "\"lid_angle\":" + String((int)currentAngle);
+      jsonPayload += "}";
+
+      int httpResponseCode = http.POST(jsonPayload);
+      
+      Serial.print("Data Sent! Reason: ");
+      if(lidChanged) Serial.print("Lid ");
+      if(fillChanged) Serial.print("Fill ");
+      if(isHeartbeat) Serial.print("Time");
+      Serial.println();
+      
+      http.end();
+      
+      // Update Memory
+      lastSentLidState = currentLidState;
+      lastSentFill = fillPercent;
+      lastSendTime = millis();
+      
+    } else {
+      Serial.println("WiFi Disconnected");
+    }
+  }
+
+  // Debug Print
+  Serial.print("Fill: "); Serial.print(fillPercent);
+  Serial.print("% | Lid: "); Serial.println(currentLidState);
+
+  delay(500); 
+}
