@@ -1,0 +1,94 @@
+.layout {
+  display: flex;
+  height: 100vh;
+}
+
+.vehicles-page {
+  flex: 1;
+  padding: 24px 32px;
+  background: #f6f7f9;
+}
+
+.page-header {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.page-header p {
+  margin: 4px 0 0;
+  color: #777;
+  font-size: 13px;
+}
+
+.fleet-card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+}
+
+.fleet-card h3 {
+  margin: 0;
+}
+
+.subtext {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 16px;
+}
+
+.table {
+  margin-top: 10px;
+}
+
+.table-head,
+.table-row {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 1fr;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.table-head {
+  background: #f0f0f0;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.table-row {
+  background: white;
+  margin-top: 10px;
+  border-radius: 12px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 13px;
+  background: white;
+}
+
+.status {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.status.active {
+  color: #2ecc71;
+}
+
+.status.inactive {
+  color: #999;
+}
+.status.maintenance {
+  color: #e67e22;
+}
