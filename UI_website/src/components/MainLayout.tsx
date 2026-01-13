@@ -1,18 +1,16 @@
+// src/components/MainLayout.tsx
 import React from 'react';
 import Sidebar from './Sidebar';
-// Fixed the path to point to your style folder
+import { Outlet } from 'react-router-dom'; // Use Outlet for nested routes
 import '../style/MainLayout.css'; 
 
-interface Props {
-  children: React.ReactNode;
-}
-
-const MainLayout: React.FC<Props> = ({ children }) => {
+const MainLayout: React.FC = () => {
   return (
     <div className="app-container">
       <Sidebar />
       <main className="content-area">
-        {children}
+        {/* Outlet renders the child route's element */}
+        <Outlet /> 
       </main>
     </div>
   );

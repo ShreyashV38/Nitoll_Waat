@@ -1,4 +1,5 @@
 import Sidebar from "../components/Sidebar";
+import { useNavigate } from "react-router-dom";
 import "../style/Profile.css";
 
 interface ProfileData {
@@ -20,6 +21,13 @@ const profileData: ProfileData = {
 };
 
 const Profile = () => {
+  const navigate = useNavigate(); // Hook
+
+  const handleLogout = () => {
+      // Clear session data if any
+      localStorage.clear(); 
+      navigate("/");
+  };
   return (
     <div className="layout">
       <Sidebar />
@@ -35,7 +43,7 @@ const Profile = () => {
             <h2>Admin Profile</h2>
           </div>
 
-          <button className="logout-btn">LOGOUT</button>
+          <button className="logout-btn" onClick={handleLogout}>LOGOUT</button>
         </div>
 
         {/* Profile Information */}

@@ -1,43 +1,38 @@
+// src/App.tsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage'; 
-import './style/App.css';
 import AreaPage from './pages/AreaPage';
-<<<<<<< HEAD
-import MapsBinsPage from './pages/MapsBinsPage'; // Import your specific page
 import MainLayout from './components/MainLayout';
-=======
+// Import pages
 import Dashboard from './pages/Dashboard';
-import Vehicles from './pages/Vehicles';
+import MapsBinsPage from './pages/MapsBinsPage';
 import RoutesPage from './pages/RoutesPage';
+import Vehicles from './pages/Vehicles';
 import Reports from './pages/Reports';
 import Messages from "./pages/Messages";
-import Profile from "./pages/Profile";
->>>>>>> f2a4db6e964d766c90e959994cbda633cba31382
+import Profile from "./components/Profile"; 
+import './style/App.css';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
+        {/* Public Routes (No Sidebar) */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-<<<<<<< HEAD
+        <Route path="/area" element={<AreaPage />} />
         
-        {/* Dashboard Routes */}
-        <Route path="/area" element={<MainLayout><AreaPage /></MainLayout>} />
-        
-        {/* YOUR WORK: Dedicated route for Map and Bins */}
-        <Route path="/maps-bins" element={<MainLayout><MapsBinsPage /></MainLayout>} />
-=======
-        <Route path ="/area" element={<AreaPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-         <Route path="/routes" element={<RoutesPage />} />
-        <Route path="/vehicles" element={<Vehicles />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/messages" element={<Messages />} />
-         <Route path="/profile" element={<Profile />} />
->>>>>>> f2a4db6e964d766c90e959994cbda633cba31382
+        {/* Protected Routes (Wrapped in MainLayout) */}
+        <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/maps-bins" element={<MapsBinsPage />} />
+            <Route path="/routes" element={<RoutesPage />} />
+            <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/profile" element={<Profile />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

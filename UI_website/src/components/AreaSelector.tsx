@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../style/LoginForm.css" // Reusing your form styles
+import "../style/LoginForm.css" 
 
 function AreaSelector() {
     const navigate = useNavigate();
     const [selectedArea, setSelectedArea] = useState("");
 
-    // You can replace these with your actual database areas later
     const areas = [
         "Panjim",
         "Margao",
@@ -22,13 +21,12 @@ function AreaSelector() {
             return;
         }
         console.log("User selected:", selectedArea);
-        // Navigate to the main dashboard/home
-        navigate('/home');
+        localStorage.setItem("selectedArea", selectedArea);
+        navigate('/dashboard'); 
     };
 
     return (
         <div className="login-page-wrapper">
-            {/* Top Bar: Optional Logout or Back button */}
             <div className="switchToSignUp">
                 <button onClick={() => navigate('/')}>Logout</button>
             </div>
@@ -46,8 +44,6 @@ function AreaSelector() {
                         <p className="subtitle">This helps us connect you to the right collectors.</p>
 
                         <div className="inputFields">
-                            
-                            {/* Scrollable Area List */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto', paddingRight: '5px' }}>
                                 {areas.map((area) => (
                                     <div 
@@ -59,7 +55,6 @@ function AreaSelector() {
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            // Conditional Styling for selection
                                             backgroundColor: selectedArea === area ? '#e8f5e9' : '#f9f9f9',
                                             borderColor: selectedArea === area ? '#27ae60' : '#e0e0e0',
                                             color: selectedArea === area ? '#27ae60' : '#333',
@@ -68,8 +63,6 @@ function AreaSelector() {
                                         }}
                                     >
                                         {area}
-                                        
-                                        {/* Checkmark Icon if selected */}
                                         {selectedArea === area && (
                                             <span style={{ fontSize: '18px', color: '#27ae60' }}>✓</span>
                                         )}

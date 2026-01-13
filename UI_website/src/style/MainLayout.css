@@ -1,12 +1,15 @@
+/* src/style/MainLayout.css */
 .app-container {
   display: flex;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f8faf9; /* Move background color here for consistency */
 }
 
 .content-area {
   flex: 1;
+  margin-left: 280px; /* CRITICAL: Pushes content right to respect fixed sidebar */
+  padding: 0;
   overflow-y: auto;
-  background-color: #ffffff;
+  min-height: 100vh;
 }

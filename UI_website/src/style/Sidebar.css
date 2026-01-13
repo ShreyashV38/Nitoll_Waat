@@ -1,8 +1,7 @@
-<<<<<<< HEAD
 /* Sidebar.css */
 .sidebar {
   width: 280px;
-  background-color: #c6f6d5; /* The specific light green from your pic */
+  background-color: #c6f6d5;
   height: 100vh;
   position: fixed;
   left: 0;
@@ -22,12 +21,12 @@
 }
 
 .sidebar-logo {
-  width: 60px; /* Size matched to text height */
+  width: 60px;
   height: auto;
 }
 
 .brand-text {
-  font-size: 18px; /* Same visual height as logo */
+  font-size: 18px;
   font-weight: 700;
   color: #1a202c;
   line-height: 1.2;
@@ -64,63 +63,6 @@
 }
 
 .nav-item.active {
-  background-color: #f0f4ff; /* Light purple/white active tab */
+  background-color: #f0f4ff;
   color: #5a67d8;
 }
-=======
-.sidebar {
-  width: 240px;
-  height: 100vh;
-  background: linear-gradient(180deg, #c7f3d2, #b3eac4);
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 30px;
-}
-
-.sidebar-logo img {
-  width: 42px;
-}
-
-.sidebar-logo h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f3b2d;
-}
-
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  text-decoration: none;
-  color: #1f3b2d;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: background 0.2s ease;
-}
-
-.nav-link:hover {
-  background: rgba(255, 255, 255, 0.6);
-}
-
-.nav-link.active {
-  background: white;
-  font-weight: 600;
-}
-
-.nav-icon {
-  font-size: 18px;
-}
->>>>>>> f2a4db6e964d766c90e959994cbda633cba31382
