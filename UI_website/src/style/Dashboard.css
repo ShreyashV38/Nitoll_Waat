@@ -1,0 +1,36 @@
+.layout {
+  display: flex;
+}
+
+.dashboard {
+  flex: 1;
+  padding: 30px;
+  background: #f9fafb;
+}
+
+.dashboard-header h1 {
+  font-size: 26px;
+}
+
+.dashboard-header p {
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.overview {
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status {
+  color: green;
+  font-weight: 500;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
