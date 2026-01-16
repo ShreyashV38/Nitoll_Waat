@@ -10,7 +10,7 @@ import MapsBinsPage from './pages/MapsBinsPage';
 import RoutesPage from './pages/RoutesPage';
 import Vehicles from './pages/Vehicles';
 import Messages from "./pages/Messages";
-import Profile from "./components/Profile"; 
+import Profile from "./pages/Profile"; 
 import './style/App.css';
 
 function App() {

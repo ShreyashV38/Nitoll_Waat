@@ -37,17 +37,6 @@
   font-weight: 900;
 }
 
-.collapse-toggle {
-  position: absolute;
-  right: -10px;
-  top: 0;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  padding: 2px;
-  cursor: pointer;
-}
-
 /* Nav Menu */
 .nav-menu { display: flex; flex-direction: column; gap: 10px; }
 

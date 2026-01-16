@@ -5,8 +5,9 @@
 
 .vehicles-page {
   flex: 1;
-  padding: 24px 32px;
+  padding: 30px;;
   background: #f6f7f9;
+  min-height: 100vh;
 }
 
 .page-header {

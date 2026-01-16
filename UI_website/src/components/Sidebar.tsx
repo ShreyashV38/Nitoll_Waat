@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Map, Truck, MessageSquare, User, ChevronLeft } from 'lucide-react'; // Removed FileText icon
+import { LayoutGrid, Map, Truck, MessageSquare, User } from 'lucide-react'; 
 import { NavLink } from 'react-router-dom';
 import GoaLogo from '../assets/Goa.png'; 
 import '../style/Sidebar.css';
@@ -16,9 +16,6 @@ const Sidebar: React.FC = () => {
               <span className="brand-name">NitollWaat</span>
             </h1>
           </div>
-          <button className="collapse-toggle">
-            <ChevronLeft size={16} />
-          </button>
         </div>
       </div>
 

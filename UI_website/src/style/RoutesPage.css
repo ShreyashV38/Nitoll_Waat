@@ -4,8 +4,9 @@
 
 .routes-page {
   flex: 1;
-  padding: 24px;
+  padding: 30px;
   background: #f8faf9;
+  min-height: 100vh;
 }
 
 /* Header */

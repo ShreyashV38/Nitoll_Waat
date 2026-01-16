@@ -2,6 +2,10 @@
 .page-layout { display: flex; min-height: 100vh; background-color: #f9fbff; }
 .main-content { margin-left: 280px; flex: 1; padding: 30px; }
 
+.maps-bins-container {
+  padding: 30px; /* Standardized padding */
+  min-height: 100vh;
+}
 /* Dashboard Cards */
 .mb-card {
   background: white;
