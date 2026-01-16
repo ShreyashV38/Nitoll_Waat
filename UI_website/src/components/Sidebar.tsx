@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Map, Truck, FileText, MessageSquare, User, ChevronLeft } from 'lucide-react';
+import { LayoutGrid, Map, Truck, MessageSquare, User, ChevronLeft } from 'lucide-react'; // Removed FileText icon
 import { NavLink } from 'react-router-dom';
 import GoaLogo from '../assets/Goa.png'; 
 import '../style/Sidebar.css';
@@ -27,7 +27,7 @@ const Sidebar: React.FC = () => {
         <NavItem to="/maps-bins" icon={<Map size={22}/>} label="Map and Bins" />
         <NavItem to="/routes" icon={<Truck size={22}/>} label="Routes" />
         <NavItem to="/vehicles" icon={<Truck size={22}/>} label="Vehicles" />
-        <NavItem to="/reports" icon={<FileText size={22}/>} label="Reports" />
+        {/* REMOVED REPORTS ITEM */}
         <NavItem to="/messages" icon={<MessageSquare size={22}/>} label="Messages" />
         <NavItem to="/profile" icon={<User size={22}/>} label="Profile" />
       </nav>

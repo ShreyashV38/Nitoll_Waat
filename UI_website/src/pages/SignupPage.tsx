@@ -1,6 +1,6 @@
-import BrandingSection from "../components/BrandingSection"
-import SignupForm from "../components/SignupForm"
-import LoginForm from "../components/SignupForm"
+import BrandingSection from "../components/Auth/BrandingSection"
+import SignupForm from "../components/Auth/SignupForm"
+import LoginForm from "../components/Auth/SignupForm"
 import "../style/LoginPage.css"
 function SignupPage(){
     return(

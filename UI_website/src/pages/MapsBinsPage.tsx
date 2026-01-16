@@ -1,166 +1,76 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus } from 'lucide-react';
-// REMOVED: import Sidebar from '../components/Sidebar'; 
-import '../style/MapsBinsPage.css';
+import { Plus } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
+import BinMap from '../components/MapsBins/BinMap'; // Imports the map component
+import BinDirectory from '../components/MapsBins/BinDirectory';
+import AddBinModal from '../components/MapsBins/AddBinModal';
+import '../style/MapsBinsPage.css'; // Correct path for pages/
 
 const MapsBinsPage: React.FC = () => {
   const [councilName, setCouncilName] = useState("Panaji");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState('A12');
-  
-  // Modal Form State
-  const [newBinId, setNewBinId] = useState('');
-  const [newBinLevel, setNewBinLevel] = useState(0);
+  const [selectedId, setSelectedId] = useState<string>(''); 
 
-  // Dynamic Data Source
   const [bins, setBins] = useState([
-    { id: 'A12', level: 90, status: 'Active', overflow: '4.30 PM', update: '30 mins ago' },
-    { id: 'A15', level: 60, status: 'Active', overflow: '7.00 PM', update: '10 mins ago' },
-    { id: 'B03', level: 20, status: 'Active', overflow: 'Tomorrow', update: '1 hr ago' },
-    { id: 'C07', level: 0, status: 'Offline', overflow: 'N/A', update: '2 days ago' },
-    { id: 'B08', level: 85, status: 'Active', overflow: '5.15 PM', update: '5 mins ago' },
-    { id: 'A20', level: 15, status: 'Active', overflow: 'Tomorrow', update: '20 mins ago' },
+    { id: 'A12', level: 90, status: 'Active', overflow: '4.30 PM', update: '30 mins ago', lat: 15.4585, lng: 73.8340 },
+    { id: 'A15', level: 60, status: 'Active', overflow: '7.00 PM', update: '10 mins ago', lat: 15.4590, lng: 73.8350 },
+    { id: 'B03', level: 20, status: 'Active', overflow: 'Tomorrow', update: '1 hr ago', lat: 15.4580, lng: 73.8335 },
+    { id: 'C07', level: 0, status: 'Offline', overflow: 'N/A', update: '2 days ago', lat: 15.4575, lng: 73.8345 },
+    { id: 'B08', level: 85, status: 'Active', overflow: '5.15 PM', update: '5 mins ago', lat: 15.4595, lng: 73.8330 },
+    { id: 'A20', level: 15, status: 'Active', overflow: 'Tomorrow', update: '20 mins ago', lat: 15.4582, lng: 73.8360 },
   ]);
 
   useEffect(() => {
     const savedArea = localStorage.getItem("selectedArea");
     if (savedArea) setCouncilName(savedArea);
-  }, []);
+    if (bins.length > 0 && !selectedId) setSelectedId(bins[0].id);
+  }, [bins]);
 
-  const activeBin = bins.find(b => b.id === selectedId) || bins[0];
+  const handleAddBin = (id: string, level: number) => {
+    const randomLat = 15.4585 + (Math.random() * 0.002 - 0.001);
+    const randomLng = 73.8340 + (Math.random() * 0.002 - 0.001);
 
-  const getStatusClass = (level: number, status: string) => {
-    if (status === 'Offline') return 'offline';
-    if (level > 80) return 'high';
-    if (level > 50) return 'mid';
-    return 'low';
-  };
-
-  const handleAddBin = (e: React.FormEvent) => {
-    e.preventDefault();
     const newBin = {
-      id: newBinId.toUpperCase(),
-      level: Number(newBinLevel),
+      id: id.toUpperCase(),
+      level: level,
       status: 'Active',
       overflow: 'Calculating...',
-      update: 'Just now'
+      update: 'Just now',
+      lat: randomLat,
+      lng: randomLng
     };
     setBins([...bins, newBin]);
-    setIsModalOpen(false);
-    setNewBinId('');
-    setNewBinLevel(0);
   };
 
   return (
-    // REMOVED: <div className="page-layout"> and <Sidebar />
-    // REMOVED: <main className="main-content"> (MainLayout handles this)
-    
     <div className="maps-bins-container">
-      <header className="mb-header">
-        <h1>{councilName} Municipal Council (Zone A)</h1>
-        <p className="subtitle">North Goa • {bins.length} Active Bins</p>
-      </header>
+      <PageHeader 
+        title={`${councilName} Municipal Council (Zone A)`}
+        subtitle={`North Goa • ${bins.length} Active Bins`}
+      >
+        <button className="add-bin-btn" onClick={() => setIsModalOpen(true)}>
+           <Plus size={18} /> Add Bin
+        </button>
+      </PageHeader>
 
-      {/* All Bins Card */}
-      <div className="mb-card visualizer-card">
-        <div className="card-top-row">
-          <h3>All Bins</h3>
-          <button className="add-bin-btn" onClick={() => setIsModalOpen(true)}>
-            <Plus size={18} /> Add Bin
-          </button>
-        </div>
-        
-        <div className="visualizer-content">
-          <div className="bins-grid-container">
-            {bins.map(bin => (
-              <div 
-                key={bin.id} 
-                className={`bin-item ${selectedId === bin.id ? 'selected' : ''}`}
-                onClick={() => setSelectedId(bin.id)}
-              >
-                <div className={`bin-circle ${getStatusClass(bin.level, bin.status)}`}>
-                  <span className="bin-icon">🗑</span>
-                </div>
-                <span className="bin-label">{bin.id}</span>
-              </div>
-            ))}
-          </div>
+      {/* Reusing the BinMap Component */}
+      <BinMap 
+        bins={bins} 
+        selectedId={selectedId} 
+        onSelect={setSelectedId} 
+      />
 
-          <div className="legend-box">
-            <div className="legend-item"><span className="dot low"></span> Less than 50%</div>
-            <div className="legend-item"><span className="dot mid"></span> 50-80%</div>
-            <div className="legend-item"><span className="dot high"></span> Above 80%</div>
-            <div className="legend-item"><span className="dot offline"></span> Offline</div>
-          </div>
-        </div>
-      </div>
+      <BinDirectory 
+        bins={bins}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+      />
 
-      {/* Bins Details Card */}
-      <div className="mb-card details-card">
-        <h3>Bins Details</h3>
-        <div className="details-row">
-          <div className="detail-group">
-            <label>Bin ID</label>
-            <div className="detail-value bold-id">{activeBin.id}</div>
-          </div>
-          
-          <div className="detail-group fill-group">
-            <label>Fill Level</label>
-            <div className="progress-container">
-              <div className="progress-track">
-                <div 
-                  className={`progress-bar ${getStatusClass(activeBin.level, activeBin.status)}`} 
-                  style={{ width: `${activeBin.level}%` }}
-                ></div>
-              </div>
-              <span className="percentage-val">{activeBin.level}%</span>
-            </div>
-          </div>
-
-          <div className="detail-group">
-            <label>Predicted Overflow</label>
-            <div className="detail-value">{activeBin.overflow}</div>
-          </div>
-
-          <div className="detail-group">
-            <label>Last Updated</label>
-            <div className="detail-value">{activeBin.update}</div>
-          </div>
-
-          <div className="detail-group">
-            <label>Status</label>
-            <div className={`status-text ${activeBin.status.toLowerCase()}`}>
-              {activeBin.status}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* User-Driven Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <div className="modal-header">
-              <h2>Add New Bin</h2>
-              <X className="close-icon" onClick={() => setIsModalOpen(false)} />
-            </div>
-            <form onSubmit={handleAddBin}>
-              <div className="input-field">
-                <label>Bin ID</label>
-                <input type="text" value={newBinId} onChange={(e) => setNewBinId(e.target.value)} placeholder="e.g. A22" required />
-              </div>
-              <div className="input-field">
-                <label>Initial Fill Level (%)</label>
-                <input type="number" value={newBinLevel} onChange={(e) => setNewBinLevel(Number(e.target.value))} max="100" min="0" />
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn-add">Add Bin</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <AddBinModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onAdd={handleAddBin} 
+      />
     </div>
   );
 };

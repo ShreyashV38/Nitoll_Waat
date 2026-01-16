@@ -1,6 +1,6 @@
-import BrandingSection from "../components/BrandingSection"
-import AreaSelector from "../components/AreaSelector"
-import "../style/LoginPage.css" // Reusing the split-screen layout
+import BrandingSection from "../components/Auth/BrandingSection"
+import AreaSelector from "../components/Auth/AreaSelector"
+import "../style/LoginPage.css" 
 
 function AreaPage() {
     return (

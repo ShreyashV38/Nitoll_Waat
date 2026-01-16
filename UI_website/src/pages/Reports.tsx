@@ -1,4 +1,5 @@
 import Sidebar from "../components/Sidebar";
+import PageHeader from "../components/PageHeader"; // Import
 import "../style/Reports.css";
 
 type SummaryRow = {
@@ -26,39 +27,33 @@ const Reports = () => {
       <Sidebar />
 
       <main className="reports-page">
-        {/* Header */}
-        <div className="reports-header">
-          <h1>Panaji Municipal Council (Zone A)</h1>
-          <p>North Goa • {stats.vehiclesUsed} Vehicles Registered</p>
-        </div>
+        {/* REUSED COMPONENT */}
+        <PageHeader 
+          title="Panaji Municipal Council (Zone A)"
+          subtitle={`North Goa • ${stats.vehiclesUsed} Vehicles Registered`}
+        />
 
-        {/* Stat Cards */}
         <div className="report-cards">
           <div className="report-card">
             <span>Vehicle Used Today</span>
             <strong>{stats.vehiclesUsed}</strong>
           </div>
-
           <div className="report-card">
             <span>Routes Completed</span>
             <strong className="green">{stats.routesCompleted}</strong>
           </div>
-
           <div className="report-card">
             <span>Bins Collected</span>
             <strong>{stats.binsCollected}</strong>
           </div>
-
           <div className="report-card">
             <span>Overflow Avoided</span>
             <strong className="blue">{stats.overflowAvoided}</strong>
           </div>
         </div>
 
-        {/* Summary Table */}
         <div className="summary-box">
           <h3>Today's Summary</h3>
-
           <table>
             <thead>
               <tr>
@@ -67,7 +62,6 @@ const Reports = () => {
                 <th>STATUS</th>
               </tr>
             </thead>
-
             <tbody>
               {summaryData.map((row) => (
                 <tr key={row.id}>

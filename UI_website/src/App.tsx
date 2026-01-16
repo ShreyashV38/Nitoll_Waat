@@ -9,7 +9,6 @@ import Dashboard from './pages/Dashboard';
 import MapsBinsPage from './pages/MapsBinsPage';
 import RoutesPage from './pages/RoutesPage';
 import Vehicles from './pages/Vehicles';
-import Reports from './pages/Reports';
 import Messages from "./pages/Messages";
 import Profile from "./components/Profile"; 
 import './style/App.css';
@@ -29,7 +28,6 @@ function App() {
             <Route path="/maps-bins" element={<MapsBinsPage />} />
             <Route path="/routes" element={<RoutesPage />} />
             <Route path="/vehicles" element={<Vehicles />} />
-            <Route path="/reports" element={<Reports />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/profile" element={<Profile />} />
         </Route>

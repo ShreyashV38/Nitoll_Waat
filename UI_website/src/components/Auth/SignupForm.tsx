@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Google from "../assets/google.png"
-import Apple from "../assets/apple-logo.png"
-import Facebook from "../assets/facebook.png"
-import "../style/LoginForm.css"
+import Google from "../../assets/google.png"
+import Apple from "../../assets/apple-logo.png"
+import Facebook from "../../assets/facebook.png"
+import "../../style/LoginForm.css"
 
 function SignupForm() {
     // State for signup inputs

@@ -83,3 +83,106 @@
 .modal-footer { display: flex; gap: 15px; margin-top: 30px; }
 .btn-cancel { flex: 1; background: #f7fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 .btn-add { flex: 1; background: #48bb78; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+
+
+.selected-marker {
+    transform: scale(1.3);
+    border: 3px solid #3b82f6 !important;
+    z-index: 1000 !important;
+}/* Add this to the bottom of the file */
+
+/* Ensures the map marker looks like a circle */
+.custom-map-marker .bin-circle {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff; /* fallback */
+}
+
+/* Specific colors for map markers (inheriting from your existing classes) */
+.custom-map-marker .low { background-color: #48bb78; }
+.custom-map-marker .mid { background-color: #ecc94b; }
+.custom-map-marker .high { background-color: #f56565; }
+.custom-map-marker .offline { background-color: #a0aec0; }
+/* ... existing styles ... */
+
+/* Highlight style for the Selected Map Pin */
+.selected-marker .bin-circle {
+  border: 3px solid #3b82f6 !important; /* Blue border */
+  transform: scale(1.3); /* Make it bigger */
+  z-index: 1000 !important; /* Put it on top of other pins */
+  transition: all 0.3s ease;
+}
+
+/* Ensure list items also look selected */
+.bin-item.selected .bin-circle {
+  border: 3px solid #3b82f6;
+  transform: scale(1.1);
+}
+
+/* --- Bin Directory Styles --- */
+.directory-card {
+  display: flex;
+  flex-direction: column;
+  height: 500px; /* Fixed height for scrolling */
+  padding-bottom: 0;
+}
+
+.directory-header {
+  display: grid;
+  grid-template-columns: 80px 2fr 1fr 1fr 100px; /* Align columns */
+  padding: 10px 20px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.directory-scroll-area {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.directory-row {
+  display: grid;
+  grid-template-columns: 80px 2fr 1fr 1fr 100px; /* Matches header */
+  padding: 16px 20px;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.directory-row:hover {
+  background-color: #f8fafc;
+}
+
+.directory-row.active-row {
+  background-color: #eff6ff;
+  border-left: 4px solid #3b82f6;
+}
+
+/* Column Specifics */
+.col-id { font-weight: 700; color: #1e293b; }
+.col-text { font-size: 14px; color: #475569; }
+
+.col-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 20px;
+}
+.progress-track.small { height: 8px; flex: 1; border-radius: 4px; background: #e2e8f0; overflow: hidden;}
+.percent { font-size: 13px; font-weight: 600; color: #64748b; width: 35px;}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.status-badge.active { background: #dcfce7; color: #166534; }
+.status-badge.offline { background: #f1f5f9; color: #64748b; }
