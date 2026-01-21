@@ -1,4 +1,4 @@
-import { use, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Google from "../../assets/google.png"
 import Apple from "../../assets/apple-logo.png"
@@ -6,34 +6,46 @@ import Facebook from "../../assets/facebook.png"
 import "../../style/LoginForm.css"
 
 function LoginForm(){
-    //States to store user inputs
-    const [phoneNumber,setPhoneNumber]=useState("")
-    const [otp,setOtp]=useState("")
-    const [sendOtp,setSendOtp]=useState(false)
-
-    //function to handle sendOtp Click
-    const handleSendOtp=()=>{
-        if(phoneNumber==="" || phoneNumber.length<10){
-            alert("please enter a valid number")
-            return
-        }
-        setSendOtp(true)
-        alert("OTP sent!")
-        console.log("Otp sent to:",phoneNumber)
-    }
-
-    //function to handle next Button click
-    const handleNext=()=>{
-        if(otp===""){
-            alert("Please Enter OTP")
-            return
-        }
-        console.log("Login with:", { phoneNumber, otp });   
-    }
-
-    const navigate=useNavigate()
-        
+    // States to store user inputs
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [otp, setOtp] = useState("")
+    const [sendOtp, setSendOtp] = useState(false)
     
+    // Unified Status State (type: 'error' | 'success' | '')
+    const [status, setStatus] = useState({ type: '', msg: '' });
+
+    const navigate = useNavigate();
+
+    // Helper to clear status when typing
+    const handleInput = (setter: any, value: string) => {
+        setter(value);
+        if (status.msg) setStatus({ type: '', msg: '' });
+    };
+
+    // function to handle sendOtp Click
+    const handleSendOtp = () => {
+        if(phoneNumber === "" || phoneNumber.length < 10){
+            setStatus({ type: 'error', msg: 'Please enter a valid 10-digit phone number' });
+            return;
+        }
+        
+        // Simulate API call success
+        setSendOtp(true);
+        setStatus({ type: 'success', msg: `✅ OTP sent to ${phoneNumber}` });
+        console.log("Otp sent to:", phoneNumber);
+    }
+
+    // function to handle next Button click
+    const handleNext = () => {
+        if(otp === ""){
+            setStatus({ type: 'error', msg: 'Please enter the OTP to continue' });
+            return;
+        }
+        
+        // Simulate Login Success
+        console.log("Login with:", { phoneNumber, otp });   
+        navigate('/dashboard'); // Assuming successful login redirects to dashboard
+    }
 
     return (
     <div className="login-page-wrapper">
@@ -56,30 +68,51 @@ function LoginForm(){
                     <p className="subtitle">Authenticate to access your account</p>                
                     <div className="inputFields">
                     
-                            <input type="tel" placeholder="Phone Number" value={phoneNumber} 
-                            onChange={(e)=>setPhoneNumber(e.target.value)}  className="input-field" disabled={sendOtp}/>  
+                        <input 
+                            type="tel" 
+                            placeholder="Phone Number" 
+                            value={phoneNumber} 
+                            onChange={(e) => handleInput(setPhoneNumber, e.target.value)}  
+                            className="input-field" 
+                            disabled={sendOtp}
+                        />  
 
-                            {!sendOtp && (<button 
-                                            onClick={handleSendOtp} 
-                                            className="sendOtp-btn">Send OTP</button>)}
-                            
-                            {sendOtp && (
-                            <input type="text" placeholder="OTP" value={otp} 
-                            onChange={(e)=>setOtp(e.target.value)}  className="input-field" />   )
-                            }
+                        {!sendOtp && (
+                            <button onClick={handleSendOtp} className="sendOtp-btn">
+                                Send OTP
+                            </button>
+                        )}
+                        
+                        {sendOtp && (
+                            <>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter OTP" 
+                                    value={otp} 
+                                    onChange={(e) => handleInput(setOtp, e.target.value)}  
+                                    className="input-field" 
+                                />
+                                <button onClick={handleNext} className="next-btn">
+                                    Login
+                                </button>
+                            </>
+                        )}
 
-                            {sendOtp && (
-                            <button onClick={handleNext} className="next-btn">Next</button>
-                            )}
-
-                            <div className="otherMethods">
-                                <p>Or do it via other accounts</p>
-                                <div className="methods">
-                                    <a href="#"><img src={Google} alt="Google" /></a>
-                                    <a href="#"><img src={Apple} alt="Apple" /></a>
-                                    <a href="#"><img src={Facebook} alt="Facebook" /></a>
-                                </div>
+                        {/* STATUS MESSAGE UI REPLACING ALERTS */}
+                        {status.msg && (
+                            <div className={`message-text ${status.type}`}>
+                                {status.msg}
                             </div>
+                        )}
+
+                        <div className="otherMethods">
+                            <p>Or do it via other accounts</p>
+                            <div className="methods">
+                                <a href="#"><img src={Google} alt="Google" /></a>
+                                <a href="#"><img src={Apple} alt="Apple" /></a>
+                                <a href="#"><img src={Facebook} alt="Facebook" /></a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

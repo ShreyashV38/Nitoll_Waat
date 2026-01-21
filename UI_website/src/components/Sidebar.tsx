@@ -4,6 +4,12 @@ import { NavLink } from 'react-router-dom';
 import GoaLogo from '../assets/Goa.png'; 
 import '../style/Sidebar.css';
 
+interface NavItemProps {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+}
+
 const Sidebar: React.FC = () => {
   return (
     <aside className="sidebar">
@@ -32,7 +38,7 @@ const Sidebar: React.FC = () => {
   );
 };
 
-const NavItem = ({ icon, label, to }: any) => (
+const NavItem: React.FC<NavItemProps> = ({ icon, label, to }) => (
   <NavLink 
     to={to} 
     className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
