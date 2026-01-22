@@ -1,54 +1,106 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import StateCard from "../components/StateCard";
 import AlertsWidget from "../components/Dashboard/AlertsWidget";
 import BinMap from "../components/MapsBins/BinMap"; 
 import RoutesWidget from "../components/Dashboard/RouteWidget";
 import PageHeader from "../components/PageHeader";
+import { binAPI, alertAPI, fleetAPI } from "../services/api"; // <--- Import fleetAPI
+import { useAuth } from "../context/AuthContext"; 
 import "../style/Dashboard.css";
 
 const Dashboard = () => {
+  const { area } = useAuth();
   const [selectedBinId, setSelectedBinId] = useState<string>("");
+  const [bins, setBins] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  
+  // New State for Dynamic Stats
+  const [vehicleStats, setVehicleStats] = useState("0/0");
+  const [routeCount, setRouteCount] = useState(0);
+  const [activeRoutesList, setActiveRoutesList] = useState<any[]>([]);
 
-  const bins = [
-    { id: 'A12', level: 90, status: 'Active', lat: 15.4585, lng: 73.8340 },
-    { id: 'A15', level: 60, status: 'Active', lat: 15.4590, lng: 73.8350 },
-    { id: 'B03', level: 20, status: 'Active', lat: 15.4580, lng: 73.8335 },
-    { id: 'C07', level: 0, status: 'Offline', lat: 15.4575, lng: 73.8345 },
-    { id: 'B08', level: 85, status: 'Active', lat: 15.4595, lng: 73.8330 },
-    { id: 'A20', level: 15, status: 'Active', lat: 15.4582, lng: 73.8360 },
-  ];
+  const [loading, setLoading] = useState(true);
+
+  // Fetch ALL Live Data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch Bins, Alerts, Vehicles, and Routes in parallel
+        const [binRes, alertRes, vehicleRes, routeRes] = await Promise.all([
+            binAPI.getAll(),
+            alertAPI.getAll(),
+            fleetAPI.getVehicles(),
+            fleetAPI.getActiveRoutes()
+        ]);
+
+        // 1. Process Bins
+        const formattedBins = binRes.data.map((b: any) => ({
+           id: b.id.substring(0, 4),
+           fullId: b.id,
+           level: b.current_fill_percent,
+           status: b.status === 'NORMAL' ? 'Active' : b.status,
+           lat: parseFloat(b.latitude),
+           lng: parseFloat(b.longitude)
+        }));
+        
+        // 2. Process Alerts
+        const formattedAlerts = alertRes.data.map((a: any) => ({
+            type: a.severity === 'HIGH' ? 'critical' : 'info',
+            msg: a.message,
+            time: new Date(a.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        }));
+
+        // 3. Process Vehicles (Count Active vs Total)
+        const totalVehicles = vehicleRes.data.length;
+        const activeVehicles = vehicleRes.data.filter((v: any) => v.status === 'ACTIVE').length;
+        setVehicleStats(`${activeVehicles}/${totalVehicles}`);
+
+        // 4. Process Routes
+        setRouteCount(routeRes.data.length);
+        
+        // Format Routes for the Widget
+        const widgetRoutes = routeRes.data.map((r: any, index: number) => ({
+            id: `Route ${index + 1}`,
+            progress: 50, // Placeholder progress (needs DB field to be real)
+            status: r.status
+        }));
+        setActiveRoutesList(widgetRoutes);
+
+        setBins(formattedBins);
+        setAlerts(formattedAlerts);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const criticalCount = bins.filter(b => b.level >= 90).length;
 
   const stats = [
-    { title: "Total Bins", value: 120, subtitle: "Active in zone" },
-    { title: "Critical Bins", value: 6, subtitle: "≥80% full", danger: true },
-    { title: "Active Vehicles", value: "3/3", subtitle: "Available today" },
-    { title: "Routes Today", value: 3, subtitle: "Auto-generated" },
-    { title: "Overflow Risk", value: 2, subtitle: "Predicted soon" },
-  ];
-
-  const alerts = [
-    { type: "critical", msg: "Bin B-12 predicted to overflow", time: "10 mins ago" },
-    { type: "info", msg: "Bin C-07 sensor offline", time: "1 hour ago" },
-    { type: "info", msg: "Daily routes generated", time: "5 hours ago" },
-  ];
-
-  const activeRoutes = [
-    { id: "GA-07-T-1234", progress: 80, status: "in progress" },
-    { id: "GA-07-T-5678", progress: 45, status: "in progress" },
-    { id: "GA-07-T-9012", progress: 100, status: "completed" },
+    { title: "Total Bins", value: bins.length, subtitle: "Active in zone" },
+    { title: "Critical Bins", value: criticalCount, subtitle: "≥90% full", danger: criticalCount > 0 },
+    
+    // NOW DYNAMIC:
+    { title: "Active Vehicles", value: vehicleStats, subtitle: "Available today" }, 
+    { title: "Routes Today", value: routeCount, subtitle: "In Progress" },
+    
+    { title: "Overflow Risk", value: criticalCount, subtitle: "Predicted soon" },
   ];
 
   return (
     <div className="dashboard">
       <PageHeader 
-        title="Panaji Municipal Council (Zone A)"
-        subtitle="North Goa • 3 Vehicles Registered"
+        title={area ? `${area.area_name}` : "Loading Zone..."} 
+        subtitle={area ? `${area.district} • Real-Time Overview` : "Loading..."}
       />
 
       <section className="overview-bar">
         <div className="overview-text">
           <h3>Overview</h3>
-          <span>Data updated: Just now</span>
+          <span>Data updated: {loading ? 'Loading...' : 'Live'}</span>
         </div>
         <div className="system-pill">
           <span className="dot"></span> System Status: <strong>Healthy</strong>
@@ -62,19 +114,19 @@ const Dashboard = () => {
       </section>
 
       <section className="main-grid">
-        <AlertsWidget alerts={alerts} />
+        <AlertsWidget alerts={alerts.slice(0, 3)} /> 
         
-        {/* Middle Col: BinMap with Title */}
         <div style={{ height: '100%', minHeight: '400px' }}> 
            <BinMap 
-             title="Map preview"  // <--- Shows the heading now!
+             title="Live Map"
              bins={bins} 
              selectedId={selectedBinId} 
              onSelect={setSelectedBinId} 
            />
         </div>
 
-        <RoutesWidget routes={activeRoutes} />
+        {/* Pass the dynamic routes list here */}
+        <RoutesWidget routes={activeRoutesList.length > 0 ? activeRoutesList : []} />
       </section>
     </div>
   );

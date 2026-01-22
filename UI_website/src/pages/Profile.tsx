@@ -1,44 +1,43 @@
 import { useNavigate } from "react-router-dom";
-// Sidebar is handled by MainLayout now, so we don't strictly need it here if wrapped
 import ProfileHeader from "../components/Profile/ProfileHeader";
 import InfoSection from "../components/Profile/InfoSection";
+import { useAuth } from "../context/AuthContext"; // <--- Import Context
 import "../style/Profile.css";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { user, area, logout } = useAuth(); // Get real user & area
 
   const handleLogout = () => {
-    localStorage.clear();
+    logout();
     navigate("/");
   };
 
-  // Profile Data
+  if (!user) return <div>Loading Profile...</div>;
+
+  // Real Data
   const personalInfo = [
-    { label: "Name", value: "Someone" },
-    { label: "Mobile Number", value: "+91 9876543210" }
+    { label: "Name", value: user.name },
+    { label: "Email", value: user.email },
+    { label: "Mobile Number", value: user.mobile || "Not Provided" },
+    { label: "Role", value: user.role }
   ];
 
   const areaInfo = [
-    { label: "District", value: "North Goa" },
-    { label: "Taluka", value: "Bardez" },
-    { label: "Zone", value: "Zone A" }
+    { label: "District", value: area?.district || "..." },
+    { label: "Taluka", value: area?.taluka || "..." },
+    { label: "Zone Name", value: area?.area_name || "..." }
   ];
 
   return (
     <div className="profile-page">
-      {/* 1. Header Section */}
       <ProfileHeader onLogout={handleLogout} />
-
-      {/* 2. Personal Info Card */}
       <InfoSection title="Profile Information" items={personalInfo} />
-
-      {/* 3. Area Info Card */}
       <InfoSection title="Assigned Area" items={areaInfo} />
-
-      {/* 4. Simple Stat Card */}
+      
       <div className="card small">
-        <label>Registered Vehicle Count</label>
-        <p className="count">3</p>
+        <label>System ID</label>
+        <p className="count" style={{fontSize: '14px'}}>{user.id.substring(0,8)}...</p>
       </div>
     </div>
   );

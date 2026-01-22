@@ -1,76 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "../components/PageHeader";
 import InboxList from "../components/Messages/InboxList";
 import MessageDetail from "../components/Messages/MessageDetails";
+import { alertAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import "../style/Messages.css";
 
-type AlertType = "CRITICAL" | "WARNING" | "INFO";
-
-interface Alert {
-  id: number;
-  type: AlertType;
-  title: string;
-  message: string;
-  time: string;
-}
-
-const alertsData: Alert[] = [
-  {
-    id: 10,
-    type: "CRITICAL",
-    title: "BIN B-12 predicted to overflow",
-    message: "Based on current fill rate, Bin B-12 (Market Complex) will reach capacity by 23:30 today. Immediate collection recommended.",
-    time: "10 mins ago",
-  },
-  {
-    id: 11,
-    type: "WARNING",
-    title: "Bin C-07 sensor offline",
-    message: "Sensor has not reported data in the last 2 hours. Please check connectivity module.",
-    time: "1 hr ago",
-  },
-  {
-    id: 12,
-    type: "INFO",
-    title: "Daily routes generated",
-    message: "All optimized routes have been generated successfully based on traffic patterns.",
-    time: "5 hrs ago",
-  },
-];
-
 const Messages = () => {
-  const [selectedAlert, setSelectedAlert] = useState<Alert>(alertsData[0]);
+  const { area } = useAuth();
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [selectedAlert, setSelectedAlert] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const res = await alertAPI.getAll();
+        const formatted = res.data.map((a: any) => ({
+          id: a.id, // Use UUID or index
+          type: a.severity === 'HIGH' ? "CRITICAL" : "INFO",
+          title: a.severity === 'HIGH' ? "Critical Bin Alert" : "System Notification",
+          message: a.message,
+          time: new Date(a.created_at).toLocaleString(),
+        }));
+        setAlerts(formatted);
+        if (formatted.length > 0) setSelectedAlert(formatted[0]);
+      } catch (err) {
+        console.error("Error loading alerts", err);
+      }
+    };
+    fetchAlerts();
+  }, []);
 
   return (
     <div className="messages-page">
       <PageHeader 
-        title="Panaji Municipal Council (Zone A)"
+        title={area ? `${area.area_name}` : "Zone Messages"}
         subtitle="North Goa • System Notifications"
       />
 
       <div className="alerts-box">
-        {/* Header / Filter Row */}
         <div className="alerts-header">
           <div>
             <h2>System Alerts</h2>
             <span>Inbox for operational exceptions.</span>
           </div>
-          <select className="filter-select">
-            <option>All Alerts</option>
-            <option>Critical</option>
-            <option>Warning</option>
-          </select>
         </div>
 
-        {/* Content Layout */}
         <div className="alerts-content">
           <InboxList 
-            alerts={alertsData} 
-            selectedId={selectedAlert.id} 
+            alerts={alerts} 
+            selectedId={selectedAlert?.id} 
             onSelect={setSelectedAlert} 
           />
           
-          <MessageDetail alert={selectedAlert} />
+          {selectedAlert && <MessageDetail alert={selectedAlert} />}
         </div>
       </div>
     </div>

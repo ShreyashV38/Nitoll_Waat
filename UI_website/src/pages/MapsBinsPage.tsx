@@ -1,70 +1,109 @@
 import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
-import BinMap from '../components/MapsBins/BinMap'; // Imports the map component
+import BinMap from '../components/MapsBins/BinMap';
 import BinDirectory from '../components/MapsBins/BinDirectory';
 import AddBinModal from '../components/MapsBins/AddBinModal';
-import '../style/MapsBinsPage.css'; // Correct path for pages/
+import { binAPI } from '../services/api'; 
+import { useAuth } from '../context/AuthContext';
+import '../style/MapsBinsPage.css';
 
 const MapsBinsPage: React.FC = () => {
-  const [councilName, setCouncilName] = useState("Panaji");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string>(''); 
+  const [bins, setBins] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [bins, setBins] = useState([
-    { id: 'A12', level: 90, status: 'Active', overflow: '4.30 PM', update: '30 mins ago', lat: 15.4585, lng: 73.8340 },
-    { id: 'A15', level: 60, status: 'Active', overflow: '7.00 PM', update: '10 mins ago', lat: 15.4590, lng: 73.8350 },
-    { id: 'B03', level: 20, status: 'Active', overflow: 'Tomorrow', update: '1 hr ago', lat: 15.4580, lng: 73.8335 },
-    { id: 'C07', level: 0, status: 'Offline', overflow: 'N/A', update: '2 days ago', lat: 15.4575, lng: 73.8345 },
-    { id: 'B08', level: 85, status: 'Active', overflow: '5.15 PM', update: '5 mins ago', lat: 15.4595, lng: 73.8330 },
-    { id: 'A20', level: 15, status: 'Active', overflow: 'Tomorrow', update: '20 mins ago', lat: 15.4582, lng: 73.8360 },
-  ]);
+  const { area } = useAuth();
+
+  // 1. Fetch Real Bins from DB
+  const fetchBins = async () => {
+    try {
+      const res = await binAPI.getAll();
+      
+      const formatted = res.data.map((b: any) => ({
+         id: b.id.substring(0, 4).toUpperCase(), 
+         fullId: b.id,
+         level: b.current_fill_percent,
+         status: b.status === 'NORMAL' ? 'Active' : b.status,
+         overflow: b.status === 'CRITICAL' ? 'High Risk' : 'Stable',
+         ward: b.ward_id || 'General', // Show Ward ID or Name if you joined it
+         update: 'Live',
+         lat: parseFloat(b.latitude),
+         lng: parseFloat(b.longitude)
+      }));
+
+      setBins(formatted);
+      if (formatted.length > 0 && !selectedId) {
+          setSelectedId(formatted[0].id);
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching bins:", err);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const savedArea = localStorage.getItem("selectedArea");
-    if (savedArea) setCouncilName(savedArea);
-    if (bins.length > 0 && !selectedId) setSelectedId(bins[0].id);
-  }, [bins]);
+    fetchBins();
+  }, []); 
 
-  const handleAddBin = (id: string, level: number) => {
-    const randomLat = 15.4585 + (Math.random() * 0.002 - 0.001);
-    const randomLng = 73.8340 + (Math.random() * 0.002 - 0.001);
+  // 2. Handle "Add Bin" (Connected to Backend)
+  // --- UPDATED SIGNATURE TO MATCH MODAL ---
+  const handleAddBin = async (data: { id: string; level: number; ward_id: string }) => {
+    try {
+      // Create a random lat/lng near the user's area (Mocking GPS for now)
+      const randomLat = 15.4909 + (Math.random() * 0.01 - 0.005);
+      const randomLng = 73.8278 + (Math.random() * 0.01 - 0.005);
 
-    const newBin = {
-      id: id.toUpperCase(),
-      level: level,
-      status: 'Active',
-      overflow: 'Calculating...',
-      update: 'Just now',
-      lat: randomLat,
-      lng: randomLng
-    };
-    setBins([...bins, newBin]);
+      const payload = {
+        id: data.id || undefined, 
+        level: data.level,
+        ward_id: data.ward_id, // <--- Now sending the Ward ID
+        lat: randomLat,
+        lng: randomLng
+      };
+
+      await binAPI.create(payload);
+      
+      // Refresh list after adding
+      fetchBins();
+      alert(`Bin added successfully!`);
+
+    } catch (err) {
+      console.error("Failed to add bin", err);
+      alert("Error adding bin to database.");
+    }
   };
 
   return (
     <div className="maps-bins-container">
       <PageHeader 
-        title={`${councilName} Municipal Council (Zone A)`}
-        subtitle={`North Goa • ${bins.length} Active Bins`}
+        title={area ? `${area.area_name}` : "Loading..."}
+        subtitle={`${area?.district || 'Goa'} • Waste Bins Map`}
       >
         <button className="add-bin-btn" onClick={() => setIsModalOpen(true)}>
            <Plus size={18} /> Add Bin
         </button>
       </PageHeader>
 
-      {/* Reusing the BinMap Component */}
-      <BinMap 
-        bins={bins} 
-        selectedId={selectedId} 
-        onSelect={setSelectedId} 
-      />
+      {loading ? (
+          <div style={{padding: '20px', textAlign: 'center'}}>Loading Map Data...</div>
+      ) : (
+          <>
+            <BinMap 
+                bins={bins} 
+                selectedId={selectedId} 
+                onSelect={setSelectedId} 
+            />
 
-      <BinDirectory 
-        bins={bins}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
-      />
+            <BinDirectory 
+                bins={bins}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+            />
+          </>
+      )}
 
       <AddBinModal 
         isOpen={isModalOpen} 
