@@ -54,3 +54,35 @@ exports.completeStop = async (req, res) => {
     res.status(500).json({ error: 'Server Error' });
   }
 };
+
+
+//
+
+exports.getAllDrivers = async (req, res) => {
+  try {
+    const area_id = req.user.area_id;
+
+    // FIX: Removed 'status' column from users table.
+    // ADDED: Logic to check if they are BUSY based on active routes.
+    const result = await db.query(
+      `SELECT 
+         u.id, 
+         u.name, 
+         u.email, 
+         u.mobile,
+         CASE 
+           WHEN r.id IS NOT NULL THEN 'BUSY' 
+           ELSE 'AVAILABLE' 
+         END as status
+       FROM users u
+       LEFT JOIN routes r ON u.id = r.driver_id AND r.status = 'IN_PROGRESS'
+       WHERE u.role = 'DRIVER' AND u.area_id = $1`,
+      [area_id]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Get All Drivers Error:", err.message);
+    res.status(500).json({ error: 'Server Error' });
+  }
+};

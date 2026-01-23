@@ -1,115 +1,199 @@
-import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
-import PageHeader from '../components/PageHeader';
-import BinMap from '../components/MapsBins/BinMap';
-import BinDirectory from '../components/MapsBins/BinDirectory';
-import AddBinModal from '../components/MapsBins/AddBinModal';
-import { binAPI } from '../services/api'; 
-import { useAuth } from '../context/AuthContext';
-import '../style/MapsBinsPage.css';
+import { useState, useEffect } from "react";
+import PageHeader from "../components/PageHeader";
+import BinMap from "../components/MapsBins/BinMap";
+import BinDirectory from "../components/MapsBins/BinDirectory";
+import AddBinModal from "../components/MapsBins/AddBinModal";
+import AddZoneModal from "../components/MapsBins/AddZoneModal";
+import { binAPI, wardAPI, dumpingZoneAPI } from "../services/api"; // Import Zone API
+import { useAuth } from "../context/AuthContext";
+import "../style/MapsBinsPage.css";
 
-const MapsBinsPage: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string>(''); 
-  const [bins, setBins] = useState<any[]>([]);
+// Interface for Real IoT Data
+export interface Bin {
+  id: string;
+  lat: number;
+  lng: number;
+  level: number;       
+  status: "NORMAL" | "WARNING" | "CRITICAL";
+  lid: string;         
+  weight: number;      
+  lastUpdated: string;
+  address: string;
+}
+
+// Interface for Dumping Zones
+export interface Zone {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+const MapsBinsPage = () => {
+  const [activeTab, setActiveTab] = useState<"map" | "directory">("map");
+  const [showBinModal, setShowBinModal] = useState(false);
+  const [showZoneModal, setShowZoneModal] = useState(false);
+  
+  const [addMode, setAddMode] = useState<"NONE" | "BIN" | "ZONE">("NONE");
+  const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
+
+  const [bins, setBins] = useState<Bin[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]); // <--- NEW: Zones State
   const [loading, setLoading] = useState(true);
-
   const { area } = useAuth();
 
-  // 1. Fetch Real Bins from DB
-  const fetchBins = async () => {
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
     try {
-      const res = await binAPI.getAll();
-      
-      const formatted = res.data.map((b: any) => ({
-         id: b.id.substring(0, 4).toUpperCase(), 
-         fullId: b.id,
-         level: b.current_fill_percent,
-         status: b.status === 'NORMAL' ? 'Active' : b.status,
-         overflow: b.status === 'CRITICAL' ? 'High Risk' : 'Stable',
-         ward: b.ward_id || 'General', // Show Ward ID or Name if you joined it
-         update: 'Live',
-         lat: parseFloat(b.latitude),
-         lng: parseFloat(b.longitude)
+      // Fetch Bins, Wards, AND Zones
+      const [binRes, wardRes, zoneRes] = await Promise.all([
+        binAPI.getAll(),
+        wardAPI.getAll(),
+        dumpingZoneAPI.getAll()
+      ]);
+
+      const formattedBins = binRes.data.map((b: any) => ({
+        id: b.id,
+        lat: parseFloat(b.latitude),
+        lng: parseFloat(b.longitude),
+        level: b.current_fill_percent,
+        status: b.status,
+        lid: b.lid_status || "CLOSED",
+        weight: parseFloat(b.current_weight) || 0,
+        lastUpdated: new Date(b.last_updated).toLocaleTimeString(),
+        address: `Ward ${b.ward_id || 'Unknown'}`
       }));
 
-      setBins(formatted);
-      if (formatted.length > 0 && !selectedId) {
-          setSelectedId(formatted[0].id);
-      }
+      // Format Zones
+      const formattedZones = zoneRes.data.map((z: any) => ({
+        id: z.id,
+        name: z.name,
+        lat: parseFloat(z.latitude),
+        lng: parseFloat(z.longitude)
+      }));
+
+      setBins(formattedBins);
+      setWards(wardRes.data);
+      setZones(formattedZones); // <--- Save Zones
       setLoading(false);
+
     } catch (err) {
-      console.error("Error fetching bins:", err);
+      console.error("Failed to load data", err);
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchBins();
-  }, []); 
+  const handleRefresh = () => {
+    setLoading(true);
+    loadData();
+  };
 
-  // 2. Handle "Add Bin" (Connected to Backend)
-  // --- UPDATED SIGNATURE TO MATCH MODAL ---
-  const handleAddBin = async (data: { id: string; level: number; ward_id: string }) => {
-    try {
-      // Create a random lat/lng near the user's area (Mocking GPS for now)
-      const randomLat = 15.4909 + (Math.random() * 0.01 - 0.005);
-      const randomLng = 73.8278 + (Math.random() * 0.01 - 0.005);
+  const handleMapClick = (lat: number, lng: number) => {
+    if (addMode === "NONE") return;
 
-      const payload = {
-        id: data.id || undefined, 
-        level: data.level,
-        ward_id: data.ward_id, // <--- Now sending the Ward ID
-        lat: randomLat,
-        lng: randomLng
-      };
+    setSelectedLocation({ lat, lng });
 
-      await binAPI.create(payload);
-      
-      // Refresh list after adding
-      fetchBins();
-      alert(`Bin added successfully!`);
-
-    } catch (err) {
-      console.error("Failed to add bin", err);
-      alert("Error adding bin to database.");
+    if (addMode === "BIN") {
+        setShowBinModal(true);
+    } else if (addMode === "ZONE") {
+        setShowZoneModal(true);
     }
+  };
+
+  const handleCloseModal = () => {
+    setShowBinModal(false);
+    setShowZoneModal(false);
+    setSelectedLocation(null);
   };
 
   return (
-    <div className="maps-bins-container">
+    <div className="maps-bins-page">
       <PageHeader 
-        title={area ? `${area.area_name}` : "Loading..."}
-        subtitle={`${area?.district || 'Goa'} • Waste Bins Map`}
-      >
-        <button className="add-bin-btn" onClick={() => setIsModalOpen(true)}>
-           <Plus size={18} /> Add Bin
-        </button>
-      </PageHeader>
+        title={area ? `${area.area_name} Map` : "Map View"}
+        subtitle="Live Bin Status & Sensor Data"
+      />
 
-      {loading ? (
-          <div style={{padding: '20px', textAlign: 'center'}}>Loading Map Data...</div>
-      ) : (
-          <>
-            <BinMap 
-                bins={bins} 
-                selectedId={selectedId} 
-                onSelect={setSelectedId} 
-            />
+      {/* Control Bar */}
+      <div className="actions-bar">
+        <div className="tabs">
+          <button className={activeTab === "map" ? "active" : ""} onClick={() => setActiveTab("map")}>
+            🗺️ Live Map
+          </button>
+          <button className={activeTab === "directory" ? "active" : ""} onClick={() => setActiveTab("directory")} >
+            📂 Directory List
+          </button>
+        </div>
 
-            <BinDirectory 
-                bins={bins}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-            />
-          </>
+        <div className="buttons">
+          <button className="refresh-btn" onClick={handleRefresh}>🔄 Refresh</button>
+          
+          <button 
+            className={`add-btn zone-btn ${addMode === "ZONE" ? "active-mode" : ""}`} 
+            onClick={() => setAddMode(addMode === "ZONE" ? "NONE" : "ZONE")}
+            style={{
+                backgroundColor: addMode === "ZONE" ? "#7e22ce" : "#9333ea", 
+                border: addMode === "ZONE" ? "2px solid #000" : "none"
+            }}
+          >
+             {addMode === "ZONE" ? "📍 Click Map to Set Zone" : "+ Add Zone"}
+          </button>
+
+          <button 
+            className={`add-btn ${addMode === "BIN" ? "active-mode" : ""}`} 
+            onClick={() => setAddMode(addMode === "BIN" ? "NONE" : "BIN")}
+            style={{
+                border: addMode === "BIN" ? "2px solid #000" : "none"
+            }}
+          >
+             {addMode === "BIN" ? "📍 Click Map to Set Bin" : "+ Add Bin"}
+          </button>
+        </div>
+      </div>
+
+      {addMode !== "NONE" && (
+        <div style={{background: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', padding: '10px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold'}}>
+            Adding {addMode === "BIN" ? "Smart Bin" : "Dumping Zone"}: Click a location on the map to place it.
+        </div>
       )}
 
-      <AddBinModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onAdd={handleAddBin} 
-      />
+      <div className="content-area">
+        {loading ? (
+            <p style={{padding: '20px', textAlign: 'center'}}>Loading IoT Data...</p>
+        ) : (
+            <>
+                {activeTab === "map" ? (
+                    <BinMap 
+                        bins={bins} 
+                        zones={zones} // <--- Pass Zones to Map
+                        onMapClick={handleMapClick} 
+                    />
+                ) : (
+                    <BinDirectory bins={bins} />
+                )}
+            </>
+        )}
+      </div>
+
+      {showBinModal && (
+        <AddBinModal 
+            onClose={handleCloseModal} 
+            refreshData={loadData} 
+            wards={wards} 
+            location={selectedLocation} 
+        />
+      )}
+      
+      {showZoneModal && (
+        <AddZoneModal 
+            onClose={handleCloseModal} 
+            refreshData={loadData} // <--- Pass Refresh function
+            location={selectedLocation} 
+        />
+      )}
     </div>
   );
 };

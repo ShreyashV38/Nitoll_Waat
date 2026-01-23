@@ -3,10 +3,11 @@ const router = express.Router();
 const binController = require('../controllers/binController');
 const protect = require('../middleware/authMiddleware');
 
-// Public or Protected (depending on your need)
-router.get('/', binController.getAllBins);
+// Protected Routes (Require Login)
+router.get('/', protect, binController.getAllBins);
+router.post('/create', protect, binController.createBin);
 
-// IoT Device Endpoint (No JWT usually, or use API Key)
+// Public / IoT Route (No Token Required for Sensors)
 router.post('/update', binController.updateBinReading);
 
 module.exports = router;

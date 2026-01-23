@@ -4,7 +4,7 @@ import AlertsWidget from "../components/Dashboard/AlertsWidget";
 import BinMap from "../components/MapsBins/BinMap"; 
 import RoutesWidget from "../components/Dashboard/RouteWidget";
 import PageHeader from "../components/PageHeader";
-import { binAPI, alertAPI, fleetAPI } from "../services/api"; // <--- Import fleetAPI
+import { binAPI, alertAPI, fleetAPI, dumpingZoneAPI } from "../services/api"; // <--- Added dumpingZoneAPI
 import { useAuth } from "../context/AuthContext"; 
 import "../style/Dashboard.css";
 
@@ -13,8 +13,9 @@ const Dashboard = () => {
   const [selectedBinId, setSelectedBinId] = useState<string>("");
   const [bins, setBins] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [zones, setZones] = useState<any[]>([]); // <--- Added Zones State
   
-  // New State for Dynamic Stats
+  // Dynamic Stats
   const [vehicleStats, setVehicleStats] = useState("0/0");
   const [routeCount, setRouteCount] = useState(0);
   const [activeRoutesList, setActiveRoutesList] = useState<any[]>([]);
@@ -25,12 +26,13 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch Bins, Alerts, Vehicles, and Routes in parallel
-        const [binRes, alertRes, vehicleRes, routeRes] = await Promise.all([
+        // Fetch Bins, Alerts, Vehicles, Routes AND Zones
+        const [binRes, alertRes, vehicleRes, routeRes, zoneRes] = await Promise.all([
             binAPI.getAll(),
             alertAPI.getAll(),
             fleetAPI.getVehicles(),
-            fleetAPI.getActiveRoutes()
+            fleetAPI.getActiveRoutes(),
+            dumpingZoneAPI.getAll() // <--- Fetch Zones
         ]);
 
         // 1. Process Bins
@@ -38,35 +40,44 @@ const Dashboard = () => {
            id: b.id.substring(0, 4),
            fullId: b.id,
            level: b.current_fill_percent,
-           status: b.status === 'NORMAL' ? 'Active' : b.status,
+           status: b.status,
+           lid: b.lid_status || "CLOSED", // Ensure these exist
+           weight: parseFloat(b.current_weight) || 0,
            lat: parseFloat(b.latitude),
            lng: parseFloat(b.longitude)
         }));
         
-        // 2. Process Alerts
+        // 2. Process Zones (Fix for Crash)
+        const formattedZones = zoneRes.data.map((z: any) => ({
+            id: z.id,
+            name: z.name,
+            lat: parseFloat(z.latitude),
+            lng: parseFloat(z.longitude)
+        }));
+
+        // 3. Process Alerts
         const formattedAlerts = alertRes.data.map((a: any) => ({
             type: a.severity === 'HIGH' ? 'critical' : 'info',
             msg: a.message,
             time: new Date(a.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         }));
 
-        // 3. Process Vehicles (Count Active vs Total)
+        // 4. Process Vehicles
         const totalVehicles = vehicleRes.data.length;
         const activeVehicles = vehicleRes.data.filter((v: any) => v.status === 'ACTIVE').length;
         setVehicleStats(`${activeVehicles}/${totalVehicles}`);
 
-        // 4. Process Routes
+        // 5. Process Routes
         setRouteCount(routeRes.data.length);
-        
-        // Format Routes for the Widget
         const widgetRoutes = routeRes.data.map((r: any, index: number) => ({
             id: `Route ${index + 1}`,
-            progress: 50, // Placeholder progress (needs DB field to be real)
+            progress: 50, 
             status: r.status
         }));
         setActiveRoutesList(widgetRoutes);
 
         setBins(formattedBins);
+        setZones(formattedZones); // <--- Set Zones
         setAlerts(formattedAlerts);
         setLoading(false);
       } catch (err) {
@@ -82,11 +93,8 @@ const Dashboard = () => {
   const stats = [
     { title: "Total Bins", value: bins.length, subtitle: "Active in zone" },
     { title: "Critical Bins", value: criticalCount, subtitle: "≥90% full", danger: criticalCount > 0 },
-    
-    // NOW DYNAMIC:
     { title: "Active Vehicles", value: vehicleStats, subtitle: "Available today" }, 
     { title: "Routes Today", value: routeCount, subtitle: "In Progress" },
-    
     { title: "Overflow Risk", value: criticalCount, subtitle: "Predicted soon" },
   ];
 
@@ -118,14 +126,12 @@ const Dashboard = () => {
         
         <div style={{ height: '100%', minHeight: '400px' }}> 
            <BinMap 
-             title="Live Map"
              bins={bins} 
-             selectedId={selectedBinId} 
-             onSelect={setSelectedBinId} 
+             zones={zones} // <--- FIX: Passing Zones Prop Prevents Crash
+             // removed invalid props like 'title' and 'selectedId' if BinMap doesn't support them
            />
         </div>
 
-        {/* Pass the dynamic routes list here */}
         <RoutesWidget routes={activeRoutesList.length > 0 ? activeRoutesList : []} />
       </section>
     </div>

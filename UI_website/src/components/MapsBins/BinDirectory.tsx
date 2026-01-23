@@ -1,75 +1,68 @@
 import React from "react";
+import type { Bin } from "../../pages/MapsBinsPage"; // Fixed Type Import
 import "../../style/MapsBinsPage.css"; 
-
-interface Bin {
-  id: string;
-  level: number;
-  status: string;
-  overflow: string;
-  update: string;
-}
 
 interface Props {
   bins: Bin[];
-  selectedId: string;
-  onSelect: (id: string) => void;
 }
 
-const BinDirectory: React.FC<Props> = ({ bins, selectedId, onSelect }) => {
-  
-  const getStatusClass = (level: number, status: string) => {
-    if (status === 'Offline') return 'offline';
-    if (level > 80) return 'high';
-    if (level > 50) return 'mid';
-    return 'low';
-  };
-
+const BinDirectory: React.FC<Props> = ({ bins }) => {
   return (
-    <div className="mb-card directory-card">
-      <h3>Bin Directory</h3>
+    <div className="directory-container" style={{ background: "white", padding: "20px", borderRadius: "12px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+      <h3 style={{ marginTop: 0, marginBottom: "20px", color: "#334155" }}>Bin Directory ({bins.length})</h3>
       
-      <div className="directory-list">
-        {/* Header Row */}
-        <div className="directory-header">
-          <span>BIN ID</span>
-          <span style={{flex: 1, paddingLeft: '20px'}}>FILL LEVEL</span>
-          <span>OVERFLOW</span>
-          <span>UPDATED</span>
-          <span>STATUS</span>
-        </div>
-
-        {/* Scrollable List of Bins */}
-        <div className="directory-scroll-area">
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+        <thead>
+          <tr style={{ borderBottom: "2px solid #e2e8f0", textAlign: "left" }}>
+            <th style={{ padding: "12px", color: "#64748b" }}>ID</th>
+            <th style={{ padding: "12px", color: "#64748b" }}>Location</th>
+            <th style={{ padding: "12px", color: "#64748b" }}>Fill Level</th>
+            <th style={{ padding: "12px", color: "#64748b" }}>Weight (kg)</th> 
+            <th style={{ padding: "12px", color: "#64748b" }}>Lid</th>
+            <th style={{ padding: "12px", color: "#64748b" }}>Status</th>
+            <th style={{ padding: "12px", color: "#64748b" }}>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
           {bins.map((bin) => (
-            <div 
-              key={bin.id} 
-              className={`directory-row ${selectedId === bin.id ? 'active-row' : ''}`}
-              onClick={() => onSelect(bin.id)}
-            >
-              <div className="col-id">{bin.id}</div>
+            <tr key={bin.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <td style={{ padding: "12px", fontFamily: "monospace" }}>{bin.id.substring(0, 6)}...</td>
+              <td style={{ padding: "12px" }}>{bin.address}</td>
               
-              <div className="col-progress">
-                <div className="progress-track small">
-                  <div 
-                    className={`progress-bar ${getStatusClass(bin.level, bin.status)}`} 
-                    style={{ width: `${bin.level}%` }}
-                  ></div>
+              <td style={{ padding: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ width: "40px", height: "6px", background: "#e2e8f0", borderRadius: "3px", overflow: "hidden" }}>
+                        <div style={{ 
+                            width: `${bin.level}%`, height: "100%", 
+                            background: bin.level > 90 ? "#ef4444" : bin.level > 70 ? "#f97316" : "#22c55e" 
+                        }} />
+                    </div>
+                    <span>{bin.level}%</span>
                 </div>
-                <span className="percent">{bin.level}%</span>
-              </div>
+              </td>
 
-              <div className="col-text">{bin.overflow}</div>
-              <div className="col-text">{bin.update}</div>
+              <td style={{ padding: "12px", fontWeight: "bold" }}>{bin.weight}</td>
+
+              <td style={{ padding: "12px" }}>
+                  <span style={{ 
+                      padding: "2px 8px", borderRadius: "12px", fontSize: "12px",
+                      background: bin.lid === "OPEN" ? "#fff7ed" : "#f0fdf4",
+                      color: bin.lid === "OPEN" ? "#c2410c" : "#15803d",
+                      border: `1px solid ${bin.lid === "OPEN" ? "#ffedd5" : "#dcfce7"}`
+                  }}>
+                      {bin.lid}
+                  </span>
+              </td>
+
+              <td style={{ padding: "12px" }}>
+                <span className={`status-badge ${bin.status.toLowerCase()}`}>{bin.status}</span>
+              </td>
               
-              <div className="col-status">
-                <span className={`status-badge ${bin.status.toLowerCase()}`}>
-                  {bin.status}
-                </span>
-              </div>
-            </div>
+              <td style={{ padding: "12px", color: "#94a3b8", fontSize: "13px" }}>{bin.lastUpdated}</td>
+            </tr>
           ))}
-        </div>
-      </div>
+        </tbody>
+      </table>
     </div>
   );
 };

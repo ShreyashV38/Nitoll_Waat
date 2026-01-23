@@ -26,9 +26,21 @@ export const binAPI = {
   create: (data: any) => api.post('/bins/create', data), 
 };
 
+export const dumpingZoneAPI = {
+  getAll: () => api.get('/dumping-zones'), // Fetch all zones
+  create: (data: { name: string, lat: number, lng: number }) => 
+    api.post('/dumping-zones/create', data), // Save new zone
+};
+
+// src/services/api.ts
+
 export const fleetAPI = {
   getVehicles: () => api.get('/fleet/vehicles'),
   getActiveRoutes: () => api.get('/fleet/routes/active'),
+  autoDispatch: () => api.post('/fleet/routes/auto-dispatch'),
+  // Add this missing function:
+  assignRoute: (data: { driver_id: string; ward_id: string }) => 
+    api.post('/fleet/routes/create', data), 
 };
 
 export const areaAPI = {
@@ -44,4 +56,7 @@ export const wardAPI = {
   create: (name: string) => api.post('/wards', { name }),
 };
 
+export const driverAPI = {
+  getAll: () => api.get('/driver/all'), // Fetches list for dropdown
+};
 export default api;

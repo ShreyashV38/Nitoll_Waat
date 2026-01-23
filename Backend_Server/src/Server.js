@@ -5,64 +5,50 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 require('dotenv').config();
 
-const db = require('./config/db');
 const socket = require('./config/socket');
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
 const binRoutes = require('./routes/binRoutes');
-const fleetRoutes = require('./routes/fleetRoutes');   // Ensure this file exists
-const driverRoutes = require('./routes/driverRoutes'); // Ensure this file exists
-const areaRoutes = require('./routes/areaRoutes');     // <--- NEW
-const alertRoutes = require('./routes/alertRoutes');   // <--- NEW
-const fleetController = require('./controllers/fleetController');
-const alertController = require('./controllers/alertController');
-const areaController = require('./controllers/areaController');
-const protect = require('./middleware/authMiddleware');
+const fleetRoutes = require('./routes/fleetRoutes');
+const driverRoutes = require('./routes/driverRoutes');
+const areaRoutes = require('./routes/areaRoutes');
+const alertRoutes = require('./routes/alertRoutes');
 const wardRoutes = require('./routes/wardRoutes');
+const dumpingZoneRoutes = require('./routes/dumpingZoneRoutes');
+
 const app = express();
 
+// Middleware Setup
 app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
-app.use('/api/wards', wardRoutes);
+
+// Base Route
 app.get('/', (req, res) => {
-  res.json({ message: 'Nitoll Waat Backend is Running 🚀' });
+  res.json({ message: 'Nitoll Waat Backend Running' });
 });
 
-// API Routes
+// Register API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/bins', binRoutes);
 app.use('/api/fleet', fleetRoutes);
 app.use('/api/driver', driverRoutes);
-app.use('/api/area', areaRoutes);     // <--- NEW
-app.use('/api/alerts', alertRoutes);  // <--- NEW
-app.use('/api/auth', authRoutes);
-app.use('/api/bins', binRoutes);
+app.use('/api/area', areaRoutes);
+app.use('/api/alerts', alertRoutes);
+app.use('/api/wards', wardRoutes);
+app.use('/api/dumping-zones', dumpingZoneRoutes);
 
-
-// NEW ROUTES
-const router = express.Router();
-
-// Fleet
-app.get('/api/fleet/vehicles', protect, fleetController.getVehicles);
-app.get('/api/fleet/routes/active', protect, fleetController.getActiveRoutes);
-
-// Alerts
-app.get('/api/alerts', protect, alertController.getAlerts);
-
-// Area
-app.get('/api/area/:id', protect, areaController.getAreaById);
-
+// Server & Socket Initialization
 const server = http.createServer(app);
 const io = socket.init(server);
 
 io.on('connection', (clientSocket) => {
-  console.log('🔌 Client Connected:', clientSocket.id);
+  console.log('Client Connected:', clientSocket.id);
 });
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`\n🚀 Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

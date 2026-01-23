@@ -1,107 +1,107 @@
-import React, { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import React from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-// Note: We use ../../ to go up two levels from components/MapsBins/ to style/
-import "../../style/MapsBinsPage.css"; 
+import type { Bin, Zone } from "../../pages/MapsBinsPage"; 
 
-// Helper to create custom colored markers
-const createBinIcon = (level: number, status: string, isSelected: boolean) => {
-  let colorClass = 'low';
-  if (status === 'Offline') colorClass = 'offline';
-  else if (level > 80) colorClass = 'high';
-  else if (level > 50) colorClass = 'mid';
-
-  const wrapperClass = isSelected ? "custom-map-marker selected-marker" : "custom-map-marker";
-
-  return L.divIcon({
-    className: wrapperClass,
-    html: `<div class="bin-circle ${colorClass}" style="width:30px; height:30px; font-size:12px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
-             <span style="display:none">${level}</span>
-           </div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-  });
+// --- 1. DEFINE CUSTOM ICONS ---
+// We use 'leaflet-color-markers' to get different colored pins
+const createIcon = (color: string) => {
+    return new L.Icon({
+        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
 };
 
-const MapUpdater = ({ center }: { center: [number, number] }) => {
-  const map = useMap();
-  useEffect(() => {
-    map.flyTo(center, 16);
-  }, [center, map]);
-  return null;
-};
-
-interface Bin {
-  id: string;
-  lat: number;
-  lng: number;
-  level: number;
-  status: string;
-}
+const greenIcon = createIcon('green');   // Normal Bin
+const orangeIcon = createIcon('orange'); // Warning Bin
+const redIcon = createIcon('red');       // Critical Bin
+const violetIcon = createIcon('violet'); // Dumping Zone
 
 interface Props {
   bins: Bin[];
-  selectedId: string;
-  onSelect: (id: string) => void;
-  title?: string;
+  zones?: Zone[]; // <--- FIXED: Made Optional (?) to prevent TS Error if missing
+  onMapClick?: (lat: number, lng: number) => void;
 }
 
-const BinMap: React.FC<Props> = ({ bins, selectedId, onSelect, title }) => {
-  const defaultCenter: [number, number] = [15.4585, 73.8340];
-  
-  const selectedBin = bins.find(b => b.id === selectedId);
-  const mapCenter = selectedBin ? [selectedBin.lat, selectedBin.lng] as [number, number] : defaultCenter;
+const MapClickHandler: React.FC<{ onMapClick?: (lat: number, lng: number) => void }> = ({ onMapClick }) => {
+  useMapEvents({
+    click(e) {
+      if (onMapClick) {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      }
+    },
+  });
+  return null;
+};
 
+// <--- FIXED: Added default value 'zones = []' to prevent Crash
+const BinMap: React.FC<Props> = ({ bins, zones = [], onMapClick }) => {
   return (
-    <div className="mb-card map-card" style={{ 
-      padding: "0", 
-      overflow: "hidden", 
-      borderRadius: "16px", 
-      marginBottom: "20px",
-      display: "flex",
-      flexDirection: "column",
-      background: "white" // Ensure background is white
-    }}>
-      
-      {/* Optional Title Header */}
-      {title && (
-        <div style={{ padding: "20px 24px 10px 24px", borderBottom: "1px solid #f0f0f0" }}>
-          <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#1e293b" }}>{title}</h3>
-        </div>
-      )}
+    <div className="map-container" style={{ height: "600px", borderRadius: "12px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+      <MapContainer center={[15.4909, 73.8278]} zoom={13} style={{ height: "100%", width: "100%" }}>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        />
 
-      {/* MAP CONTAINER - FIXED HEIGHT IS CRITICAL HERE */}
-      <div style={{ height: "500px", width: "100%", position: "relative" }}>
-        <MapContainer 
-          center={defaultCenter} 
-          zoom={15} 
-          style={{ height: "100%", width: "100%", zIndex: 0 }} // zIndex fixes layering issues
-        >
-          <TileLayer
-            attribution='&copy; OpenStreetMap contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          
-          <MapUpdater center={mapCenter} />
+        <MapClickHandler onMapClick={onMapClick} />
 
-          {bins.map((bin) => (
-            <Marker 
-              key={bin.id} 
-              position={[bin.lat, bin.lng]} 
-              icon={createBinIcon(bin.level, bin.status, bin.id === selectedId)}
-              eventHandlers={{
-                click: () => onSelect(bin.id),
-              }}
-            >
-              <Popup>
-                <strong>Bin {bin.id}</strong><br />
-                Status: {bin.status}
-              </Popup>
+        {/* 2. RENDER BINS WITH COLOR CODING */}
+        {bins.map((bin) => {
+            // Logic to pick color based on fill level or status
+            let iconToUse = greenIcon; // Default Green
+            
+            if (bin.status === "CRITICAL" || bin.level >= 90) {
+                iconToUse = redIcon;
+            } else if (bin.status === "WARNING" || bin.level >= 70) {
+                iconToUse = orangeIcon;
+            }
+
+            return (
+                <Marker key={bin.id} position={[bin.lat, bin.lng]} icon={iconToUse}>
+                    <Popup>
+                        <div style={{ minWidth: "200px" }}>
+                            <h3 style={{ margin: "0 0 8px 0", color: "#334155" }}>Bin #{bin.id.substring(0, 6)}</h3>
+                            
+                            <div style={{ 
+                                marginBottom: "10px", padding: "4px 8px", borderRadius: "4px", display: "inline-block",
+                                fontSize: "12px", fontWeight: "bold",
+                                backgroundColor: bin.status === "CRITICAL" ? "#fee2e2" : bin.status === "WARNING" ? "#ffedd5" : "#dcfce7",
+                                color: bin.status === "CRITICAL" ? "#ef4444" : bin.status === "WARNING" ? "#f97316" : "#22c55e"
+                            }}>
+                                {bin.status}
+                            </div>
+
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", fontSize: "13px" }}>
+                                <div><strong style={{color: '#64748b'}}>Level:</strong> {bin.level}%</div>
+                                <div><strong style={{color: '#64748b'}}>Weight:</strong> {bin.weight} kg</div>
+                                <div><strong style={{color: '#64748b'}}>Lid:</strong> {bin.lid}</div>
+                            </div>
+                        </div>
+                    </Popup>
+                </Marker>
+            );
+        })}
+
+        {/* 3. RENDER DUMPING ZONES (Safe Render) */}
+        {zones && zones.map((zone) => (
+            <Marker key={zone.id} position={[zone.lat, zone.lng]} icon={violetIcon}>
+                <Popup>
+                    <div style={{ textAlign: "center", minWidth: "150px" }}>
+                        <h3 style={{ margin: "0", color: "#7e22ce" }}>♻️ Dumping Zone</h3>
+                        <p style={{ margin: "5px 0 0 0", fontWeight: "bold", fontSize: "14px" }}>{zone.name}</p>
+                        <p style={{ fontSize: "12px", color: "#666" }}>Authorized Disposal Site</p>
+                    </div>
+                </Popup>
             </Marker>
-          ))}
-        </MapContainer>
-      </div>
+        ))}
+
+      </MapContainer>
     </div>
   );
 };
