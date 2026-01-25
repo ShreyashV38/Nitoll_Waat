@@ -71,11 +71,13 @@
 /* Main Grid (Bottom Section) */
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr 1.5fr 1fr; /* 3 Columns: Alerts, Map, Routes */
+  grid-template-columns: 1fr 1.5fr 1fr;
   gap: 24px;
-  height: 400px; /* Fixed height for visual consistency */
+  /* ✅ FIX: Remove fixed heights. Grid automatically stretches children by default. */
+  align-items: stretch; 
+  /* Optional: Set a minimum so it doesn't collapse on empty data */
+  min-height: 500px; 
 }
-
 /* Card General Style */
 .dashboard-card {
   background: white;

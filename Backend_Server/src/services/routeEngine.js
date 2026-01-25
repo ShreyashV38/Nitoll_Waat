@@ -1,14 +1,18 @@
+// src/services/routeEngine.js
 const { predictBinOverflow } = require('./predictionEngine');
 
 // Configuration
 const CONFIG = {
     COLLECTION_WINDOW_HOURS: 24,
-    FILL_THRESHOLD_CRITICAL: 50,  // ✅ NEW: Bins at 50%+ are critical
+    FILL_THRESHOLD_CRITICAL: 50, // User requested 50%
+    FILL_THRESHOLD_WARNING: 45,  // Kept as a buffer (optional)
     PRIORITY_WEIGHTS: {
-        CRITICAL: 100,           // Fill >= 50% OR Currently >= 90%
-        CRITICAL_SOON: 80,       // Will overflow in < 6 hours
-        PREDICTED_OVERFLOW: 60,  // Will overflow in < 24 hours
-        BLOCKED_VIEW: 40         // Sensor blocked
+        CRITICAL: 100,           
+        CRITICAL_SOON: 80,       
+        WARNING: 70,             
+        PREDICTED_OVERFLOW: 60,
+        BLOCKED_VIEW: 40
+        // removed NORMAL priority
     }
 };
 
@@ -23,16 +27,9 @@ function getDistance(lat1, lon1, lat2, lon2) {
     return R * c; 
 }
 
-/**
- * Generates optimized collection route based on predictions
- * @param {Object} startLocation - Driver's current location
- * @param {Object} endLocation - Dumping zone location
- * @param {Array} bins - Array of bin objects with readings
- * @returns {Object} Optimized route with categorized bins
- */
 function generateRoute(startLocation, endLocation, bins) {
     const selectedBins = [];
-    const excludedBins = [];
+    const excludedBins = []; 
     const blockedBins = [];
     const predictions = new Map();
 
@@ -45,62 +42,60 @@ function generateRoute(startLocation, endLocation, bins) {
         const analysis = predictBinOverflow(bin.id, readings);
         predictions.set(bin.id, analysis);
 
-        // Prepare bin data
         bin.fill = parseFloat(bin.current_fill_percent) || 0.0;
         bin.weight = parseFloat((readings[0] && readings[0].weight) || 0);
         bin.prediction = analysis;
 
-        console.log(`Bin ${bin.id.substring(0, 8)}: Fill=${bin.fill}%, Status=${analysis.status}, Hours until overflow=${analysis.hours_until_overflow?.toFixed(1) || 'N/A'}`);
+        // --- FILTERING LOGIC (STRICT) ---
 
-        // Categorize bins based on prediction
         if (analysis.status === "BLOCKED_VIEW") {
             bin.reason = "SENSOR_BLOCKED";
             bin.priority = CONFIG.PRIORITY_WEIGHTS.BLOCKED_VIEW;
-            blockedBins.push(bin);
+            bin.urgency = "MEDIUM";
+            selectedBins.push(bin);
         } 
-        // ✅ UPDATED: Check fill percentage first (50%+ is critical)
         else if (bin.fill >= CONFIG.FILL_THRESHOLD_CRITICAL) {
-            bin.reason = `FILL_${Math.round(bin.fill)}%`;
+            // ✅ Include: >= 50%
+            bin.reason = `FILL_${Math.round(bin.fill)}%_CRITICAL`;
             bin.priority = CONFIG.PRIORITY_WEIGHTS.CRITICAL;
             bin.urgency = "HIGH";
             selectedBins.push(bin);
         }
-        else if (analysis.status === "CRITICAL") {
-            bin.reason = "CRITICAL_NOW";
-            bin.priority = CONFIG.PRIORITY_WEIGHTS.CRITICAL;
-            bin.urgency = "HIGH";
-            selectedBins.push(bin);
-        } 
-        else if (analysis.status === "CRITICAL_SOON") {
-            // Will overflow in < 6 hours - HIGH PRIORITY
-            bin.reason = `CRITICAL_IN_${Math.ceil(analysis.hours_until_overflow)}H`;
+        else if (analysis.status === "CRITICAL" || analysis.status === "CRITICAL_SOON") {
+            // ✅ Include: AI predicts it will be full very soon
+            bin.reason = "PREDICTED_CRITICAL";
             bin.priority = CONFIG.PRIORITY_WEIGHTS.CRITICAL_SOON;
             bin.urgency = "HIGH";
             selectedBins.push(bin);
         }
         else if (analysis.status === "PREDICTED_OVERFLOW") {
-            // Will overflow within collection window (24h)
-            bin.reason = `OVERFLOW_IN_${Math.ceil(analysis.hours_until_overflow)}H`;
+             // ✅ Include: AI predicts overflow within 24h
+            bin.reason = "PREDICTED_OVERFLOW";
             bin.priority = CONFIG.PRIORITY_WEIGHTS.PREDICTED_OVERFLOW;
             bin.urgency = "MEDIUM";
             selectedBins.push(bin);
         }
+        else if (bin.fill >= CONFIG.FILL_THRESHOLD_WARNING) {
+            // (Optional) Include: 45-49% to be safe
+            bin.reason = `FILL_${Math.round(bin.fill)}%_WARNING`;
+            bin.priority = CONFIG.PRIORITY_WEIGHTS.WARNING;
+            bin.urgency = "MEDIUM";
+            selectedBins.push(bin);
+        }
         else {
-            // Normal bins - not urgent
+            // ❌ EXCLUDE: Normal bins (e.g., 20% full) are SKIPPED
             bin.reason = "NOT_URGENT";
             bin.priority = 0;
-            excludedBins.push(bin);
+            excludedBins.push(bin); 
         }
     });
 
-    console.log(`\nBins selected for collection: ${selectedBins.length}`);
-    console.log(`Blocked bins: ${blockedBins.length}`);
-    console.log(`Excluded bins: ${excludedBins.length}`);
+    console.log(`Selected: ${selectedBins.length}, Skipped: ${excludedBins.length}`);
 
-    // Sort selected bins by priority (highest first)
+    // Sort selected bins by priority initially
     selectedBins.sort((a, b) => b.priority - a.priority);
 
-    // --- OPTIMIZED NEAREST NEIGHBOR WITH PRIORITY ---
+    // --- NEAREST NEIGHBOR ALGORITHM ---
     let currentPos = startLocation;
     let unvisited = [...selectedBins];
     const finalRoute = [];
@@ -118,7 +113,6 @@ function generateRoute(startLocation, endLocation, bins) {
         let selectedIdx = -1;
         let bestScore = -Infinity;
 
-        // Find best bin using weighted score (priority + proximity)
         unvisited.forEach((bin, idx) => {
             const distance = getDistance(
                 currentPos.latitude, 
@@ -127,12 +121,13 @@ function generateRoute(startLocation, endLocation, bins) {
                 bin.longitude
             );
 
-            // Normalize distance (assume max 10km for normalization)
-            const normalizedDistance = Math.min(distance / 10000, 1);
+            // Normalize distance (5km baseline)
+            const normalizedDistance = Math.min(distance / 5000, 1);
             
-            // Score = Priority - Distance Penalty
-            // Higher priority bins preferred, but distance matters
-            const distancePenalty = normalizedDistance * 20;
+            // Priority vs Distance Weighting
+            // Allows picking a "Predicted" bin nearby over a "Critical" bin far away
+            const distancePenalty = normalizedDistance * 60; 
+            
             const score = bin.priority - distancePenalty;
 
             if (score > bestScore) {
@@ -173,10 +168,6 @@ function generateRoute(startLocation, endLocation, bins) {
         longitude: endLocation.longitude
     });
 
-    console.log(`\nFinal route has ${finalRoute.length} stops (including start/end)`);
-    console.log(`=== Route Generation Complete ===\n`);
-
-    // Return comprehensive route data
     return {
         route_points: finalRoute,
         other_bins: excludedBins.map(b => ({

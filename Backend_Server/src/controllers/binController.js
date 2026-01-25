@@ -1,15 +1,52 @@
 const db = require('../config/db');
 const { getIO } = require('../config/socket');
-
+const { predictBinOverflow } = require('../services/predictionEngine');
 // 1. GET ALL BINS
 exports.getAllBins = async (req, res) => {
   try {
     const area_id = req.user.area_id; 
-    const result = await db.query(
-      'SELECT * FROM bins WHERE area_id = $1 ORDER BY last_updated DESC', 
-      [area_id]
-    );
-    res.json(result.rows);
+    
+    // Fetch bins with their last 48 hours of readings for prediction
+    const result = await db.query(`
+      SELECT 
+        b.*,
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'fill_percent', fill_percent,
+                    'weight', weight, 
+                    'recorded_at', recorded_at
+                ) ORDER BY recorded_at DESC
+            )
+            FROM (
+                SELECT fill_percent, weight, recorded_at
+                FROM bin_readings 
+                WHERE bin_id = b.id 
+                AND recorded_at > NOW() - INTERVAL '48 hours'
+                ORDER BY recorded_at DESC
+            ) as readings
+        ) as readings
+      FROM bins b 
+      WHERE b.area_id = $1 
+      ORDER BY b.last_updated DESC
+    `, [area_id]);
+
+    // Calculate predictions for each bin
+    const binsWithPredictions = result.rows.map(bin => {
+        const readings = bin.readings || [];
+        const prediction = predictBinOverflow(bin.id, readings);
+        
+        return {
+            ...bin,
+            prediction: {
+                status: prediction.status,
+                predicted_overflow_at: prediction.predicted_overflow_at,
+                hours_until_overflow: prediction.hours_until_overflow
+            }
+        };
+    });
+
+    res.json(binsWithPredictions);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server Error' });
@@ -168,12 +205,19 @@ exports.markBinCollected = async (req, res) => {
                 [routeId]
             );
 
-            if (parseInt(pendingCount.rows[0].count) === 0) {
-                // Route Complete: Close it
-                await db.query(
-                    `UPDATE routes SET status = 'COMPLETED', completed_at = NOW() WHERE id = $1`,
-                    [routeId]
-                );
+        if (parseInt(pendingCount.rows[0].count) === 0) {
+            // 1. Close Route
+          await db.query(
+         `UPDATE routes SET status = 'COMPLETED', completed_at = NOW() WHERE id = $1`,
+          [routeId]
+        );
+
+    // 2. [OPTIONAL] Unassign Driver from Vehicle
+    // Only add this if you want them to lose the vehicle immediately
+    await db.query(
+        `UPDATE vehicles SET driver_id = NULL WHERE driver_id = $1`,
+        [driverId]
+    );
 
                 // Alert: Driver is Free
                 const routeMsg = `Route Completed. ${req.user.name} is now AVAILABLE.`;

@@ -14,19 +14,34 @@ exports.getWards = async (req, res) => {
 
 // Create a new Ward (e.g., "Market Area")
 exports.createWard = async (req, res) => {
-  const { name } = req.body;
+  const { name, description } = req.body;
   const area_id = req.user.area_id;
 
   if (!name) return res.status(400).json({ message: 'Name required' });
 
   try {
-    const newWard = await db.query(
-      `INSERT INTO wards (id, area_id, name) VALUES (uuid_generate_v4(), $1, $2) RETURNING *`,
-      [area_id, name]
-    );
+    // 1. Check if name already exists in this area to prevent duplicates
+    const check = await db.query('SELECT * FROM wards WHERE area_id = $1 AND name = $2', [area_id, name]);
+    if (check.rows.length > 0) {
+        return res.status(400).json({ message: 'Ward name already exists' });
+    }
+
+    // 2. Insert only valid columns (id, area_id, name, description, created_at)
+    const query = `
+      INSERT INTO wards (id, area_id, name, description, created_at) 
+      VALUES (uuid_generate_v4(), $1, $2, $3, NOW()) 
+      RETURNING *
+    `;
+    
+    const newWard = await db.query(query, [
+      area_id, 
+      name, 
+      description || '' 
+    ]);
+
     res.status(201).json(newWard.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error("Create Ward Error:", err);
     res.status(500).json({ error: 'Server Error' });
   }
 };

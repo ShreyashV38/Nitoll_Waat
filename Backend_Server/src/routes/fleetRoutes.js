@@ -18,5 +18,5 @@ router.post('/driver/ignore-bin', protect, fleetController.ignoreBin);
 
 // NEW: Prediction & Analytics
 router.get('/bins/need-collection', protect, fleetController.getBinsNeedingCollection);
-
+router.post('/vehicles/assign', protect, fleetController.assignVehicle);
 module.exports = router;

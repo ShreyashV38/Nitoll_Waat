@@ -1,65 +1,70 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import '../../style/Dashboard.css'; // Re-use dashboard styles for the card
+import ReactApexChart from 'react-apexcharts';
+import type { ApexOptions } from 'apexcharts';
 
-interface WasteData {
-  day: string;
-  total_weight: number;
-}
-
+// ✅ 1. Define Props Interface
 interface Props {
-  data: WasteData[];
+    data: number[];      // e.g., [120, 150, 180...]
+    labels: string[];    // e.g., ["Mon", "Tue", "Wed"...]
 }
 
-const WasteChart: React.FC<Props> = ({ data }) => {
-  return (
-    <div className="dashboard-card" style={{ height: '400px' }}>
-      <div className="card-header">
-        <h3>Waste Collection Trends</h3>
-        <select style={{ padding: '6px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '12px' }}>
-          <option>Last 7 Days</option>
-          <option>Last 30 Days</option>
-        </select>
-      </div>
+const WasteChart: React.FC<Props> = ({ data, labels }) => {
+    // ✅ 2. Dynamic Options
+    const options: ApexOptions = {
+        chart: {
+            type: 'area',
+            height: 350,
+            toolbar: { show: false },
+            fontFamily: 'Inter, sans-serif'
+        },
+        colors: ['#22c55e'], // Green color for waste/recycling
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 2 },
+        xaxis: {
+            categories: labels, // ⬅️ Dynamic Labels
+            axisBorder: { show: false },
+            axisTicks: { show: false }
+        },
+        yaxis: {
+            title: { text: 'Waste Collected (kg)' }
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.3,
+                stops: [0, 90, 100]
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val + " kg";
+                }
+            }
+        }
+    };
 
-      <div style={{ flex: 1, width: '100%', minHeight: '300px' }}>
-        {data.length === 0 ? (
-          <div className="empty-feed" style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            No data available for this week
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-              <XAxis 
-                dataKey="day" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#64748b', fontSize: 12 }} 
-                dy={10}
-              />
-              <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: '#64748b', fontSize: 12 }} 
-              />
-              <Tooltip 
-                cursor={{ fill: '#f1f5f9' }}
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-              />
-              <Bar 
-                dataKey="total_weight" 
-                fill="#22c55e" 
-                radius={[6, 6, 0, 0]} 
-                barSize={40}
-                name="Waste (kg)"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </div>
-    </div>
-  );
+    // ✅ 3. Dynamic Series
+    const series = [{
+        name: 'Total Waste',
+        data: data // ⬅️ Dynamic Data
+    }];
+
+    return (
+        <div className="dashboard-card" style={{ height: '100%' }}>
+            <h3>Waste Collection Trends</h3>
+            <div className="chart-container">
+                <ReactApexChart 
+                    options={options} 
+                    series={series} 
+                    type="area" 
+                    height={320} 
+                />
+            </div>
+        </div>
+    );
 };
 
 export default WasteChart;

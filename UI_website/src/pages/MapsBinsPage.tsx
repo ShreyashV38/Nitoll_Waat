@@ -4,8 +4,9 @@ import BinMap from "../components/MapsBins/BinMap";
 import BinDirectory from "../components/MapsBins/BinDirectory";
 import AddBinModal from "../components/MapsBins/AddBinModal";
 import AddZoneModal from "../components/MapsBins/AddZoneModal";
+import AddWardModal from "../components/MapsBins/AddwardModal"; 
 import { binAPI, wardAPI, dumpingZoneAPI } from "../services/api";
-import { socketService } from "../services/socket"; // <--- IMPORT SOCKET
+import { socketService } from "../services/socket";
 import { useAuth } from "../context/AuthContext";
 import "../style/MapsBinsPage.css";
 
@@ -18,8 +19,14 @@ export interface Bin {
   status: "NORMAL" | "WARNING" | "CRITICAL" | "BLOCKED"; 
   lid: string;
   weight: number;
-  lastUpdated: string;
+  lastUpdated: string; 
+  last_updated: string; 
   address: string;
+  prediction?: {
+    predicted_overflow_at: string | null;
+    hours_until_overflow: number | null;
+    status: string;
+  };
 }
 
 // Interface for Dumping Zones
@@ -32,12 +39,16 @@ export interface Zone {
 
 const MapsBinsPage = () => {
   const [activeTab, setActiveTab] = useState<"map" | "directory">("map");
+  
+  // Modals state
   const [showBinModal, setShowBinModal] = useState(false);
   const [showZoneModal, setShowZoneModal] = useState(false);
+  const [showWardModal, setShowWardModal] = useState(false); 
   
+  // ✅ FIX: Removed "WARD" from Add Mode (Wards don't need map clicks)
   const [addMode, setAddMode] = useState<"NONE" | "BIN" | "ZONE">("NONE");
+  
   const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
-
   const [bins, setBins] = useState<Bin[]>([]);
   const [wards, setWards] = useState<any[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
@@ -45,64 +56,50 @@ const MapsBinsPage = () => {
   const { area } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
 
-  // src/pages/MapsBinsPage.tsx
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 10000); 
 
-useEffect(() => {
-  // 1. Initial Data Load
-  loadData();
-
-  // 2. Start Polling (Backup Refresh)
-  const interval = setInterval(loadData, 10000); // Refresh every 10 seconds
-
-  // 3. Connect to Real-Time Socket
-  const socket = socketService.connect();
-
-  // 4. Handle Connection Status (For the Badge)
-  socket.on("connect", () => {
+    const socket = socketService.connect();
+    socket.on("connect", () => {
       console.log("Socket Connected!");
       setIsConnected(true);
-  });
-
-  socket.on("disconnect", () => {
+    });
+    socket.on("disconnect", () => {
       console.log("Socket Disconnected");
       setIsConnected(false);
-  });
+    });
 
-  // 5. Listen for Updates
-  socketService.onBinUpdate((updatedBin: any) => {
-      console.log("⚡ Live IoT Update:", updatedBin);
-
+    socketService.onBinUpdate((updatedBin: any) => {
       setBins((prevBins) => {
-          return prevBins.map((bin) => {
-              // Ensure we match the correct Bin ID
-              if (bin.id === updatedBin.id) {
-                  return {
-                      ...bin,
-                      level: updatedBin.fill_percent,
-                      status: updatedBin.status,
-                      lid: updatedBin.lid_status,
-                      // Ensure weight is treated as a number
-                      weight: parseFloat(updatedBin.weight) || 0,
-                      lastUpdated: new Date().toLocaleTimeString()
-                  };
-              }
-              return bin;
-          });
+        return prevBins.map((bin) => {
+          if (bin.id === updatedBin.id) {
+            const now = new Date();
+            return {
+              ...bin,
+              level: updatedBin.fill_percent,
+              status: updatedBin.status,
+              lid: updatedBin.lid_status,
+              weight: parseFloat(updatedBin.weight) || 0,
+              lastUpdated: now.toLocaleTimeString(),
+              last_updated: now.toISOString() 
+            };
+          }
+          return bin;
+        });
       });
-  });
+    });
 
-  // 6. SINGLE CLEANUP FUNCTION (Runs when page closes)
-  return () => {
-      clearInterval(interval);       // Stop Polling
-      socketService.disconnect();    // Close Socket
-      socket.off("connect");         // Remove listeners
+    return () => {
+      clearInterval(interval);
+      socketService.disconnect();
+      socket.off("connect");
       socket.off("disconnect");
-  };
-}, []);
+    };
+  }, []);
 
   const loadData = async () => {
     try {
-      // Fetch Bins, Wards, AND Zones
       const [binRes, wardRes, zoneRes] = await Promise.all([
         binAPI.getAll(),
         wardAPI.getAll(),
@@ -118,10 +115,11 @@ useEffect(() => {
         lid: b.lid_status || "CLOSED",
         weight: parseFloat(b.current_weight) || 0,
         lastUpdated: new Date(b.last_updated).toLocaleTimeString(),
-        address: `Ward ${b.ward_id || 'Unknown'}`
+        last_updated: b.last_updated,
+        address: `Ward ${b.ward_id || 'Unknown'}`,
+        prediction: b.prediction
       }));
 
-      // Format Zones
       const formattedZones = zoneRes.data.map((z: any) => ({
         id: z.id,
         name: z.name,
@@ -133,7 +131,6 @@ useEffect(() => {
       setWards(wardRes.data);
       setZones(formattedZones);
       setLoading(false);
-
     } catch (err) {
       console.error("Failed to load data", err);
       setLoading(false);
@@ -145,28 +142,29 @@ useEffect(() => {
     loadData();
   };
 
+  // ✅ FIX: Map click only handles Bins and Zones (Items with locations)
   const handleMapClick = (lat: number, lng: number) => {
     if (addMode === "NONE") return;
 
     setSelectedLocation({ lat, lng });
 
     if (addMode === "BIN") {
-        setShowBinModal(true);
+      setShowBinModal(true);
     } else if (addMode === "ZONE") {
-        setShowZoneModal(true);
+      setShowZoneModal(true);
     }
   };
 
   const handleCloseModal = () => {
     setShowBinModal(false);
     setShowZoneModal(false);
+    setShowWardModal(false); 
     setSelectedLocation(null);
   };
 
   return (
     <div className="maps-bins-page">
-      <PageHeader title="..." subtitle="...">
-         {/* REAL DYNAMIC BADGE */}
+      <PageHeader title={area ? `${area.area_name}` : "Operations"} subtitle="Monitor Bins & Zones">
          <div style={{
              background: isConnected ? '#dcfce7' : '#fee2e2', 
              color: isConnected ? '#166534' : '#991b1b',
@@ -183,7 +181,6 @@ useEffect(() => {
          </div>
       </PageHeader>
 
-      {/* 2. Actions Bar with CLEAR LABELS */}
       <div className="actions-bar">
         <div className="tabs">
           <button className={activeTab === "map" ? "active" : ""} onClick={() => setActiveTab("map")}>
@@ -197,6 +194,19 @@ useEffect(() => {
         <div className="buttons">
           <button className="refresh-btn" onClick={handleRefresh}>🔄 Refresh</button>
           
+          {/* ✅ FIX: Ward Button now opens Modal DIRECTLY (No Map Click needed) */}
+          <button 
+            className="add-btn ward-btn" 
+            onClick={() => setShowWardModal(true)}
+            style={{
+                backgroundColor: "#ec4899", 
+                border: "none",
+                color: 'white'
+            }}
+          >
+             + Add Ward
+          </button>
+
           <button 
             className={`add-btn zone-btn ${addMode === "ZONE" ? "active-mode" : ""}`} 
             onClick={() => setAddMode(addMode === "ZONE" ? "NONE" : "ZONE")}
@@ -220,10 +230,10 @@ useEffect(() => {
         </div>
       </div>
 
-      {/* 3. Instruction Banner */}
+      {/* ✅ FIX: Updated Info Banner */}
       {addMode !== "NONE" && (
         <div style={{background: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', padding: '10px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold'}}>
-            Adding {addMode === "BIN" ? "Smart Bin" : "Dumping Zone"}: Click a location on the map to place it.
+           Adding {addMode === "BIN" ? "Smart Bin" : "Dumping Zone"}: Click a location on the map to place it.
         </div>
       )}
 
@@ -259,6 +269,14 @@ useEffect(() => {
             onClose={handleCloseModal} 
             refreshData={loadData} 
             location={selectedLocation} 
+        />
+      )}
+
+      {showWardModal && (
+        <AddWardModal 
+            onClose={handleCloseModal} 
+            refreshData={loadData} 
+            // Location is no longer needed/passed
         />
       )}
     </div>

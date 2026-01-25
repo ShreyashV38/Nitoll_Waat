@@ -1,17 +1,25 @@
+// src/components/Dashboard/RouteWidget.tsx
 import React from "react";
 
+// ✅ 1. Update Interface to include 'name'
 interface RouteData {
   id: string;
+  name?: string; // Add this optional property
   progress: number;
   status: string;
 }
 
 interface Props {
   routes: RouteData[];
-  latestActivity: string; //
+  latestActivity: string; 
 }
 
-const RoutesWidget: React.FC<Props> = ({ routes, latestActivity }) => { //
+const RoutesWidget: React.FC<Props> = ({ routes, latestActivity }) => { 
+  // ✅ Helper to fix class names (IN_PROGRESS -> inprogress)
+  const getStatusClass = (status: string) => {
+    return status.replace(/_/g, "").toLowerCase(); // Removes underscores, not just spaces
+  };
+
   return (
     <div className="right-column">
       {/* Today's Routes */}
@@ -24,17 +32,23 @@ const RoutesWidget: React.FC<Props> = ({ routes, latestActivity }) => { //
             routes.map((route) => (
               <div key={route.id} className="route-item">
                 <div className="route-info">
-                  <span>{route.id}</span>
-                  <span className={`status-badge ${route.status.replace(/\s/g, "").toLowerCase()}`}>
-                    {route.status}
+                  {/* ✅ 2. Display friendly 'name' OR fallback to ID */}
+                  <span style={{fontWeight: '600', color: '#334155'}}>
+                    {route.name || `Route #${route.id.substring(0,4)}`}
+                  </span>
+                  
+                  {/* ✅ 3. Apply fixed status class */}
+                  <span className={`status-badge ${getStatusClass(route.status)}`}>
+                    {route.status.replace(/_/g, " ")}
                   </span>
                 </div>
+                
                 <div className="progress-bg">
                   <div 
                     className="progress-fill" 
                     style={{ 
                       width: `${route.progress}%`, 
-                      background: route.progress === 100 ? '#4ade80' : '#fb923c',
+                      background: route.progress === 100 ? '#22c55e' : '#f59e0b', // Green if done, Orange if active
                       transition: 'width 0.5s ease-in-out' 
                     }}
                   ></div>
@@ -45,7 +59,7 @@ const RoutesWidget: React.FC<Props> = ({ routes, latestActivity }) => { //
         </div>
       </div>
 
-      {/* Active Feed - Now Dynamic */}
+      {/* Active Feed */}
       <div className="dashboard-card feed-card">
         <h3>Active Feed</h3>
         <div 
@@ -53,10 +67,11 @@ const RoutesWidget: React.FC<Props> = ({ routes, latestActivity }) => { //
           style={{ 
             color: latestActivity === "No new activity" ? "#cbd5e1" : "#1e293b",
             fontSize: "13px",
-            fontWeight: latestActivity === "No new activity" ? "400" : "500"
+            fontWeight: latestActivity === "No new activity" ? "400" : "500",
+            padding: "10px 0"
           }}
         >
-          {latestActivity} {/* */}
+          {latestActivity}
         </div>
       </div>
     </div>

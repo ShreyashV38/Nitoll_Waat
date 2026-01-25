@@ -52,7 +52,8 @@ function predictBinOverflow(binId, history) {
     }
 
     // --- 2. CRITICAL CHECK (Already Overflowing) ---
-    if (result.current_fill >= 90) {
+    // ✅ UPDATED: Threshold lowered to 50% as per requirements
+    if (result.current_fill >= 50) {
         result.status = "CRITICAL";
         result.confidence = "HIGH";
         result.hours_until_overflow = 0;
@@ -60,7 +61,6 @@ function predictBinOverflow(binId, history) {
     }
 
     // --- 3. ENHANCED PREDICTION LOGIC ---
-    // Use 48-hour window for more accurate predictions
     let dataPoints = [];
     for (let i = 0; i < history.length; i++) {
         const hoursAgo = (now - new Date(history[i].recorded_at)) / 36e5;

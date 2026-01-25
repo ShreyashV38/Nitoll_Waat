@@ -409,3 +409,44 @@ exports.ignoreBin = async (req, res) => {
         res.status(500).json({ error: e.message }); 
     }
 };
+// src/controllers/fleetController.js
+
+// ... existing code ...
+
+// 9. ASSIGN DRIVER TO VEHICLE
+exports.assignVehicle = async (req, res) => {
+  const { vehicle_id, driver_id } = req.body;
+
+  if (!vehicle_id || !driver_id) {
+    return res.status(400).json({ message: "Vehicle ID and Driver ID are required" });
+  }
+
+  try {
+    // Optional: Check if driver is already assigned to another active vehicle
+    // const checkDriver = await db.query('SELECT * FROM vehicles WHERE driver_id = $1 AND id != $2', [driver_id, vehicle_id]);
+    // if (checkDriver.rows.length > 0) return res.status(400).json({ message: "Driver is already assigned to another vehicle" });
+
+    // 1. Unassign this driver from any other vehicles first (Enforce 1-to-1 relationship)
+    await db.query(`UPDATE vehicles SET driver_id = NULL WHERE driver_id = $1`, [driver_id]);
+
+    // 2. Assign driver to the new vehicle
+    const result = await db.query(
+      `UPDATE vehicles SET driver_id = $1 WHERE id = $2 RETURNING *`,
+      [driver_id, vehicle_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Driver assigned successfully", 
+      vehicle: result.rows[0] 
+    });
+
+  } catch (err) {
+    console.error("Assign Vehicle Error:", err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};

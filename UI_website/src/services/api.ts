@@ -57,9 +57,9 @@ export const alertAPI = {
 
 export const wardAPI = {
   getAll: () => api.get('/wards'),
-  create: (name: string) => api.post('/wards', { name }),
+  create: (data: { name: string; description?: string }) => 
+    api.post('/wards', data),
 };
-
 export const driverAPI = {
   getAll: () => api.get('/driver/all'),
 };
@@ -68,4 +68,8 @@ export const analyticsAPI = {
   getStats: () => api.get('/analytics/waste-stats'),
 };
 
+export const getWasteStats = async () => {
+    const response = await api.get('/analytics/waste-stats');
+    return response.data;
+};
 export default api;
