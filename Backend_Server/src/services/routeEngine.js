@@ -2,9 +2,10 @@ const { predictBinOverflow } = require('./predictionEngine');
 
 // Configuration
 const CONFIG = {
-    COLLECTION_WINDOW_HOURS: 24,  // Include bins that will overflow in next 24 hours
+    COLLECTION_WINDOW_HOURS: 24,
+    FILL_THRESHOLD_CRITICAL: 50,  // ✅ NEW: Bins at 50%+ are critical
     PRIORITY_WEIGHTS: {
-        CRITICAL: 100,           // Currently >= 90%
+        CRITICAL: 100,           // Fill >= 50% OR Currently >= 90%
         CRITICAL_SOON: 80,       // Will overflow in < 6 hours
         PREDICTED_OVERFLOW: 60,  // Will overflow in < 24 hours
         BLOCKED_VIEW: 40         // Sensor blocked
@@ -46,7 +47,7 @@ function generateRoute(startLocation, endLocation, bins) {
 
         // Prepare bin data
         bin.fill = parseFloat(bin.current_fill_percent) || 0.0;
-        bin.weight = parseFloat(readings[0]?.weight) || 0.0;
+        bin.weight = parseFloat((readings[0] && readings[0].weight) || 0);
         bin.prediction = analysis;
 
         console.log(`Bin ${bin.id.substring(0, 8)}: Fill=${bin.fill}%, Status=${analysis.status}, Hours until overflow=${analysis.hours_until_overflow?.toFixed(1) || 'N/A'}`);
@@ -57,6 +58,13 @@ function generateRoute(startLocation, endLocation, bins) {
             bin.priority = CONFIG.PRIORITY_WEIGHTS.BLOCKED_VIEW;
             blockedBins.push(bin);
         } 
+        // ✅ UPDATED: Check fill percentage first (50%+ is critical)
+        else if (bin.fill >= CONFIG.FILL_THRESHOLD_CRITICAL) {
+            bin.reason = `FILL_${Math.round(bin.fill)}%`;
+            bin.priority = CONFIG.PRIORITY_WEIGHTS.CRITICAL;
+            bin.urgency = "HIGH";
+            selectedBins.push(bin);
+        }
         else if (analysis.status === "CRITICAL") {
             bin.reason = "CRITICAL_NOW";
             bin.priority = CONFIG.PRIORITY_WEIGHTS.CRITICAL;

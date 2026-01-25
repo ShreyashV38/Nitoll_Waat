@@ -19,6 +19,7 @@ const greenIcon = createIcon('green');
 const orangeIcon = createIcon('orange'); 
 const redIcon = createIcon('red');       
 const violetIcon = createIcon('violet'); 
+const greyIcon = createIcon('grey');
 
 // --- HELPER: Format Weight ---
 const formatWeight = (grams: number) => {
@@ -58,8 +59,17 @@ const BinMap: React.FC<Props> = ({ bins, zones = [], onMapClick }) => {
 
         {bins.map((bin) => {
             let iconToUse = greenIcon; 
-            if (bin.status === "CRITICAL" || bin.level >= 90) iconToUse = redIcon;
-            else if (bin.status === "WARNING" || bin.level >= 70) iconToUse = orangeIcon;
+            
+            // AUTOMATION RULES:
+            if (bin.status === "BLOCKED") {
+                iconToUse = greyIcon; // Visual cue for Blocked sensor
+            }
+            else if (bin.status === "CRITICAL" || bin.level >= 50) { 
+                iconToUse = redIcon; // Your requested 50% Threshold
+            }
+            else if (bin.status === "WARNING" || bin.level >= 40) {
+                iconToUse = orangeIcon;
+            }
 
             return (
                 <Marker key={bin.id} position={[bin.lat, bin.lng]} icon={iconToUse}>
@@ -67,11 +77,12 @@ const BinMap: React.FC<Props> = ({ bins, zones = [], onMapClick }) => {
                         <div style={{ minWidth: "200px" }}>
                             <h3 style={{ margin: "0 0 8px 0", color: "#334155" }}>Bin #{bin.id.substring(0, 6)}</h3>
                             
+                            {/* STATUS BADGE */}
                             <div style={{ 
                                 marginBottom: "10px", padding: "4px 8px", borderRadius: "4px", display: "inline-block",
                                 fontSize: "12px", fontWeight: "bold",
-                                backgroundColor: bin.status === "CRITICAL" ? "#fee2e2" : bin.status === "WARNING" ? "#ffedd5" : "#dcfce7",
-                                color: bin.status === "CRITICAL" ? "#ef4444" : bin.status === "WARNING" ? "#f97316" : "#22c55e"
+                                backgroundColor: bin.status === "BLOCKED" ? "#333" : bin.status === "CRITICAL" ? "#fee2e2" : "#dcfce7",
+                                color: bin.status === "BLOCKED" ? "#fff" : bin.status === "CRITICAL" ? "#ef4444" : "#22c55e"
                             }}>
                                 {bin.status}
                             </div>

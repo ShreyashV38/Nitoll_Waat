@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { socket } from "../../services/socket"; // Ensure this path matches your socket service
+import { socket } from "../../services/socket"; 
 import "../../style/Dashboard.css"; 
 
 interface Alert {
@@ -10,45 +10,39 @@ interface Alert {
 }
 
 interface Props {
-  alerts: Alert[]; // Initial alerts fetched by parent
+  alerts: Alert[]; 
 }
 
 const AlertsWidget: React.FC<Props> = ({ alerts: initialAlerts }) => {
   const navigate = useNavigate();
-  
-  // Local state to handle both initial and new live alerts
   const [currentAlerts, setCurrentAlerts] = useState<Alert[]>(initialAlerts);
 
-  // 1. Sync with parent if initial props change (e.g. on first load)
   useEffect(() => {
     setCurrentAlerts(initialAlerts);
   }, [initialAlerts]);
 
-  // 2. Listen for Real-Time Socket Events
+  // Listen for Real-Time Socket Events
   useEffect(() => {
     if (!socket) return;
 
     const handleNewAlert = (alertData: any) => {
       console.log("New Alert Received:", alertData);
 
-      // Convert Backend Data Format to Frontend UI Format
       const newAlert: Alert = {
-        type: alertData.severity === 'HIGH' ? 'critical' : 'warning', // Map severity to CSS class
+        type: alertData.severity === 'HIGH' ? 'critical' : 'warning',
         msg: alertData.message,
         time: new Date(alertData.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
-      // Add new alert to the TOP of the list
       setCurrentAlerts((prev) => [newAlert, ...prev]);
     };
 
-    // Listen to the specific event name emitted by fleetController.js
-    socket.on('newAlert', handleNewAlert);
+    // ✅ FIX: Changed 'newAlert' to 'new_alert' to match Backend
+    socket.on('new_alert', handleNewAlert);
 
-    // Cleanup listener on unmount
     return () => {
       if (socket) {
-        socket.off('newAlert', handleNewAlert);
+        socket.off('new_alert', handleNewAlert);
       }
     };
   }, []);

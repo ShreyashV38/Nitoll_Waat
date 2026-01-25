@@ -381,25 +381,31 @@ exports.getBinsNeedingCollection = async (req, res) => {
   }
 };
 
+// src/controllers/fleetController.js
+
 exports.ignoreBin = async (req, res) => {
+    // 1. Remove the duplicate variable declaration
     const { bin_id, reason } = req.body;
+
     try {
-        const { bin_id, reason } = req.body;
-        
-        // 1. Log Alert
+        // 2. FIXED QUERY:
+        // - Removed manual "id" insertion (Let the database auto-generate it)
+        // - Removed "type" column (It likely doesn't exist in your table, based on other controllers)
         const alertRes = await db.query(
-            `INSERT INTO alerts (id, bin_id, type, message, severity, created_at)
-             VALUES (uuid_generate_v4(), $1, 'COLLECTION_SKIPPED', $2, 'MEDIUM', NOW())
+            `INSERT INTO alerts (bin_id, message, severity, created_at)
+             VALUES ($1, $2, 'MEDIUM', NOW())
              RETURNING *`,
             [bin_id, `Skipped: ${reason}`]
         );
 
-        // 2. NOTIFY WEBSITE
+        // 3. Notify Website
         const io = require('../config/socket').getIO();
-        io.emit('newAlert', alertRes.rows[0]); // Send full alert object
+        io.emit('new_alert', alertRes.rows[0]); // Changed 'newAlert' to 'new_alert' to match other controllers
 
         res.json({ success: true });
-    } catch (e){ 
+
+    } catch (e) { 
+        console.error("Ignore Bin Error:", e); // Log the actual error to your terminal
         res.status(500).json({ error: e.message }); 
     }
 };

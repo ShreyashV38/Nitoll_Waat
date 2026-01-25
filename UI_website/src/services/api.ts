@@ -22,25 +22,28 @@ export const authAPI = {
 export const binAPI = {
   getAll: () => api.get('/bins'),
   update: (bin_id: string, fill_percent: number) => api.post('/bins/update', { bin_id, fill_percent }),
-  // --- ADDED THIS LINE ---
   create: (data: any) => api.post('/bins/create', data), 
 };
 
 export const dumpingZoneAPI = {
-  getAll: () => api.get('/dumping-zones'), // Fetch all zones
+  getAll: () => api.get('/dumping-zones'),
   create: (data: { name: string, lat: number, lng: number }) => 
-    api.post('/dumping-zones/create', data), // Save new zone
+    api.post('/dumping-zones/create', data),
 };
-
-// src/services/api.ts
 
 export const fleetAPI = {
   getVehicles: () => api.get('/fleet/vehicles'),
   getActiveRoutes: () => api.get('/fleet/routes/active'),
   autoDispatch: () => api.post('/fleet/routes/auto-dispatch'),
-  // Add this missing function:
+  
+  // Existing function for Routes Page (Driver + Ward)
   assignRoute: (data: { driver_id: string; ward_id: string }) => 
     api.post('/fleet/routes/create', data), 
+  
+  // ✅ ADD THIS NEW FUNCTION for Vehicles Page (Driver + Vehicle)
+  assignVehicle: (data: { driver_id: string; vehicle_id: string }) => 
+    api.post('/fleet/vehicles/assign', data),
+
   cancelRoute: (routeId: string) => api.patch(`/fleet/routes/${routeId}/cancel`),
 };
 
@@ -58,7 +61,7 @@ export const wardAPI = {
 };
 
 export const driverAPI = {
-  getAll: () => api.get('/driver/all'), // Fetches list for dropdown
+  getAll: () => api.get('/driver/all'),
 };
 
 export const analyticsAPI = {

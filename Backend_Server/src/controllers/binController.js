@@ -1,10 +1,10 @@
 const db = require('../config/db');
-const io = require('../config/socket');
 const { getIO } = require('../config/socket');
+
 // 1. GET ALL BINS
 exports.getAllBins = async (req, res) => {
   try {
-    const area_id = req.user.area_id; // Extracted from protect middleware
+    const area_id = req.user.area_id; 
     const result = await db.query(
       'SELECT * FROM bins WHERE area_id = $1 ORDER BY last_updated DESC', 
       [area_id]
@@ -41,8 +41,7 @@ exports.createBin = async (req, res) => {
   }
 };
 
-// 3. IOT UPDATE (Handles Weight & Lid)
-// This endpoint receives data from the ESP8266
+// 3. IOT UPDATE
 exports.updateBinReading = async (req, res) => {
   const { bin_id, fill_percent, lid_status, lid_angle, weight } = req.body;
 
@@ -50,67 +49,59 @@ exports.updateBinReading = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Missing Data' });
   }
 
-  // --- FIX: REMOVE WHITESPACE ---
   const cleanBinId = bin_id.trim(); 
 
   try {
-    // A. Calculate Status
-    let status = 'NORMAL';
-    if (fill_percent >= 90) status = 'CRITICAL';
-    else if (fill_percent >= 70) status = 'WARNING';
+    const prevRes = await db.query(
+        'SELECT current_fill_percent, current_weight FROM bins WHERE id = $1', 
+        [cleanBinId]
+    );
+    const prevData = prevRes.rows[0] || { current_fill_percent: 0, current_weight: 0 };
 
-    // B. Update Database (Use cleanBinId)
+    let status = 'NORMAL';
+    const fillDiff = fill_percent - prevData.current_fill_percent;
+    const weightDiff = Math.abs(weight - prevData.current_weight);
+
+    if (fillDiff > 20 && weightDiff < 0.20) {
+        status = 'BLOCKED';
+    } else if (fill_percent >= 50) {
+        status = 'CRITICAL'; 
+    }
+
     await db.query(
       `UPDATE bins 
-       SET current_fill_percent = $1, 
-           status = $2, 
-           lid_status = $3, 
-           lid_angle = $4,
-           current_weight = $5, 
-           last_updated = NOW() 
+       SET current_fill_percent = $1, status = $2, lid_status = $3, lid_angle = $4, current_weight = $5, last_updated = NOW() 
        WHERE id = $6`,
-      [
-        fill_percent, 
-        status, 
-        lid_status || 'CLOSED', 
-        lid_angle || 0,         
-        weight || 0.00,         
-        cleanBinId // <--- USING TRIMMED ID
-      ]
-    );
+      [fill_percent, status, lid_status || 'CLOSED', lid_angle || 0, weight || 0.00, cleanBinId]
+    );  
 
-    // C. Save History
     await db.query(
       `INSERT INTO bin_readings (bin_id, fill_percent, status, weight, lid_status, lid_angle, recorded_at) 
        VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-      [
-        cleanBinId, 
-        fill_percent, 
-        status, 
-        weight || 0.00,
-        lid_status || 'CLOSED',  // <--- Added
-        lid_angle || 0           // <--- Added
-      ]
+      [cleanBinId, fill_percent, status, weight || 0.00, lid_status || 'CLOSED', lid_angle || 0]
     );
 
-    // D. Send Socket Update
-    const socket = io.getIO();
-    socket.emit('bin_update', { 
-        id: cleanBinId, 
-        fill_percent, 
-        status, 
-        lid_status: lid_status || 'CLOSED', 
-        weight: weight || 0.0 
-    });
+    const socket = getIO();
+    if(socket) {
+      socket.emit('bin_update', { 
+          id: cleanBinId, 
+          fill_percent, 
+          status, 
+          lid_status: lid_status || 'CLOSED', 
+          weight: weight || 0.0 
+      });
 
-    // E. Handle Alerts
-    if (status === 'CRITICAL') {
-      const alertMsg = `Bin ${cleanBinId.substring(0,8)} is CRITICAL (${fill_percent}%)`;
-      await db.query(
-        `INSERT INTO alerts (bin_id, message, severity, created_at) VALUES ($1, $2, 'HIGH', NOW())`,
-        [cleanBinId, alertMsg]
-      );
-      socket.emit('new_alert', { message: alertMsg, severity: 'HIGH' });
+      if (status === 'CRITICAL' || status === 'BLOCKED') {
+        const alertMsg = status === 'BLOCKED' 
+            ? `Bin ${cleanBinId.substring(0,8)} sensor BLOCKED!`
+            : `Bin ${cleanBinId.substring(0,8)} is CRITICAL (${fill_percent}%)`;
+
+        const alertRes = await db.query(
+          `INSERT INTO alerts (bin_id, message, severity, created_at) VALUES ($1, $2, 'HIGH', NOW()) RETURNING *`,
+          [cleanBinId, alertMsg]
+        );
+        socket.emit('new_alert', alertRes.rows[0]);
+      }
     }
 
     res.json({ success: true, status });
@@ -120,31 +111,95 @@ exports.updateBinReading = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-// 4. MARK BIN AS COLLECTED
+
+// 4. MARK BIN AS COLLECTED (UPDATED FOR DRIVER ALERTS)
 exports.markBinCollected = async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.params; // Bin ID
+    const driverId = req.user.id; // Driver ID from auth token
+
     try {
-        // 1. Update Database (Reset Fill & Weight)
+        // A. Reset 'bins' Table
         await db.query(
             `UPDATE bins SET current_fill_percent = 0, current_weight = 0, status = 'NORMAL', last_updated = NOW() 
              WHERE id = $1`, 
             [id]
         );
 
-        // 2. Log History
+        // B. Log History
         await db.query(
             `INSERT INTO bin_readings (bin_id, fill_percent, weight, status, recorded_at)
              VALUES ($1, 0, 0, 'NORMAL', NOW())`,
             [id]
         );
 
-        // 3. NOTIFY WEBSITE (Socket.IO)
-        const io = getIO();
-        io.emit('binUpdated', {
-            id: id,
-            fill_percent: 0,
-            status: 'NORMAL'
-        });
+        const socket = getIO();
+
+        // C. ALERT: Notify Admin that Bin was collected
+        const binAlertMsg = `Bin collected by ${req.user.name || 'Driver'}`;
+        const binAlertRes = await db.query(
+             `INSERT INTO alerts (bin_id, message, severity, created_at) 
+              VALUES ($1, $2, 'INFO', NOW()) 
+              RETURNING *`,
+             [id, binAlertMsg]
+        );
+        if (socket) socket.emit('new_alert', binAlertRes.rows[0]);
+
+        // D. ROUTE LOGIC: Update Route Status & Check Completion
+        // Find the active route stop for this driver + bin and mark it collected
+        const updateStopRes = await db.query(
+            `UPDATE route_stops rs
+             SET status = 'COLLECTED', collected_at = NOW()
+             FROM routes r
+             WHERE rs.route_id = r.id
+               AND r.driver_id = $1
+               AND r.status = 'IN_PROGRESS'
+               AND rs.bin_id = $2
+               AND rs.status != 'COLLECTED'
+             RETURNING rs.route_id`,
+            [driverId, id]
+        );
+
+        // If a route stop was actually updated, check if the whole route is done
+        if (updateStopRes.rows.length > 0) {
+            const routeId = updateStopRes.rows[0].route_id;
+
+            const pendingCount = await db.query(
+                `SELECT COUNT(*) FROM route_stops WHERE route_id = $1 AND status != 'COLLECTED'`,
+                [routeId]
+            );
+
+            if (parseInt(pendingCount.rows[0].count) === 0) {
+                // Route Complete: Close it
+                await db.query(
+                    `UPDATE routes SET status = 'COMPLETED', completed_at = NOW() WHERE id = $1`,
+                    [routeId]
+                );
+
+                // Alert: Driver is Free
+                const routeMsg = `Route Completed. ${req.user.name} is now AVAILABLE.`;
+                const routeAlertRes = await db.query(
+                    `INSERT INTO alerts (bin_id, message, severity, created_at) 
+                     VALUES (NULL, $1, 'SUCCESS', NOW()) 
+                     RETURNING *`,
+                    [routeMsg]
+                );
+
+                if (socket) {
+                    socket.emit('new_alert', routeAlertRes.rows[0]);
+                    socket.emit('drivers_refresh'); // Tell frontend to refresh driver list
+                }
+            }
+        }
+
+        // E. Notify Frontend of Bin Reset (Map Update)
+        if (socket) {
+            socket.emit('bin_update', {
+                id: id,
+                fill_percent: 0,
+                status: 'NORMAL',
+                weight: 0
+            });
+        }
 
         res.json({ success: true, message: "Bin collected" });
     } catch (err) {

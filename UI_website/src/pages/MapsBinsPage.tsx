@@ -14,10 +14,10 @@ export interface Bin {
   id: string;
   lat: number;
   lng: number;
-  level: number;       
-  status: "NORMAL" | "WARNING" | "CRITICAL";
-  lid: string;         
-  weight: number;      
+  level: number;
+  status: "NORMAL" | "WARNING" | "CRITICAL" | "BLOCKED"; 
+  lid: string;
+  weight: number;
   lastUpdated: string;
   address: string;
 }

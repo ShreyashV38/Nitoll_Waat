@@ -21,6 +21,13 @@
   font-size: 14px;
 }
 
+/* Add this to your existing CSS */
+.alert-box.success {
+  background-color: #dcfce7; /* Light Green */
+  border-left: 4px solid #22c55e; /* Dark Green */
+  color: #14532d;
+}
+
 /* Overview Bar */
 .overview-bar {
   display: flex;

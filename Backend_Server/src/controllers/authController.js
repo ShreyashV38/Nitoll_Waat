@@ -121,22 +121,27 @@ exports.verify = async (req, res) => {
     } catch (err) { res.status(500).json({ message: 'Server Error' }); }
 };
 
+
 exports.getProfile = async (req, res) => {
   try {
-    const userId = req.user.id; // From middleware
+    const userId = req.user.id; 
 
-    // 1. Get User Details
-    const userRes = await db.query(
-      'SELECT id, name, email, mobile, role, area_id FROM users WHERE id = $1', 
-      [userId]
-    );
+    // 1. Get User Details WITH Ward Name (LEFT JOIN)
+    const userRes = await db.query(`
+      SELECT 
+        u.id, u.name, u.email, u.mobile, u.role, u.area_id, u.assigned_ward_id,
+        w.name as ward_name
+      FROM users u
+      LEFT JOIN wards w ON u.assigned_ward_id = w.id
+      WHERE u.id = $1
+    `, [userId]);
     
     if (userRes.rows.length === 0) {
       return res.status(404).json({ message: 'User not found' });
     }
     const user = userRes.rows[0];
 
-    // 2. Get Vehicle Details (Only if Driver)
+    // 2. Get Vehicle Details (Separate Query to keep structure clean)
     let vehicle = null;
     if (user.role === 'DRIVER') {
       const vehicleRes = await db.query(
@@ -148,7 +153,7 @@ exports.getProfile = async (req, res) => {
       }
     }
 
-    // 3. Return Combined Data
+    // 3. Return Nested Data (Matches your Java Model)
     res.json({ user, vehicle });
 
   } catch (err) {
