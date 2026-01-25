@@ -60,27 +60,52 @@ const VehicleFleet: React.FC<Props> = ({ vehicles, drivers, onAssign }) => {
 
                     {/* Column 3: Driver Selector */}
                     <td style={{ padding: '16px 12px' }}>
-                        <select
-                            value={v.driver_id || ""}
-                            onChange={(e) => onAssign(v.id, e.target.value)}
-                            style={{
-                                padding: '8px 12px',
-                                borderRadius: '6px',
-                                border: '1px solid #cbd5e1',
-                                background: '#f8fafc',
-                                width: '100%',
-                                maxWidth: '200px',
-                                fontSize: '14px',
-                                color: v.driver_id ? '#0f172a' : '#64748b'
-                            }}
-                        >
-                            <option value="">-- Assign Driver --</option>
-                            {drivers.map((d) => (
-                                <option key={d.id} value={d.id}>
-                                    {d.name} {d.status === 'BUSY' ? '(Busy)' : ''}
-                                </option>
-                            ))}
-                        </select>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <select
+                                value={v.driver_id || ""}
+                                onChange={(e) => onAssign(v.id, e.target.value)}
+                                style={{
+                                    padding: '8px 12px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #cbd5e1',
+                                    background: '#f8fafc',
+                                    width: '100%',
+                                    maxWidth: '180px',
+                                    fontSize: '14px',
+                                    color: v.driver_id ? '#0f172a' : '#64748b'
+                                }}
+                            >
+                                <option value="">-- No Driver --</option>
+                                {drivers.map((d) => (
+                                    <option key={d.id} value={d.id}>
+                                        {d.name} {d.status === 'BUSY' ? '(Busy)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+
+                            {/* ✅ NEW: X Button to quickly remove driver */}
+                            {v.driver_id && (
+                                <button 
+                                    onClick={() => onAssign(v.id, "")}
+                                    title="Unassign Driver"
+                                    style={{
+                                        background: '#fee2e2', 
+                                        border: '1px solid #fecaca', 
+                                        color: '#ef4444',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        padding: '0 10px',
+                                        height: '35px',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
                     </td>
 
                     {/* Column 4: Status Badge */}

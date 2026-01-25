@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import PageHeader from "../components/PageHeader";
 import VehicleFleet from "../components/Vehicles/VehicleFleet";
-import { fleetAPI, driverAPI } from "../services/api"; // Added driverAPI
+import { fleetAPI, driverAPI } from "../services/api"; 
 import { useAuth } from "../context/AuthContext";
 import "../style/Vehicles.css";
 
@@ -24,19 +24,18 @@ const Vehicles = () => {
         driverAPI.getAll()
       ]);
       
-      // Map DB data to UI
       const formattedVehicles = fleetRes.data.map((v: any) => ({
-        id: v.id, // Database ID
+        id: v.id, 
         license_plate: v.license_plate,
-        type: v.type || "Truck", // Default if missing
+        type: v.type || "Truck", 
         capacity: v.capacity || "N/A",
-        driver_id: v.driver_id || "", // For the dropdown value
-        driver_name: v.driver_name || "Unassigned", // For display
+        driver_id: v.driver_id || "", 
+        driver_name: v.driver_name || "Unassigned", 
         status: v.status
       }));
       
       setVehicles(formattedVehicles);
-      setDrivers(driverRes.data); // Store available drivers
+      setDrivers(driverRes.data); 
       setLoading(false);
 
     } catch (err) {
@@ -45,24 +44,36 @@ const Vehicles = () => {
     }
   };
 
-  // Handle Driver Assignment
+  // Handle Driver Assignment (and Unassignment)
   const handleAssignDriver = async (vehicleId: string, driverId: string) => {
-    // Optimistic Update (Update UI immediately)
+    // Optimistic Update
     const updatedVehicles = vehicles.map(v => 
-        v.id === vehicleId ? { ...v, driver_id: driverId } : v
+        v.id === vehicleId ? { 
+            ...v, 
+            driver_id: driverId,
+            // If driverId is empty, name is "Unassigned", otherwise find the name
+            driver_name: driverId ? drivers.find(d => d.id === driverId)?.name || "Assigned" : "Unassigned"
+        } : v
     );
     setVehicles(updatedVehicles);
 
     try {
-        // ✅ CORRECTED: Use the new assignVehicle API method
         await fleetAPI.assignVehicle({ 
             driver_id: driverId, 
             vehicle_id: vehicleId 
         }); 
-        alert("Driver assigned successfully!");
-        loadData(); // Refresh to get official state
+        
+        // Success message varies based on action
+        if (driverId) {
+            alert("Driver assigned successfully!");
+        } else {
+            console.log("Driver removed successfully");
+        }
+        
+        // Optional: reload to sync fully
+        // loadData(); 
     } catch (err) {
-        alert("Failed to save driver assignment.");
+        alert("Failed to update driver assignment.");
         loadData(); // Revert on error
     }
   };

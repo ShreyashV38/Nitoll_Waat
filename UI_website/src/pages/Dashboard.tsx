@@ -7,6 +7,8 @@ import WasteChart from "../components/Dashboard/WasteChart";
 import PageHeader from "../components/PageHeader";
 import { binAPI, alertAPI, fleetAPI, dumpingZoneAPI, analyticsAPI, } from "../services/api"; 
 import { useAuth } from "../context/AuthContext"; 
+import { socketService } from "../services/socket"; // ✅ IMPORT SOCKET
+
 import "../style/Dashboard.css";
 
 const Dashboard = () => {
@@ -29,102 +31,127 @@ const Dashboard = () => {
 
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [binRes, alertRes, vehicleRes, routeRes, zoneRes, analyticsRes] = await Promise.all([
-            binAPI.getAll(),
-            alertAPI.getAll(),
-            fleetAPI.getVehicles(),
-            fleetAPI.getActiveRoutes(),
-            dumpingZoneAPI.getAll(),
-            analyticsAPI.getStats()
-        ]);
+  // ✅ Extracted fetchData so it can be called by Socket
+  const fetchData = async () => {
+    try {
+      const [binRes, alertRes, vehicleRes, routeRes, zoneRes, analyticsRes] = await Promise.all([
+          binAPI.getAll(),
+          alertAPI.getAll(),
+          fleetAPI.getVehicles(),
+          fleetAPI.getActiveRoutes(),
+          dumpingZoneAPI.getAll(),
+          analyticsAPI.getStats()
+      ]);
 
-        // 1. Process Bins
-        const formattedBins = binRes.data.map((b: any) => ({
-            id: b.id.substring(0, 4),
-            fullId: b.id,
-            level: b.current_fill_percent,
-            status: b.status,
-            lid: b.lid_status || "CLOSED", 
-            weight: parseFloat(b.current_weight) || 0,
-            lat: parseFloat(b.latitude),
-            lng: parseFloat(b.longitude),
-            last_updated: b.last_updated,
-            prediction: b.prediction 
-        }));
+      // 1. Process Bins
+      const formattedBins = binRes.data.map((b: any) => ({
+          id: b.id.substring(0, 4),
+          fullId: b.id,
+          level: b.current_fill_percent,
+          status: b.status,
+          lid: b.lid_status || "CLOSED", 
+          weight: parseFloat(b.current_weight) || 0,
+          lat: parseFloat(b.latitude),
+          lng: parseFloat(b.longitude),
+          last_updated: b.last_updated,
+          prediction: b.prediction 
+      }));
 
-        if (formattedBins.length > 0) {
-            const sortedBins = [...formattedBins].sort((a, b) => 
-                new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
-            );
-            const latest = sortedBins[0];
-            setLatestActivity(`Bin ${latest.id} updated to ${latest.level}% fill level`);
-        }
-        
-        // 2. Process Zones
-        const formattedZones = zoneRes.data.map((z: any) => ({
-            id: z.id,
-            name: z.name,
-            lat: parseFloat(z.latitude),
-            lng: parseFloat(z.longitude)
-        }));
-
-        // 3. Process Alerts
-        const formattedAlerts = alertRes.data.map((a: any) => ({
-            type: a.severity === 'HIGH' ? 'critical' : 'info',
-            msg: a.message,
-            time: new Date(a.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-        }));
-
-        // 4. Process Vehicles Stats
-        const totalVehicles = vehicleRes.data.length;
-        const activeVehicles = vehicleRes.data.filter((v: any) => v.status === 'ACTIVE').length;
-        setVehicleStats(`${activeVehicles}/${totalVehicles}`);
-
-        setRouteCount(routeRes.data.length);
-        
-        // 5. Process Routes (WITH DRIVER DETAILS)
-        const widgetRoutes = routeRes.data.map((r: any) => ({
-            id: r.id,
-            name: `Route #${r.id.substring(0, 4)}`,
-            progress: r.total_stops > 0 ? Math.round((r.completed_stops / r.total_stops) * 100) : 0, 
-            status: r.status,
-            driver: r.driver_name || "Unassigned",
-            vehicle: r.license_plate || "No Vehicle",
-            ward: r.ward_name || "General Area"
-        }));
-        setActiveRoutesList(widgetRoutes);
-
-        // 6. Process Analytics (Dynamic Chart Data)
-        const stats = analyticsRes.data;
-        if (stats && Array.isArray(stats.weeklyWaste)) {
-            const labels = stats.weeklyWaste.map((item: any) => item.day);
-            const values = stats.weeklyWaste.map((item: any) => parseFloat(item.total_weight) || 0);
-
-            if (values.length === 0) {
-                 setChartLabels(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
-                 setChartData([0, 0, 0, 0, 0, 0, 0]);
-            } else {
-                 setChartLabels(labels);
-                 setChartData(values);
-            }
-        }
-
-        setBins(formattedBins);
-        setZones(formattedZones); 
-        setAlerts(formattedAlerts);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
-        setLoading(false);
+      if (formattedBins.length > 0) {
+          const sortedBins = [...formattedBins].sort((a, b) => 
+              new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
+          );
+          const latest = sortedBins[0];
+          setLatestActivity(`Bin ${latest.id} updated to ${latest.level}% fill level`);
       }
-    };
-    
+      
+      // 2. Process Zones
+      const formattedZones = zoneRes.data.map((z: any) => ({
+          id: z.id,
+          name: z.name,
+          lat: parseFloat(z.latitude),
+          lng: parseFloat(z.longitude)
+      }));
+
+      // 3. Process Alerts
+      const formattedAlerts = alertRes.data.map((a: any) => ({
+          type: a.severity === 'HIGH' ? 'critical' : 'info',
+          msg: a.message,
+          time: new Date(a.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+      }));
+
+      // 4. Process Vehicles Stats
+      const totalVehicles = vehicleRes.data.length;
+      const activeVehicles = vehicleRes.data.filter((v: any) => v.status === 'ACTIVE').length;
+      setVehicleStats(`${activeVehicles}/${totalVehicles}`);
+
+      setRouteCount(routeRes.data.length);
+      
+      // 5. Process Routes (WITH SAFETY CHECK)
+      const widgetRoutes = routeRes.data.map((r: any) => {
+        // Safe math to avoid NaN errors
+        const completed = parseInt(r.completed_stops) || 0;
+        const total = parseInt(r.total_stops) || 0;
+        const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+        
+        return {
+          id: r.id,
+          name: `Route #${r.id.substring(0, 4)}`,
+          progress: percentage, // <--- This sends the % to the widget
+          status: r.status,
+          driver: r.driver_name || "Unassigned",
+          vehicle: r.license_plate || "No Vehicle",
+          ward: r.ward_name || "General Area"
+        };
+      });
+      setActiveRoutesList(widgetRoutes);
+
+      // 6. Process Analytics (Dynamic Chart Data)
+      const stats = analyticsRes.data;
+      if (stats && Array.isArray(stats.weeklyWaste)) {
+          const labels = stats.weeklyWaste.map((item: any) => item.day);
+          const values = stats.weeklyWaste.map((item: any) => parseFloat(item.total_weight) || 0);
+
+          if (values.length === 0) {
+               setChartLabels(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+               setChartData([0, 0, 0, 0, 0, 0, 0]);
+          } else {
+               setChartLabels(labels);
+               setChartData(values);
+          }
+      }
+
+      setBins(formattedBins);
+      setZones(formattedZones); 
+      setAlerts(formattedAlerts);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
+
+    // ✅ NEW: Socket Listeners
+    const socket = socketService.connect();
+    socket.on("connect", () => console.log("Dashboard Socket Connected"));
+    
+    // Listen for progress updates
+    socket.on("route_update", () => {
+        console.log("♻️ Dashboard refreshing route progress...");
+        fetchData();
+    });
+    
+    socket.on("bin_update", () => fetchData());
+
     const interval = setInterval(fetchData, 60000);
-    return () => clearInterval(interval);
+    return () => {
+        clearInterval(interval);
+        socket.off("route_update");
+        socket.off("bin_update");
+    };
   }, []);
 
   const criticalCount = bins.filter(b => b.level >= 50).length;
@@ -147,7 +174,7 @@ const Dashboard = () => {
       <section className="overview-bar">
         <div className="overview-text">
           <h3>Overview</h3>
-          <span>Data updated: {loading ? 'Loading...' : 'Live'}</span>
+          <span>Data updated: {loading ? 'Loading...' : 'Live 🟢'}</span>
         </div>
         <div className="system-pill">
           <span className="dot"></span> System Status: <strong>Healthy</strong>
@@ -160,27 +187,14 @@ const Dashboard = () => {
         ))}
       </section>
 
-      {/* Row 1: Equal Height Widgets */}
       <section className="main-grid">
-        {/* Column 1: Alerts Only */}
         <AlertsWidget alerts={alerts.slice(0, 3)} /> 
-        
-        {/* Column 2: Map */}
         <div style={{ height: '100%', minHeight: '300px' }}> 
-           <BinMap 
-             bins={bins} 
-             zones={zones} 
-           />
+           <BinMap bins={bins} zones={zones} />
         </div>
-
-        {/* Column 3: Routes */}
-        <RoutesWidget 
-          routes={activeRoutesList} 
-          latestActivity={latestActivity}        
-        />
+        <RoutesWidget routes={activeRoutesList} latestActivity={latestActivity} />
       </section>
 
-      {/* Row 2: Full Width Chart */}
       <section className="chart-section" style={{ marginTop: '24px' }}>
          <WasteChart data={chartData} labels={chartLabels} />
       </section>

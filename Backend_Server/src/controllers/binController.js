@@ -1,6 +1,8 @@
 const db = require('../config/db');
 const { getIO } = require('../config/socket');
 const { predictBinOverflow } = require('../services/predictionEngine');
+
+
 // 1. GET ALL BINS
 exports.getAllBins = async (req, res) => {
   try {
@@ -151,18 +153,19 @@ exports.updateBinReading = async (req, res) => {
 
 // 4. MARK BIN AS COLLECTED (UPDATED FOR DRIVER ALERTS)
 exports.markBinCollected = async (req, res) => {
-    const { id } = req.params; // Bin ID
-    const driverId = req.user.id; // Driver ID from auth token
+    const { id } = req.params;
+    const driverId = req.user.id;
 
     try {
-        // A. Reset 'bins' Table
+        // A. Reset bin state
         await db.query(
-            `UPDATE bins SET current_fill_percent = 0, current_weight = 0, status = 'NORMAL', last_updated = NOW() 
-             WHERE id = $1`, 
+            `UPDATE bins 
+             SET current_fill_percent = 0, current_weight = 0, status = 'NORMAL', last_updated = NOW()
+             WHERE id = $1`,
             [id]
         );
 
-        // B. Log History
+        // B. Log reading
         await db.query(
             `INSERT INTO bin_readings (bin_id, fill_percent, weight, status, recorded_at)
              VALUES ($1, 0, 0, 'NORMAL', NOW())`,
@@ -171,18 +174,20 @@ exports.markBinCollected = async (req, res) => {
 
         const socket = getIO();
 
-        // C. ALERT: Notify Admin that Bin was collected
+        // C. Alert: bin collected
         const binAlertMsg = `Bin collected by ${req.user.name || 'Driver'}`;
         const binAlertRes = await db.query(
-             `INSERT INTO alerts (bin_id, message, severity, created_at) 
-              VALUES ($1, $2, 'INFO', NOW()) 
-              RETURNING *`,
-             [id, binAlertMsg]
+            `INSERT INTO alerts (bin_id, message, severity, created_at)
+             VALUES ($1, $2, 'INFO', NOW())
+             RETURNING *`,
+            [id, binAlertMsg]
         );
-        if (socket) socket.emit('new_alert', binAlertRes.rows[0]);
 
-        // D. ROUTE LOGIC: Update Route Status & Check Completion
-        // Find the active route stop for this driver + bin and mark it collected
+        if (socket) {
+            socket.emit('new_alert', binAlertRes.rows[0]);
+        }
+
+        // D. Route logic: mark stop collected
         const updateStopRes = await db.query(
             `UPDATE route_stops rs
              SET status = 'COLLECTED', collected_at = NOW()
@@ -196,58 +201,78 @@ exports.markBinCollected = async (req, res) => {
             [driverId, id]
         );
 
-        // If a route stop was actually updated, check if the whole route is done
-        if (updateStopRes.rows.length > 0) {
-            const routeId = updateStopRes.rows[0].route_id;
-
-            const pendingCount = await db.query(
-                `SELECT COUNT(*) FROM route_stops WHERE route_id = $1 AND status != 'COLLECTED'`,
-                [routeId]
-            );
-
-        if (parseInt(pendingCount.rows[0].count) === 0) {
-            // 1. Close Route
-          await db.query(
-         `UPDATE routes SET status = 'COMPLETED', completed_at = NOW() WHERE id = $1`,
-          [routeId]
-        );
-
-    // 2. [OPTIONAL] Unassign Driver from Vehicle
-    // Only add this if you want them to lose the vehicle immediately
-    await db.query(
-        `UPDATE vehicles SET driver_id = NULL WHERE driver_id = $1`,
-        [driverId]
-    );
-
-                // Alert: Driver is Free
-                const routeMsg = `Route Completed. ${req.user.name} is now AVAILABLE.`;
-                const routeAlertRes = await db.query(
-                    `INSERT INTO alerts (bin_id, message, severity, created_at) 
-                     VALUES (NULL, $1, 'SUCCESS', NOW()) 
-                     RETURNING *`,
-                    [routeMsg]
-                );
-
-                if (socket) {
-                    socket.emit('new_alert', routeAlertRes.rows[0]);
-                    socket.emit('drivers_refresh'); // Tell frontend to refresh driver list
-                }
-            }
+        // ✅ REAL-TIME ROUTE PROGRESS UPDATE (THIS IS WHAT YOU ASKED FOR)
+        if (socket && updateStopRes.rows.length > 0) {
+            socket.emit('route_update', {
+                bin_id: id,
+                status: 'COLLECTED',
+                driver_id: driverId
+            });
         }
 
-        // E. Notify Frontend of Bin Reset (Map Update)
+        // E. Check if route is completed
+        if (updateStopRes.rows.length > 0) {
+    const routeId = updateStopRes.rows[0].route_id;
+
+    const pendingCount = await db.query(
+        `SELECT COUNT(*) FROM route_stops 
+         WHERE route_id = $1 AND status != 'COLLECTED'`,
+        [routeId]
+    );
+
+    if (parseInt(pendingCount.rows[0].count) === 0) {
+        // 1. Mark the route as COMPLETED in the database
+        await db.query(
+            `UPDATE routes 
+             SET status = 'COMPLETED', completed_at = NOW()
+             WHERE id = $1`,
+            [routeId]
+        );
+
+        // 2. Clear the driver's vehicle assignment
+        await db.query(
+            `UPDATE vehicles SET driver_id = NULL WHERE driver_id = $1`,
+            [driverId]
+        );
+
+        // 3. Create a detailed alert message
+        const driverName = req.user.name || 'Driver';
+        const routeMsg = `Route #${routeId.substring(0,8)} Completed. ${driverName} has finished all stops and is now AVAILABLE.`;
+        
+        const routeAlertRes = await db.query(
+            `INSERT INTO alerts (bin_id, message, severity, created_at)
+             VALUES (NULL, $1, 'SUCCESS', NOW())
+             RETURNING *`,
+            [routeMsg]
+        );
+
+        // 4. Send the alert and status updates via Socket.io
+        if (socket) {
+            socket.emit('new_alert', routeAlertRes.rows[0]); // Notifies the admin alert widget
+            socket.emit('drivers_refresh');
+            socket.emit('route_update', { 
+                route_id: routeId, 
+                status: 'COMPLETED',
+                message: "Progress 100% complete" 
+            });
+        }
+    }
+}
+
+        // F. Map update
         if (socket) {
             socket.emit('bin_update', {
-                id: id,
+                id,
                 fill_percent: 0,
-                status: 'NORMAL',
-                weight: 0
+                weight: 0,
+                status: 'NORMAL'
             });
         }
 
         res.json({ success: true, message: "Bin collected" });
+
     } catch (err) {
-        console.error(err);
+        console.error("Mark Bin Error:", err);
         res.status(500).json({ error: "Server Error" });
     }
 };

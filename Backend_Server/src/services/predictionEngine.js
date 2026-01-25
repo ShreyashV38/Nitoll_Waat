@@ -51,16 +51,10 @@ function predictBinOverflow(binId, history) {
         }
     }
 
-    // --- 2. CRITICAL CHECK (Already Overflowing) ---
-    // ✅ UPDATED: Threshold lowered to 50% as per requirements
-    if (result.current_fill >= 50) {
-        result.status = "CRITICAL";
-        result.confidence = "HIGH";
-        result.hours_until_overflow = 0;
-        return result;
-    }
+    // ❌ REMOVED: The early return for >= 50%
+    // We want to calculate the overflow time regardless of the current level.
 
-    // --- 3. ENHANCED PREDICTION LOGIC ---
+    // --- 2. ENHANCED PREDICTION LOGIC ---
     let dataPoints = [];
     for (let i = 0; i < history.length; i++) {
         const hoursAgo = (now - new Date(history[i].recorded_at)) / 36e5;
@@ -80,7 +74,7 @@ function predictBinOverflow(binId, history) {
         const hours = (newest.time - oldest.time) / 36e5;
         const change = newest.fill - oldest.fill;
         
-        if (hours > 1 && change > 0) {
+        if (hours > 0.5 && change > 0) { // Reduced hours requirement to catch fast spikes
             const rate = change / hours;
             result.fill_rate_per_hour = rate;
             
@@ -119,6 +113,18 @@ function predictBinOverflow(binId, history) {
     } else {
         result.status = "DATA_INSUFFICIENT";
         result.confidence = "LOW";
+    }
+
+    // --- 3. FALLBACK STATUS CHECK ---
+    // If prediction didn't set a status, fall back to current level checks
+    if (result.status === "NORMAL" || result.status === "DATA_INSUFFICIENT") {
+        if (result.current_fill >= 90) {
+            result.status = "CRITICAL";
+        } else if (result.current_fill >= 50) {
+            // Only set to WARNING if no specific prediction was made
+            // But for your UI, you might prefer keeping it NORMAL if the prediction is valid
+            result.status = "WARNING"; 
+        }
     }
     
     return result;

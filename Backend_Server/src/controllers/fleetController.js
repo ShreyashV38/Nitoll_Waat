@@ -1,5 +1,6 @@
 const routeEngine = require('../services/routeEngine');
 const db = require('../config/db');
+
 // 1. GET VEHICLES (For Admin Fleet View)
 exports.getVehicles = async (req, res) => {
   try {
@@ -13,7 +14,7 @@ exports.getVehicles = async (req, res) => {
   } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 };
 
-// 2. GET ACTIVE ROUTES (For Admin Dashboard) <-- RESTORED THIS FUNCTION
+// 2. GET ACTIVE ROUTES (For Admin Dashboard)
 exports.getActiveRoutes = async (req, res) => {
   try {
     const area_id = req.user.area_id; 
@@ -63,7 +64,6 @@ exports.registerVehicle = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
-// Alias for backward compatibility if needed
 exports.addVehicle = exports.registerVehicle;
 
 // 4. CREATE ROUTE (Manual Assign)
@@ -91,6 +91,11 @@ exports.createRoute = async (req, res) => {
       [area_id, driver_id, ward_id, vehicle_id || null]
     );
 
+    await db.query(
+        `UPDATE users SET assigned_ward_id = $1 WHERE id = $2`,
+        [ward_id, driver_id]
+    );
+
     res.status(201).json({ success: true, route: newRoute.rows[0] });
 
   } catch (err) {
@@ -99,7 +104,7 @@ exports.createRoute = async (req, res) => {
   }
 };
 
-// 5. AUTO DISPATCH (Daily Start)
+// 5. AUTO DISPATCH
 exports.generateAutoRoutes = async (req, res) => {
   const area_id = req.user.area_id;
 
@@ -117,7 +122,6 @@ exports.generateAutoRoutes = async (req, res) => {
     }
 
     for (let row of availableDrivers.rows) {
-      // Skip if ward_id is NULL (Driver hasn't selected a ward yet)
       if (!row.ward_id) continue;
 
       await db.query(
@@ -148,6 +152,14 @@ exports.cancelRoute = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Route not found' });
     }
 
+    const route = result.rows[0];
+    if (route.driver_id) {
+        await db.query(
+            `UPDATE users SET assigned_ward_id = NULL WHERE id = $1`,
+            [route.driver_id]
+        );
+    }
+
     res.json({ success: true, message: 'Route removed successfully', route: result.rows[0] });
   } catch (err) {
     console.error("Cancel Route Error:", err);
@@ -159,8 +171,6 @@ exports.cancelRoute = async (req, res) => {
 exports.getDriverActiveRoute = async (req, res) => {
   try {
     const driver_id = req.user.id; 
-
-    // USING THE FIX: LEFT JOIN so route shows even if ward is missing
     const query = `
       SELECT 
         r.id as route_id,
@@ -177,15 +187,12 @@ exports.getDriverActiveRoute = async (req, res) => {
       AND r.route_date = CURRENT_DATE
       LIMIT 1;
     `;
-
     const result = await db.query(query, [driver_id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "No active route assigned for today." });
     }
-
     res.json(result.rows[0]);
-
   } catch (err) {
     console.error("Get Driver Route Error:", err);
     res.status(500).json({ error: "Server Error" });
@@ -196,118 +203,102 @@ exports.getDriverActiveRoute = async (req, res) => {
 exports.generateOptimizedRoute = async (req, res) => {
   const { latitude, longitude, dumping_zone_id } = req.body;
   const area_id = req.user.area_id;
+  const driver_id = req.user.id;
 
   if (!latitude || !longitude || !dumping_zone_id) {
     return res.status(400).json({ message: "Location and Dumping Zone required" });
   }
 
   try {
-    console.log(`\n=== Generating Route for Area: ${area_id} ===`);
-    
-    // 1. Get Dumping Zone Info
-    const zoneRes = await db.query('SELECT * FROM dumping_zones WHERE id = $1', [dumping_zone_id]);
-    if (zoneRes.rows.length === 0) {
-      return res.status(404).json({ message: "Dumping Zone not found" });
+    // 1. Get Driver's Assigned Ward
+    const driverRes = await db.query(
+        `SELECT assigned_ward_id FROM users WHERE id = $1`, 
+        [driver_id]
+    );
+    const assignedWardId = driverRes.rows[0]?.assigned_ward_id;
+
+    if (!assignedWardId) {
+        return res.status(400).json({ message: "You are not assigned to any ward." });
     }
+
+    // 2. Get Dumping Zone
+    const zoneRes = await db.query('SELECT * FROM dumping_zones WHERE id = $1', [dumping_zone_id]);
+    if (zoneRes.rows.length === 0) return res.status(404).json({ message: "Dumping Zone not found" });
     const dumpingZone = zoneRes.rows[0];
 
-    // 2. Get ALL Bins with their 48-hour reading history
-    // This is CRITICAL - we need historical data for prediction
+    // 3. Get Bins
     const binsRes = await db.query(`
-      SELECT 
-        b.id, 
-        b.latitude, 
-        b.longitude, 
-        b.current_fill_percent,
-        b.current_weight,
-        COALESCE(w.name, 'Bin ' || substring(b.id::text, 1, 6)) as area_name,
-        (
-            SELECT json_agg(
-                json_build_object(
-                    'fill_percent', fill_percent,
-                    'weight', weight, 
-                    'recorded_at', recorded_at
-                ) ORDER BY recorded_at DESC
-            )
-            FROM (
-                SELECT fill_percent, weight, recorded_at
-                FROM bin_readings 
-                WHERE bin_id = b.id 
-                AND recorded_at > NOW() - INTERVAL '48 hours'
-                ORDER BY recorded_at DESC
-                LIMIT 100
-            ) as readings
-        ) as readings
+      SELECT b.id, b.latitude, b.longitude, b.current_fill_percent, b.current_weight,
+      (SELECT json_agg(json_build_object('fill_percent', fill_percent, 'recorded_at', recorded_at) ORDER BY recorded_at DESC)
+       FROM (SELECT fill_percent, recorded_at FROM bin_readings WHERE bin_id = b.id LIMIT 50) as readings
+      ) as readings
       FROM bins b
-      LEFT JOIN wards w ON b.ward_id = w.id
-      WHERE b.area_id = $1 
-      AND b.latitude IS NOT NULL 
-      AND b.longitude IS NOT NULL
+      WHERE b.area_id = $1 AND b.ward_id = $2
+      AND b.latitude IS NOT NULL AND b.longitude IS NOT NULL
       ORDER BY b.current_fill_percent DESC
-    `, [area_id]);
-
-    console.log(`Found ${binsRes.rows.length} bins in the area`);
+    `, [area_id, assignedWardId]);
 
     if (binsRes.rows.length === 0) {
-      return res.status(400).json({ 
-        message: "No bins found in your area", 
-        success: false 
-      });
+      return res.status(400).json({ success: false, message: "No bins found in your ward" });
     }
 
-    // 3. Process bins and ensure readings are arrays
-    const processedBins = binsRes.rows.map(bin => {
-      // Convert readings from JSON to array
-      let readings = [];
-      if (bin.readings) {
-        readings = Array.isArray(bin.readings) ? bin.readings : JSON.parse(bin.readings);
-      }
-      
-      return {
-        ...bin,
-        readings: readings,
-        current_fill_percent: bin.current_fill_percent || 0
-      };
-    });
+    // 4. Process Bins & Generate Route
+    const processedBins = binsRes.rows.map(bin => ({
+      ...bin,
+      readings: bin.readings || [],
+      current_fill_percent: bin.current_fill_percent || 0
+    }));
 
-    // 4. Run Prediction & Optimization Engine
-    const startLoc = { 
-      latitude: parseFloat(latitude), 
-      longitude: parseFloat(longitude) 
-    };
+    const startLoc = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
+    const endLoc = { latitude: parseFloat(dumpingZone.latitude), longitude: parseFloat(dumpingZone.longitude), name: dumpingZone.name };
     
-    const endLoc = { 
-      latitude: parseFloat(dumpingZone.latitude), 
-      longitude: parseFloat(dumpingZone.longitude), 
-      name: dumpingZone.name 
-    };
-    
+    // Generate route using custom engine
     const optimizationResult = routeEngine.generateRoute(startLoc, endLoc, processedBins);
 
-    // 5. Log summary
-    console.log(`\n=== Route Summary ===`);
-    console.log(`Total stops: ${optimizationResult.meta.total_stops}`);
-    console.log(`Bins to collect: ${optimizationResult.meta.bins_to_collect}`);
-    console.log(`  - Critical now: ${optimizationResult.meta.critical_now}`);
-    console.log(`  - Predicted soon: ${optimizationResult.meta.predicted_soon}`);
-    console.log(`Blocked bins: ${optimizationResult.meta.bins_blocked}`);
-    console.log(`Monitored bins: ${optimizationResult.meta.bins_monitored}`);
+    // ============================================================
+    // ✅ NEW STEP: SAVE STOPS TO DATABASE FOR TRACKING
+    // ============================================================
+    
+    const routeCheck = await db.query(
+        `SELECT id FROM routes WHERE driver_id = $1 AND status = 'IN_PROGRESS' LIMIT 1`,
+        [driver_id]
+    );
+
+    if (routeCheck.rows.length > 0) {
+        const routeId = routeCheck.rows[0].id;
+        const binsToCollect = optimizationResult.route_points; 
+
+        // Clear old stops
+        await db.query(`DELETE FROM route_stops WHERE route_id = $1 AND status = 'PENDING'`, [routeId]);
+
+        // Insert new stops (FIXED: Added sequence_order)
+        for (let i = 0; i < binsToCollect.length; i++) {
+            const stop = binsToCollect[i];
+            
+            if (stop.type === 'COLLECTION_POINT') { 
+                await db.query(
+                    `INSERT INTO route_stops (id, route_id, bin_id, status, sequence_order)
+                     VALUES (uuid_generate_v4(), $1, $2, 'PENDING', $3)
+                     ON CONFLICT DO NOTHING`,
+                    [routeId, stop.bin_id, i + 1] // ✅ Passing 'i + 1' as the sequence order
+                );
+            }
+        }
+        
+        const io = require('../config/socket').getIO();
+        if(io) io.emit('route_update', { message: 'New route generated' });
+    }
+    // ============================================================
 
     res.json({ 
       success: true, 
       data: optimizationResult,
-      summary: {
-        message: `Route includes ${optimizationResult.meta.bins_to_collect} bins (${optimizationResult.meta.critical_now} critical now, ${optimizationResult.meta.predicted_soon} will overflow soon)`,
-        collection_window: "24 hours"
-      }
+      summary: { message: "Route generated and saved.", bins: optimizationResult.meta.bins_to_collect }
     });
 
   } catch (err) {
     console.error("Route Generation Error:", err); 
-    res.status(500).json({ 
-      message: "Server Error", 
-      details: err.message 
-    });
+    res.status(500).json({ message: "Server Error", details: err.message });
   }
 };
 
@@ -346,28 +337,17 @@ exports.getBinsNeedingCollection = async (req, res) => {
     const binPredictions = [];
 
     binsRes.rows.forEach(bin => {
-      const readings = bin.readings || [];
-      const analysis = predictBinOverflow(bin.id, readings);
+      const isCritical = bin.current_fill_percent >= 50; 
       
-      // Only include bins that need attention
-      if (['CRITICAL', 'CRITICAL_SOON', 'PREDICTED_OVERFLOW', 'BLOCKED_VIEW'].includes(analysis.status)) {
+      if (isCritical) {
         binPredictions.push({
           bin_id: bin.id,
           ward_name: bin.ward_name,
-          current_fill: analysis.current_fill,
-          status: analysis.status,
-          predicted_overflow_at: analysis.predicted_overflow_at,
-          hours_until_overflow: analysis.hours_until_overflow,
-          confidence: analysis.confidence
+          current_fill: bin.current_fill_percent,
+          status: 'CRITICAL',
+          confidence: 'HIGH'
         });
       }
-    });
-
-    // Sort by urgency
-    binPredictions.sort((a, b) => {
-      const priorityA = a.hours_until_overflow || 999;
-      const priorityB = b.hours_until_overflow || 999;
-      return priorityA - priorityB;
     });
 
     res.json({
@@ -381,16 +361,9 @@ exports.getBinsNeedingCollection = async (req, res) => {
   }
 };
 
-// src/controllers/fleetController.js
-
 exports.ignoreBin = async (req, res) => {
-    // 1. Remove the duplicate variable declaration
     const { bin_id, reason } = req.body;
-
     try {
-        // 2. FIXED QUERY:
-        // - Removed manual "id" insertion (Let the database auto-generate it)
-        // - Removed "type" column (It likely doesn't exist in your table, based on other controllers)
         const alertRes = await db.query(
             `INSERT INTO alerts (bin_id, message, severity, created_at)
              VALUES ($1, $2, 'MEDIUM', NOW())
@@ -398,38 +371,38 @@ exports.ignoreBin = async (req, res) => {
             [bin_id, `Skipped: ${reason}`]
         );
 
-        // 3. Notify Website
         const io = require('../config/socket').getIO();
-        io.emit('new_alert', alertRes.rows[0]); // Changed 'newAlert' to 'new_alert' to match other controllers
+        if(io) io.emit('new_alert', alertRes.rows[0]);
 
         res.json({ success: true });
-
     } catch (e) { 
-        console.error("Ignore Bin Error:", e); // Log the actual error to your terminal
+        console.error("Ignore Bin Error:", e);
         res.status(500).json({ error: e.message }); 
     }
 };
-// src/controllers/fleetController.js
 
-// ... existing code ...
-
-// 9. ASSIGN DRIVER TO VEHICLE
 exports.assignVehicle = async (req, res) => {
   const { vehicle_id, driver_id } = req.body;
 
-  if (!vehicle_id || !driver_id) {
-    return res.status(400).json({ message: "Vehicle ID and Driver ID are required" });
+  if (!vehicle_id) {
+    return res.status(400).json({ message: "Vehicle ID is required" });
   }
 
   try {
-    // Optional: Check if driver is already assigned to another active vehicle
-    // const checkDriver = await db.query('SELECT * FROM vehicles WHERE driver_id = $1 AND id != $2', [driver_id, vehicle_id]);
-    // if (checkDriver.rows.length > 0) return res.status(400).json({ message: "Driver is already assigned to another vehicle" });
+    if (!driver_id) {
+        const result = await db.query(
+            `UPDATE vehicles SET driver_id = NULL WHERE id = $1 RETURNING *`,
+            [vehicle_id]
+        );
+        return res.json({ 
+            success: true, 
+            message: "Driver unassigned successfully", 
+            vehicle: result.rows[0] 
+        });
+    }
 
-    // 1. Unassign this driver from any other vehicles first (Enforce 1-to-1 relationship)
     await db.query(`UPDATE vehicles SET driver_id = NULL WHERE driver_id = $1`, [driver_id]);
 
-    // 2. Assign driver to the new vehicle
     const result = await db.query(
       `UPDATE vehicles SET driver_id = $1 WHERE id = $2 RETURNING *`,
       [driver_id, vehicle_id]

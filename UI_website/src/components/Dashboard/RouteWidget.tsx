@@ -1,78 +1,74 @@
-// src/components/Dashboard/RouteWidget.tsx
 import React from "react";
+import "../../style/Dashboard.css";
 
-// ✅ 1. Update Interface to include 'name'
-interface RouteData {
+// ✅ FIXED INTERFACE: Added 'driver' and 'ward'
+export interface RouteData {
   id: string;
-  name?: string; // Add this optional property
-  progress: number;
+  name: string;
   status: string;
+  progress: number;
+  driver: string; // <--- Added
+  ward: string;   // <--- Added
+  vehicle?: string; // Optional: In case you use it later
 }
 
-interface Props {
+interface RoutesWidgetProps {
   routes: RouteData[];
-  latestActivity: string; 
+  latestActivity: string;
 }
 
-const RoutesWidget: React.FC<Props> = ({ routes, latestActivity }) => { 
-  // ✅ Helper to fix class names (IN_PROGRESS -> inprogress)
-  const getStatusClass = (status: string) => {
-    return status.replace(/_/g, "").toLowerCase(); // Removes underscores, not just spaces
-  };
-
+const RoutesWidget: React.FC<RoutesWidgetProps> = ({ routes, latestActivity }) => {
   return (
-    <div className="right-column">
-      {/* Today's Routes */}
-      <div className="dashboard-card routes-card">
-        <h3>Today's Routes</h3>
-        <div className="routes-list">
-          {routes.length === 0 ? (
-            <div className="empty-feed">No active routes</div>
-          ) : (
-            routes.map((route) => (
-              <div key={route.id} className="route-item">
-                <div className="route-info">
-                  {/* ✅ 2. Display friendly 'name' OR fallback to ID */}
-                  <span style={{fontWeight: '600', color: '#334155'}}>
-                    {route.name || `Route #${route.id.substring(0,4)}`}
-                  </span>
-                  
-                  {/* ✅ 3. Apply fixed status class */}
-                  <span className={`status-badge ${getStatusClass(route.status)}`}>
-                    {route.status.replace(/_/g, " ")}
-                  </span>
-                </div>
-                
-                <div className="progress-bg">
-                  <div 
-                    className="progress-fill" 
-                    style={{ 
-                      width: `${route.progress}%`, 
-                      background: route.progress === 100 ? '#22c55e' : '#f59e0b', // Green if done, Orange if active
-                      transition: 'width 0.5s ease-in-out' 
-                    }}
-                  ></div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+    <div className="dashboard-widget routes-widget">
+      <div className="widget-header">
+        <h3>Live Route Performance</h3>
+        <span className="live-badge">● Live</span>
       </div>
 
-      {/* Active Feed */}
-      <div className="dashboard-card feed-card">
-        <h3>Active Feed</h3>
-        <div 
-          className="empty-feed" 
-          style={{ 
-            color: latestActivity === "No new activity" ? "#cbd5e1" : "#1e293b",
-            fontSize: "13px",
-            fontWeight: latestActivity === "No new activity" ? "400" : "500",
-            padding: "10px 0"
-          }}
-        >
-          {latestActivity}
-        </div>
+      <div className="routes-list">
+        {routes.length === 0 ? (
+          <div className="empty-state">No active routes</div>
+        ) : (
+          routes.map((route) => (
+            <div key={route.id} className="route-item" style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9' }}>
+              
+              {/* Top Row: Name and Status */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '14px' }}>{route.name}</span>
+                <span className={`status-badge ${route.status.toLowerCase()}`} style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px' }}>
+                  {route.status}
+                </span>
+              </div>
+
+              {/* Details Row (Driver & Ward) */}
+              <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>
+                {route.driver} • {route.ward}
+              </div>
+
+              {/* Progress Bar Section */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ flex: 1, height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div 
+                    style={{ 
+                      width: `${route.progress}%`, 
+                      height: '100%', 
+                      background: '#22c55e', 
+                      transition: 'width 0.5s ease' 
+                    }} 
+                  />
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#16a34a' }}>
+                  {route.progress}%
+                </span>
+              </div>
+
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="activity-footer">
+        <small>Latest: {latestActivity}</small>
       </div>
     </div>
   );

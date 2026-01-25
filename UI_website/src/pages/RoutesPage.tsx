@@ -4,6 +4,7 @@ import RouteTabs from "../components/Routes/RoutesTabs";
 import RouteInfoCard from "../components/Routes/RoutesInfoCard";
 import { fleetAPI, driverAPI, wardAPI } from "../services/api"; 
 import { useAuth } from "../context/AuthContext";
+import { socketService } from "../services/socket"; // ✅ IMPORT SOCKET
 import "../style/RoutesPage.css";
 
 const RoutesPage = () => {
@@ -22,11 +23,21 @@ const RoutesPage = () => {
 
   const { area } = useAuth();
 
-  // 1. Fetch All Data (Routes, Drivers, Wards)
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000);
-    return () => clearInterval(interval);
+
+    // ✅ NEW: Connect Socket for Real-Time Progress Updates
+    const socket = socketService.connect();
+    socket.on("route_update", () => {
+        console.log("♻️ Route Progress Update Received");
+        loadData();
+    });
+
+    const interval = setInterval(loadData, 30000); // Backup polling
+    return () => {
+        clearInterval(interval);
+        socket.off("route_update");
+    };
   }, []);
 
   const loadData = async () => {
@@ -37,21 +48,28 @@ const RoutesPage = () => {
             wardAPI.getAll()
         ]);
 
-        const formattedRoutes = routeRes.data.map((r: any, index: number) => ({
-            id: index + 1,
-            db_route_id: r.id,
-            name: `Route ${index + 1}`,
-            number: "Active", 
-            driver: r.driver_name,
-            license_plate: r.license_plate,
-            ward_name: r.ward_name,        
-            completed_stops: r.completed_stops || 0,
-            total_stops: r.total_stops || 0,
-            progress: r.total_stops > 0 ? (r.completed_stops / r.total_stops) * 100 : 0,
-            status: r.status,
-            bins: `${r.completed_stops || 0}/${r.total_stops || 0}`, 
-            distance: r.distance || "..."
-        }));
+        const formattedRoutes = routeRes.data.map((r: any, index: number) => {
+            // ✅ SAFETY FIX: Parse DB strings to integers
+            const completed = parseInt(r.completed_stops) || 0;
+            const total = parseInt(r.total_stops) || 0;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            return {
+                id: index + 1,
+                db_route_id: r.id,
+                name: `Route ${index + 1}`,
+                number: "Active", 
+                driver: r.driver_name,
+                license_plate: r.license_plate,
+                ward_name: r.ward_name,        
+                completed_stops: completed,
+                total_stops: total,
+                progress: percentage, // ✅ Use safe calculated percentage
+                status: r.status,
+                bins: `${completed}/${total}`, 
+                distance: r.distance || "..."
+            };
+        });
         
         setRoutes(formattedRoutes);
         setDrivers(driverRes.data);
@@ -61,6 +79,9 @@ const RoutesPage = () => {
         console.error("Fetch error", err);
     }
   };
+
+  // ... (Keep handleDispatch, handleAutoDispatch, handleCancelRoute, return JSX exactly as they were) ...
+  // (Assuming you have the rest of the file content, just copy-paste the functions below loadData)
 
   // 2. Handle Manual Dispatch
   const handleDispatch = async () => {
@@ -99,14 +120,14 @@ const RoutesPage = () => {
     }
   };
 
-  // 4. NEW: Handle Route Cancellation (Remove Driver)
+  // 4. Handle Route Cancellation
   const handleCancelRoute = async (routeId: string) => {
     if (!window.confirm("Are you sure you want to remove this driver from their route?")) return;
 
     try {
         await fleetAPI.cancelRoute(routeId);
         alert("Route removed. Driver is now available.");
-        loadData(); // Refresh the list
+        loadData(); 
     } catch (err: any) {
         alert(err.response?.data?.message || "Failed to remove route");
     }
@@ -121,6 +142,7 @@ const RoutesPage = () => {
         subtitle="Dispatch Drivers & Monitor Active Routes"
       />
 
+      {/* Start Button */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
           <button 
             onClick={handleAutoDispatch}
@@ -140,11 +162,12 @@ const RoutesPage = () => {
           </button>
       </div>
 
+      {/* Dispatch Card */}
       <div className="assignment-card" style={{ 
           background: 'white', 
           padding: '24px', 
           borderRadius: '16px', 
-          marginBottom: '30px', 
+          marginBottom: '20px', 
           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' 
       }}>
          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
@@ -208,9 +231,20 @@ const RoutesPage = () => {
       </div>
 
       <h3 style={{fontSize:'18px', color:'#334155', marginBottom:'15px'}}>Live Route Performance</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+      
+      {/* ✅ FIX: Reduced Height & Added Auto Scroll */}
+      <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
+          gap: '20px', 
+          marginBottom: '30px',
+          maxHeight: '40vh',   // ✅ Uses 40% of viewport height (Approx 300-400px)
+          overflowY: 'auto',   // ✅ Enables scrolling inside this section
+          padding: '4px',
+          paddingRight: '8px'
+      }}>
           {routes.map(route => (
-              <div key={route.db_route_id} style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+              <div key={route.db_route_id} style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', height: 'fit-content', border: '1px solid #f1f5f9' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '15px' }}>
                       <div>
                           <h4 style={{ margin: 0, color: '#1e293b' }}>{route.driver}</h4>
@@ -251,16 +285,19 @@ const RoutesPage = () => {
 
       <h3 style={{fontSize:'18px', color:'#334155', marginBottom:'15px'}}>Fleet Details</h3>
       
-      {routes.length === 0 ? (
-         <div className="empty-state-card" style={{padding:'40px', background:'white', borderRadius:'12px', textAlign:'center', color:'#94a3b8', border:'2px dashed #e2e8f0'}}>
-            <p style={{fontSize:'16px'}}>No active routes. Start operations to see fleet details.</p>
-         </div>
-      ) : (
-        <>
-            <RouteTabs vehicles={routes} selectedId={selectedRouteId} onSelect={setSelectedRouteId} />
-            {selectedVehicle && <RouteInfoCard vehicle={selectedVehicle} />}
-        </>
-      )}
+      {/* Fleet Details Section */}
+      <div style={{ paddingBottom: '40px' }}> {/* ✅ Added padding bottom so it doesn't touch edge */}
+        {routes.length === 0 ? (
+            <div className="empty-state-card" style={{padding:'40px', background:'white', borderRadius:'12px', textAlign:'center', color:'#94a3b8', border:'2px dashed #e2e8f0'}}>
+                <p style={{fontSize:'16px'}}>No active routes. Start operations to see fleet details.</p>
+            </div>
+        ) : (
+            <>
+                <RouteTabs vehicles={routes} selectedId={selectedRouteId} onSelect={setSelectedRouteId} />
+                {selectedVehicle && <RouteInfoCard vehicle={selectedVehicle} />}
+            </>
+        )}
+      </div>
     </div>
   );
 };

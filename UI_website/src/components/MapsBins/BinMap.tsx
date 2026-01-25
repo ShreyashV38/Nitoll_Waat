@@ -15,7 +15,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// ✅ Custom Icons Configuration
+// --- ICONS CONFIGURATION ---
 const greenIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -34,27 +34,30 @@ const yellowIcon = new L.Icon({
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
 
-// ✅ Helper to handle Map Clicks
+// ✅ ADDED: Orange Icon for Predictions
+const orangeIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+});
+
+// --- HELPERS ---
 const MapClickHandler = ({ onClick }: { onClick: (lat: number, lng: number) => void }) => {
   useMapEvents({
-    click(e) {
-      onClick(e.latlng.lat, e.latlng.lng);
-    },
+    click(e) { onClick(e.latlng.lat, e.latlng.lng); },
   });
   return null;
 };
 
-// ✅ NEW HELPER: Automatically Recenters Map when data changes
 const RecenterMap = ({ lat, lng }: { lat: number; lng: number }) => {
   const map = useMap();
   useEffect(() => {
-    // Keeps the current zoom, but moves center to the new bin
     map.setView([lat, lng], map.getZoom());
   }, [lat, lng, map]);
   return null;
 };
 
-// ✅ Interfaces matching Parent
+// --- INTERFACES ---
 interface Bin {
   id: string;
   lat: number;
@@ -85,15 +88,11 @@ interface Props {
 }
 
 const BinMap: React.FC<Props> = ({ bins, zones, onMapClick }) => {
-  // Default to Panaji, Goa if absolutely no data exists
   const defaultLat = 15.4909;
   const defaultLng = 73.8278;
-
-  // Prefer the first bin's location
   const centerLat = bins.length > 0 ? bins[0].lat : defaultLat;
   const centerLng = bins.length > 0 ? bins[0].lng : defaultLng;
 
-  // Time Formatter
   const formatTime = (isoString: string) => {
     if (!isoString) return "N/A";
     return new Date(isoString).toLocaleString([], {
@@ -105,15 +104,12 @@ const BinMap: React.FC<Props> = ({ bins, zones, onMapClick }) => {
     <MapContainer 
         center={[centerLat, centerLng]} 
         zoom={13} 
-        style={{ height: "100%", minHeight: "450px", width: "100%", borderRadius: '12px', aspectRatio: '1/1' }}
+        style={{ height: "100%", width: "100%" }} 
     >
-      {/* ✅ Add this component to force the map to move */}
       <RecenterMap lat={centerLat} lng={centerLng} />
-
       {onMapClick && <MapClickHandler onClick={onMapClick} />}
-
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution='&copy; OpenStreetMap'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
@@ -134,8 +130,17 @@ const BinMap: React.FC<Props> = ({ bins, zones, onMapClick }) => {
       {/* BINS */}
       {bins.map((bin) => {
         let icon = greenIcon;
-        if (bin.level >= 50) icon = redIcon;
-        else if (bin.level >= 45) icon = yellowIcon;
+
+        // ✅ UPDATED LOGIC: Prioritize Prediction Color
+        if (bin.prediction && bin.prediction.predicted_overflow_at) {
+            icon = orangeIcon; // ⚠️ Predicts Overflow (Orange)
+        } 
+        else if (bin.level >= 50) {
+            icon = redIcon;    // 🔴 Critical (Red)
+        } 
+        else if (bin.level >= 45) {
+            icon = yellowIcon; // 🟡 Warning (Gold)
+        }
 
         return (
             <Marker key={bin.id} position={[bin.lat, bin.lng]} icon={icon}>
@@ -145,9 +150,7 @@ const BinMap: React.FC<Props> = ({ bins, zones, onMapClick }) => {
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '13px' }}>
                         <span>Fill Level:</span>
-                        <strong style={{ color: bin.level >= 50 ? '#ef4444' : '#22c55e' }}>
-                            {bin.level}%
-                        </strong>
+                        <strong style={{ color: bin.level >= 50 ? '#ef4444' : '#22c55e' }}>{bin.level}%</strong>
                     </div>
 
                     <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
@@ -155,15 +158,11 @@ const BinMap: React.FC<Props> = ({ bins, zones, onMapClick }) => {
                         Status: {bin.status}
                     </div>
 
+                    {/* ALERT BOX */}
                     {bin.prediction && bin.prediction.predicted_overflow_at && (
                         <div style={{ 
-                            marginTop: '8px', 
-                            paddingTop: '8px', 
-                            borderTop: '1px solid #e2e8f0', 
-                            fontSize: '12px',
-                            background: '#fffbeb',
-                            padding: '8px',
-                            borderRadius: '6px'
+                            marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e2e8f0', 
+                            fontSize: '12px', background: '#fffbeb', padding: '8px', borderRadius: '6px'
                         }}>
                             <div style={{ fontWeight: 'bold', color: '#f59e0b', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 ⚠️ Predicted Overflow

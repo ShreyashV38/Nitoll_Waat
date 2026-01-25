@@ -1,13 +1,16 @@
-.layout {
-  display: flex;
-}
+/* src/style/RoutesPage.css */
 
 .routes-page {
   flex: 1;
   padding: 30px;
   background: #f8faf9;
-  min-height: 100vh;
+  /* ✅ FIX: Change min-height to height 100% and add overflow */
+  height: 100%;
+  overflow-y: auto; 
+  box-sizing: border-box;
 }
+
+/* ... keep existing styles below ... */
 
 /* Header */
 .page-header h1 {
@@ -28,6 +31,7 @@
   padding: 16px;
   border-radius: 12px;
   margin: 24px 0;
+  flex-wrap: wrap; /* Allows wrapping on mobile */
 }
 
 .tab {
@@ -37,6 +41,7 @@
   background: #e0e0e0;
   cursor: pointer;
   font-size: 14px;
+  white-space: nowrap;
 }
 
 .tab.active {
@@ -50,7 +55,8 @@
   padding: 24px;
   border-radius: 16px;
   width: 100%;
-  max-width: 520px;
+  /* Removed max-width restriction to fill space */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .vehicle-card h2 {
@@ -59,7 +65,7 @@
 
 .vehicle-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive Grid */
   gap: 20px;
 }
 
@@ -74,78 +80,18 @@
   margin-top: 4px;
 }
 
-.routes-tabs-container {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  margin-top: 20px;
+/* Scrollbar Styling for Webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-
-.assign-form h3 {
-  margin-top: 0;
-  color: #1e293b;
+::-webkit-scrollbar-track {
+  background: transparent; 
 }
-
-.form-group {
-  margin-bottom: 15px;
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; 
+  border-radius: 4px;
 }
-
-.form-group label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #64748b;
-  margin-bottom: 5px;
-}
-
-.dropdown {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-  background-color: #f8fafc;
-}
-
-.assign-btn {
-  width: 100%;
-  background-color: #9333ea; /* Purple */
-  color: white;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.assign-btn:hover {
-  background-color: #7e22ce;
-}
-
-.assign-btn:disabled {
-  background-color: #cbd5e1;
-  cursor: not-allowed;
-}
-
-.message.success {
-  color: #166534;
-  background: #dcfce7;
-  padding: 10px;
-  border-radius: 6px;
-  margin-top: 10px;
-  text-align: center;
-  font-size: 14px;
-}
-
-.message.error {
-  color: #991b1b;
-  background: #fee2e2;
-  padding: 10px;
-  border-radius: 6px;
-  margin-top: 10px;
-  text-align: center;
-  font-size: 14px;
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; 
 }
