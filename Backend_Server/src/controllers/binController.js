@@ -1,6 +1,6 @@
 const db = require('../config/db');
 const io = require('../config/socket');
-
+const { getIO } = require('../config/socket');
 // 1. GET ALL BINS
 exports.getAllBins = async (req, res) => {
   try {
@@ -119,4 +119,36 @@ exports.updateBinReading = async (req, res) => {
     console.error("IoT Update Error:", err);
     res.status(500).json({ error: err.message });
   }
+};
+// 4. MARK BIN AS COLLECTED
+exports.markBinCollected = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // 1. Update Database (Reset Fill & Weight)
+        await db.query(
+            `UPDATE bins SET current_fill_percent = 0, current_weight = 0, status = 'NORMAL', last_updated = NOW() 
+             WHERE id = $1`, 
+            [id]
+        );
+
+        // 2. Log History
+        await db.query(
+            `INSERT INTO bin_readings (bin_id, fill_percent, weight, status, recorded_at)
+             VALUES ($1, 0, 0, 'NORMAL', NOW())`,
+            [id]
+        );
+
+        // 3. NOTIFY WEBSITE (Socket.IO)
+        const io = getIO();
+        io.emit('binUpdated', {
+            id: id,
+            fill_percent: 0,
+            status: 'NORMAL'
+        });
+
+        res.json({ success: true, message: "Bin collected" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server Error" });
+    }
 };

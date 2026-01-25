@@ -10,4 +10,6 @@ router.post('/create', protect, binController.createBin);
 // Public / IoT Route (No Token Required for Sensors)
 router.post('/update', binController.updateBinReading);
 
+
+router.post('/:id/collect', protect, binController.markBinCollected);
 module.exports = router;

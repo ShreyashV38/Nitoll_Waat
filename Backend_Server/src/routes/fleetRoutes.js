@@ -12,8 +12,11 @@ router.post('/routes/create', protect, fleetController.createRoute);
 router.patch('/routes/:id/cancel', protect, fleetController.cancelRoute);
 router.post('/routes/auto-dispatch', protect, fleetController.generateAutoRoutes);
 
-router.get('/driver/active', protect, fleetController.getDriverActiveRoute);
+router.get('/driver/active-route', protect, fleetController.getDriverActiveRoute);
+router.post('/driver/generate-route', protect, fleetController.generateOptimizedRoute);
+router.post('/driver/ignore-bin', protect, fleetController.ignoreBin);
 
-router.post('/routes/generate', protect, fleetController.generateOptimizedRoute);
-router.post('/bins/ignore', protect, fleetController.ignoreBin);
+// NEW: Prediction & Analytics
+router.get('/bins/need-collection', protect, fleetController.getBinsNeedingCollection);
+
 module.exports = router;

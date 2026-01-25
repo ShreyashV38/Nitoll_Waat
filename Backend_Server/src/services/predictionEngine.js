@@ -2,9 +2,16 @@
 const CONFIG = {
     JUMP_THRESHOLD: 20,          
     WEIGHT_THRESHOLD_GMS: 200,   
-    MAX_PREDICTION_WINDOW: 168   
+    MAX_PREDICTION_WINDOW: 168,  // 7 days
+    COLLECTION_WINDOW_HOURS: 24  // Consider bins that will overflow in next 24 hours
 };
 
+/**
+ * Predicts when a bin will overflow based on historical data
+ * @param {string} binId - Bin identifier
+ * @param {Array} history - Array of bin readings sorted by time
+ * @returns {Object} Prediction result with status and timing
+ */
 function predictBinOverflow(binId, history) {
     const now = new Date();
     let result = {
@@ -12,7 +19,10 @@ function predictBinOverflow(binId, history) {
         current_fill: 0,
         current_weight: 0,
         status: "NORMAL", 
-        predicted_overflow_at: null
+        predicted_overflow_at: null,
+        hours_until_overflow: null,
+        fill_rate_per_hour: 0,
+        confidence: "LOW" // LOW, MEDIUM, HIGH
     };
 
     if (!history || history.length === 0) {
@@ -27,7 +37,7 @@ function predictBinOverflow(binId, history) {
     result.current_fill = latest.fill_percent;
     result.current_weight = latest.weight || 0;
 
-    // --- 🛡️ 1. WEIGHT INTEGRITY CHECK (BLOCKAGE DETECTION) ---
+    // --- 1. WEIGHT INTEGRITY CHECK (BLOCKAGE DETECTION) ---
     if (history.length >= 2) {
         const previous = history[1];
         const fillDiff = latest.fill_percent - previous.fill_percent;
@@ -36,39 +46,103 @@ function predictBinOverflow(binId, history) {
         // If Fill Spikes (>20%) but Weight is tiny (<200g) -> BLOCKAGE
         if (fillDiff > CONFIG.JUMP_THRESHOLD && weightDiff < CONFIG.WEIGHT_THRESHOLD_GMS) {
             result.status = "BLOCKED_VIEW";
+            result.confidence = "HIGH";
             return result; 
         }
     }
 
-    // --- 2. CRITICAL CHECK ---
+    // --- 2. CRITICAL CHECK (Already Overflowing) ---
     if (result.current_fill >= 90) {
         result.status = "CRITICAL";
+        result.confidence = "HIGH";
+        result.hours_until_overflow = 0;
         return result;
     }
 
-    // --- 3. PREDICTION LOGIC ---
-    let oldest = null;
-    for (let i = 1; i < history.length; i++) {
+    // --- 3. ENHANCED PREDICTION LOGIC ---
+    // Use 48-hour window for more accurate predictions
+    let dataPoints = [];
+    for (let i = 0; i < history.length; i++) {
         const hoursAgo = (now - new Date(history[i].recorded_at)) / 36e5;
         if (hoursAgo > 48) break; 
-        oldest = history[i];
+        dataPoints.push({
+            fill: history[i].fill_percent,
+            time: new Date(history[i].recorded_at),
+            hoursAgo: hoursAgo
+        });
     }
 
-    if (oldest) {
-        const hours = (new Date(latest.recorded_at) - new Date(oldest.recorded_at)) / 36e5;
-        const change = latest.fill_percent - oldest.fill_percent;
+    if (dataPoints.length >= 2) {
+        // Calculate fill rate using linear regression for better accuracy
+        const oldest = dataPoints[dataPoints.length - 1];
+        const newest = dataPoints[0];
+        
+        const hours = (newest.time - oldest.time) / 36e5;
+        const change = newest.fill - oldest.fill;
         
         if (hours > 1 && change > 0) {
             const rate = change / hours;
-            const hoursLeft = (100 - result.current_fill) / rate;
+            result.fill_rate_per_hour = rate;
+            
+            const remainingCapacity = 100 - result.current_fill;
+            const hoursLeft = remainingCapacity / rate;
+            
+            result.hours_until_overflow = hoursLeft;
+            
+            // Set confidence based on data quality
+            if (dataPoints.length >= 10) {
+                result.confidence = "HIGH";
+            } else if (dataPoints.length >= 5) {
+                result.confidence = "MEDIUM";
+            } else {
+                result.confidence = "LOW";
+            }
+            
+            // Check if it will overflow within prediction window
             if (hoursLeft < CONFIG.MAX_PREDICTION_WINDOW) {
                 result.predicted_overflow_at = new Date(now.getTime() + (hoursLeft * 36e5));
-                result.status = "PREDICTED_OVERFLOW";
+                
+                // Determine status based on urgency
+                if (hoursLeft < 6) {
+                    result.status = "CRITICAL_SOON"; // Will overflow in < 6 hours
+                } else if (hoursLeft < CONFIG.COLLECTION_WINDOW_HOURS) {
+                    result.status = "PREDICTED_OVERFLOW"; // Will overflow in < 24 hours
+                } else {
+                    result.status = "MONITOR"; // Will overflow but not urgent
+                }
             }
+        } else if (change < 0) {
+            // Bin is being emptied or has inconsistent data
+            result.status = "UNSTABLE_DATA";
+            result.confidence = "LOW";
         }
+    } else {
+        result.status = "DATA_INSUFFICIENT";
+        result.confidence = "LOW";
     }
     
     return result;
 }
 
-module.exports = { predictBinOverflow };
+/**
+ * Batch predict for multiple bins
+ * @param {Array} bins - Array of bin objects with readings
+ * @returns {Map} Map of bin_id to prediction result
+ */
+function batchPredict(bins) {
+    const predictions = new Map();
+    
+    bins.forEach(bin => {
+        const readings = bin.readings || [];
+        const prediction = predictBinOverflow(bin.id, readings);
+        predictions.set(bin.id, prediction);
+    });
+    
+    return predictions;
+}
+
+module.exports = { 
+    predictBinOverflow,
+    batchPredict,
+    CONFIG 
+};

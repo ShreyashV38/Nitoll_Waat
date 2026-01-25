@@ -202,31 +202,139 @@ exports.generateOptimizedRoute = async (req, res) => {
   }
 
   try {
+    console.log(`\n=== Generating Route for Area: ${area_id} ===`);
+    
     // 1. Get Dumping Zone Info
     const zoneRes = await db.query('SELECT * FROM dumping_zones WHERE id = $1', [dumping_zone_id]);
-    if (zoneRes.rows.length === 0) return res.status(404).json({ message: "Dumping Zone not found" });
+    if (zoneRes.rows.length === 0) {
+      return res.status(404).json({ message: "Dumping Zone not found" });
+    }
     const dumpingZone = zoneRes.rows[0];
 
-    // 2. Get Bins + History (FIXED SQL QUERY)
-    // FIX 1: Changed 'fill_level' to 'fill_percent' (matches bin_readings table)
-    // FIX 2: Added fallback for current fill if readings are empty
+    // 2. Get ALL Bins with their 48-hour reading history
+    // This is CRITICAL - we need historical data for prediction
     const binsRes = await db.query(`
       SELECT 
         b.id, 
         b.latitude, 
         b.longitude, 
-        b.current_fill_percent, -- ✅ Get current status directly from bin
+        b.current_fill_percent,
+        b.current_weight,
         COALESCE(w.name, 'Bin ' || substring(b.id::text, 1, 6)) as area_name,
         (
-            SELECT json_agg(json_build_object(
-                'fill_percent', fill_percent,  -- ✅ CHANGED from fill_level
-                'weight', weight, 
-                'recorded_at', recorded_at
-            ))
+            SELECT json_agg(
+                json_build_object(
+                    'fill_percent', fill_percent,
+                    'weight', weight, 
+                    'recorded_at', recorded_at
+                ) ORDER BY recorded_at DESC
+            )
             FROM (
-                SELECT fill_percent, weight, recorded_at  -- ✅ CHANGED from fill_level
+                SELECT fill_percent, weight, recorded_at
                 FROM bin_readings 
-                WHERE bin_id = b.id AND recorded_at > NOW() - INTERVAL '48 hours'
+                WHERE bin_id = b.id 
+                AND recorded_at > NOW() - INTERVAL '48 hours'
+                ORDER BY recorded_at DESC
+                LIMIT 100
+            ) as readings
+        ) as readings
+      FROM bins b
+      LEFT JOIN wards w ON b.ward_id = w.id
+      WHERE b.area_id = $1 
+      AND b.latitude IS NOT NULL 
+      AND b.longitude IS NOT NULL
+      ORDER BY b.current_fill_percent DESC
+    `, [area_id]);
+
+    console.log(`Found ${binsRes.rows.length} bins in the area`);
+
+    if (binsRes.rows.length === 0) {
+      return res.status(400).json({ 
+        message: "No bins found in your area", 
+        success: false 
+      });
+    }
+
+    // 3. Process bins and ensure readings are arrays
+    const processedBins = binsRes.rows.map(bin => {
+      // Convert readings from JSON to array
+      let readings = [];
+      if (bin.readings) {
+        readings = Array.isArray(bin.readings) ? bin.readings : JSON.parse(bin.readings);
+      }
+      
+      return {
+        ...bin,
+        readings: readings,
+        current_fill_percent: bin.current_fill_percent || 0
+      };
+    });
+
+    // 4. Run Prediction & Optimization Engine
+    const startLoc = { 
+      latitude: parseFloat(latitude), 
+      longitude: parseFloat(longitude) 
+    };
+    
+    const endLoc = { 
+      latitude: parseFloat(dumpingZone.latitude), 
+      longitude: parseFloat(dumpingZone.longitude), 
+      name: dumpingZone.name 
+    };
+    
+    const optimizationResult = routeEngine.generateRoute(startLoc, endLoc, processedBins);
+
+    // 5. Log summary
+    console.log(`\n=== Route Summary ===`);
+    console.log(`Total stops: ${optimizationResult.meta.total_stops}`);
+    console.log(`Bins to collect: ${optimizationResult.meta.bins_to_collect}`);
+    console.log(`  - Critical now: ${optimizationResult.meta.critical_now}`);
+    console.log(`  - Predicted soon: ${optimizationResult.meta.predicted_soon}`);
+    console.log(`Blocked bins: ${optimizationResult.meta.bins_blocked}`);
+    console.log(`Monitored bins: ${optimizationResult.meta.bins_monitored}`);
+
+    res.json({ 
+      success: true, 
+      data: optimizationResult,
+      summary: {
+        message: `Route includes ${optimizationResult.meta.bins_to_collect} bins (${optimizationResult.meta.critical_now} critical now, ${optimizationResult.meta.predicted_soon} will overflow soon)`,
+        collection_window: "24 hours"
+      }
+    });
+
+  } catch (err) {
+    console.error("Route Generation Error:", err); 
+    res.status(500).json({ 
+      message: "Server Error", 
+      details: err.message 
+    });
+  }
+};
+
+// HELPER: Get bins that need collection
+exports.getBinsNeedingCollection = async (req, res) => {
+  try {
+    const area_id = req.user.area_id;
+
+    const binsRes = await db.query(`
+      SELECT 
+        b.id, 
+        b.current_fill_percent,
+        b.current_weight,
+        COALESCE(w.name, 'Unknown') as ward_name,
+        (
+            SELECT json_agg(
+                json_build_object(
+                    'fill_percent', fill_percent,
+                    'weight', weight, 
+                    'recorded_at', recorded_at
+                )
+            )
+            FROM (
+                SELECT fill_percent, weight, recorded_at
+                FROM bin_readings 
+                WHERE bin_id = b.id 
+                AND recorded_at > NOW() - INTERVAL '48 hours'
                 ORDER BY recorded_at DESC
             ) as readings
         ) as readings
@@ -235,33 +343,63 @@ exports.generateOptimizedRoute = async (req, res) => {
       WHERE b.area_id = $1
     `, [area_id]);
 
-    // 3. Run Optimization Engine
-    const startLoc = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
-    const endLoc = { 
-        latitude: parseFloat(dumpingZone.latitude), 
-        longitude: parseFloat(dumpingZone.longitude), 
-        name: dumpingZone.name 
-    };
-    
-    // Pass the raw rows. The Route Engine will handle the logic.
-    const optimizationResult = routeEngine.generateRoute(startLoc, endLoc, binsRes.rows);
+    const binPredictions = [];
 
-    res.json({ success: true, data: optimizationResult });
+    binsRes.rows.forEach(bin => {
+      const readings = bin.readings || [];
+      const analysis = predictBinOverflow(bin.id, readings);
+      
+      // Only include bins that need attention
+      if (['CRITICAL', 'CRITICAL_SOON', 'PREDICTED_OVERFLOW', 'BLOCKED_VIEW'].includes(analysis.status)) {
+        binPredictions.push({
+          bin_id: bin.id,
+          ward_name: bin.ward_name,
+          current_fill: analysis.current_fill,
+          status: analysis.status,
+          predicted_overflow_at: analysis.predicted_overflow_at,
+          hours_until_overflow: analysis.hours_until_overflow,
+          confidence: analysis.confidence
+        });
+      }
+    });
+
+    // Sort by urgency
+    binPredictions.sort((a, b) => {
+      const priorityA = a.hours_until_overflow || 999;
+      const priorityB = b.hours_until_overflow || 999;
+      return priorityA - priorityB;
+    });
+
+    res.json({
+      bins: binPredictions,
+      total: binPredictions.length
+    });
 
   } catch (err) {
-    console.error("Optimization Error:", err); 
-    res.status(500).json({ message: "Server Error", details: err.message });
+    console.error("Get Bins Error:", err);
+    res.status(500).json({ error: 'Server Error' });
   }
 };
 
 exports.ignoreBin = async (req, res) => {
     const { bin_id, reason } = req.body;
     try {
-        await db.query(
+        const { bin_id, reason } = req.body;
+        
+        // 1. Log Alert
+        const alertRes = await db.query(
             `INSERT INTO alerts (id, bin_id, type, message, severity, created_at)
-             VALUES (uuid_generate_v4(), $1, 'COLLECTION_SKIPPED', $2, 'MEDIUM', NOW())`,
+             VALUES (uuid_generate_v4(), $1, 'COLLECTION_SKIPPED', $2, 'MEDIUM', NOW())
+             RETURNING *`,
             [bin_id, `Skipped: ${reason}`]
         );
+
+        // 2. NOTIFY WEBSITE
+        const io = require('../config/socket').getIO();
+        io.emit('newAlert', alertRes.rows[0]); // Send full alert object
+
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e){ 
+        res.status(500).json({ error: e.message }); 
+    }
 };

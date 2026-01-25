@@ -2,9 +2,8 @@ import React from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import type { Bin, Zone } from "../../pages/MapsBinsPage"; 
+import type { Bin, Zone } from "../../pages/MapsBinsPage";
 
-// ... (Keep your Icon definitions: greenIcon, redIcon, etc.) ...
 const createIcon = (color: string) => {
     return new L.Icon({
         iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
