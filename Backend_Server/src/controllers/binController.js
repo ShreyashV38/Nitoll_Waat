@@ -4,8 +4,11 @@ const io = require('../config/socket');
 // 1. GET ALL BINS
 exports.getAllBins = async (req, res) => {
   try {
-    const area_id = req.user.area_id;
-    const result = await db.query('SELECT * FROM bins WHERE area_id = $1 ORDER BY last_updated DESC', [area_id]);
+    const area_id = req.user.area_id; // Extracted from protect middleware
+    const result = await db.query(
+      'SELECT * FROM bins WHERE area_id = $1 ORDER BY last_updated DESC', 
+      [area_id]
+    );
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -39,6 +42,7 @@ exports.createBin = async (req, res) => {
 };
 
 // 3. IOT UPDATE (Handles Weight & Lid)
+// This endpoint receives data from the ESP8266
 exports.updateBinReading = async (req, res) => {
   const { bin_id, fill_percent, lid_status, lid_angle, weight } = req.body;
 
@@ -46,13 +50,16 @@ exports.updateBinReading = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Missing Data' });
   }
 
+  // --- FIX: REMOVE WHITESPACE ---
+  const cleanBinId = bin_id.trim(); 
+
   try {
     // A. Calculate Status
     let status = 'NORMAL';
     if (fill_percent >= 90) status = 'CRITICAL';
     else if (fill_percent >= 70) status = 'WARNING';
 
-    // B. Update Database
+    // B. Update Database (Use cleanBinId)
     await db.query(
       `UPDATE bins 
        SET current_fill_percent = $1, 
@@ -68,20 +75,28 @@ exports.updateBinReading = async (req, res) => {
         lid_status || 'CLOSED', 
         lid_angle || 0,         
         weight || 0.00,         
-        bin_id
+        cleanBinId // <--- USING TRIMMED ID
       ]
     );
 
     // C. Save History
     await db.query(
-      `INSERT INTO bin_readings (bin_id, fill_percent, status, recorded_at) VALUES ($1, $2, $3, NOW())`,
-      [bin_id, fill_percent, status]
+      `INSERT INTO bin_readings (bin_id, fill_percent, status, weight, lid_status, lid_angle, recorded_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+      [
+        cleanBinId, 
+        fill_percent, 
+        status, 
+        weight || 0.00,
+        lid_status || 'CLOSED',  // <--- Added
+        lid_angle || 0           // <--- Added
+      ]
     );
 
     // D. Send Socket Update
     const socket = io.getIO();
     socket.emit('bin_update', { 
-        id: bin_id, 
+        id: cleanBinId, 
         fill_percent, 
         status, 
         lid_status: lid_status || 'CLOSED', 
@@ -90,10 +105,10 @@ exports.updateBinReading = async (req, res) => {
 
     // E. Handle Alerts
     if (status === 'CRITICAL') {
-      const alertMsg = `Bin ${bin_id} is CRITICAL (${fill_percent}%)`;
+      const alertMsg = `Bin ${cleanBinId.substring(0,8)} is CRITICAL (${fill_percent}%)`;
       await db.query(
-        `INSERT INTO alerts (bin_id, message, severity) VALUES ($1, $2, 'HIGH')`,
-        [bin_id, alertMsg]
+        `INSERT INTO alerts (bin_id, message, severity, created_at) VALUES ($1, $2, 'HIGH', NOW())`,
+        [cleanBinId, alertMsg]
       );
       socket.emit('new_alert', { message: alertMsg, severity: 'HIGH' });
     }

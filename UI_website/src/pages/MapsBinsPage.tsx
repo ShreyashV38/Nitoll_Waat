@@ -4,7 +4,8 @@ import BinMap from "../components/MapsBins/BinMap";
 import BinDirectory from "../components/MapsBins/BinDirectory";
 import AddBinModal from "../components/MapsBins/AddBinModal";
 import AddZoneModal from "../components/MapsBins/AddZoneModal";
-import { binAPI, wardAPI, dumpingZoneAPI } from "../services/api"; // Import Zone API
+import { binAPI, wardAPI, dumpingZoneAPI } from "../services/api";
+import { socketService } from "../services/socket"; // <--- IMPORT SOCKET
 import { useAuth } from "../context/AuthContext";
 import "../style/MapsBinsPage.css";
 
@@ -39,13 +40,65 @@ const MapsBinsPage = () => {
 
   const [bins, setBins] = useState<Bin[]>([]);
   const [wards, setWards] = useState<any[]>([]);
-  const [zones, setZones] = useState<Zone[]>([]); // <--- NEW: Zones State
+  const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const { area } = useAuth();
+  const [isConnected, setIsConnected] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  // src/pages/MapsBinsPage.tsx
+
+useEffect(() => {
+  // 1. Initial Data Load
+  loadData();
+
+  // 2. Start Polling (Backup Refresh)
+  const interval = setInterval(loadData, 10000); // Refresh every 10 seconds
+
+  // 3. Connect to Real-Time Socket
+  const socket = socketService.connect();
+
+  // 4. Handle Connection Status (For the Badge)
+  socket.on("connect", () => {
+      console.log("Socket Connected!");
+      setIsConnected(true);
+  });
+
+  socket.on("disconnect", () => {
+      console.log("Socket Disconnected");
+      setIsConnected(false);
+  });
+
+  // 5. Listen for Updates
+  socketService.onBinUpdate((updatedBin: any) => {
+      console.log("⚡ Live IoT Update:", updatedBin);
+
+      setBins((prevBins) => {
+          return prevBins.map((bin) => {
+              // Ensure we match the correct Bin ID
+              if (bin.id === updatedBin.id) {
+                  return {
+                      ...bin,
+                      level: updatedBin.fill_percent,
+                      status: updatedBin.status,
+                      lid: updatedBin.lid_status,
+                      // Ensure weight is treated as a number
+                      weight: parseFloat(updatedBin.weight) || 0,
+                      lastUpdated: new Date().toLocaleTimeString()
+                  };
+              }
+              return bin;
+          });
+      });
+  });
+
+  // 6. SINGLE CLEANUP FUNCTION (Runs when page closes)
+  return () => {
+      clearInterval(interval);       // Stop Polling
+      socketService.disconnect();    // Close Socket
+      socket.off("connect");         // Remove listeners
+      socket.off("disconnect");
+  };
+}, []);
 
   const loadData = async () => {
     try {
@@ -78,7 +131,7 @@ const MapsBinsPage = () => {
 
       setBins(formattedBins);
       setWards(wardRes.data);
-      setZones(formattedZones); // <--- Save Zones
+      setZones(formattedZones);
       setLoading(false);
 
     } catch (err) {
@@ -112,12 +165,25 @@ const MapsBinsPage = () => {
 
   return (
     <div className="maps-bins-page">
-      <PageHeader 
-        title={area ? `${area.area_name} Map` : "Map View"}
-        subtitle="Live Bin Status & Sensor Data"
-      />
+      <PageHeader title="..." subtitle="...">
+         {/* REAL DYNAMIC BADGE */}
+         <div style={{
+             background: isConnected ? '#dcfce7' : '#fee2e2', 
+             color: isConnected ? '#166534' : '#991b1b',
+             padding: '6px 12px', borderRadius: '20px', 
+             fontSize: '12px', fontWeight: 'bold', 
+             display: 'flex', alignItems: 'center', gap: '6px'
+         }}>
+             <span style={{
+                 width: '8px', height: '8px', 
+                 background: isConnected ? '#22c55e' : '#ef4444', 
+                 borderRadius: '50%'
+             }}></span>
+             {isConnected ? "LIVE SOCKET ACTIVE" : "SOCKET DISCONNECTED"}
+         </div>
+      </PageHeader>
 
-      {/* Control Bar */}
+      {/* 2. Actions Bar with CLEAR LABELS */}
       <div className="actions-bar">
         <div className="tabs">
           <button className={activeTab === "map" ? "active" : ""} onClick={() => setActiveTab("map")}>
@@ -154,6 +220,7 @@ const MapsBinsPage = () => {
         </div>
       </div>
 
+      {/* 3. Instruction Banner */}
       {addMode !== "NONE" && (
         <div style={{background: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', padding: '10px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold'}}>
             Adding {addMode === "BIN" ? "Smart Bin" : "Dumping Zone"}: Click a location on the map to place it.
@@ -168,7 +235,7 @@ const MapsBinsPage = () => {
                 {activeTab === "map" ? (
                     <BinMap 
                         bins={bins} 
-                        zones={zones} // <--- Pass Zones to Map
+                        zones={zones} 
                         onMapClick={handleMapClick} 
                     />
                 ) : (
@@ -190,7 +257,7 @@ const MapsBinsPage = () => {
       {showZoneModal && (
         <AddZoneModal 
             onClose={handleCloseModal} 
-            refreshData={loadData} // <--- Pass Refresh function
+            refreshData={loadData} 
             location={selectedLocation} 
         />
       )}

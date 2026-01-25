@@ -3,51 +3,64 @@ import StateCard from "../components/StateCard";
 import AlertsWidget from "../components/Dashboard/AlertsWidget";
 import BinMap from "../components/MapsBins/BinMap"; 
 import RoutesWidget from "../components/Dashboard/RouteWidget";
+import WasteChart from "../components/Dashboard/WasteChart"; // <--- IMPORT THIS
 import PageHeader from "../components/PageHeader";
-import { binAPI, alertAPI, fleetAPI, dumpingZoneAPI } from "../services/api"; // <--- Added dumpingZoneAPI
+// Import analyticsAPI
+import { binAPI, alertAPI, fleetAPI, dumpingZoneAPI, analyticsAPI } from "../services/api"; 
 import { useAuth } from "../context/AuthContext"; 
 import "../style/Dashboard.css";
 
 const Dashboard = () => {
   const { area } = useAuth();
-  const [selectedBinId, setSelectedBinId] = useState<string>("");
+  
+  // Data States
   const [bins, setBins] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
-  const [zones, setZones] = useState<any[]>([]); // <--- Added Zones State
+  const [zones, setZones] = useState<any[]>([]); 
+  const [wasteData, setWasteData] = useState<any[]>([]); // <--- NEW STATE
   
-  // Dynamic Stats
+  // Stats
   const [vehicleStats, setVehicleStats] = useState("0/0");
   const [routeCount, setRouteCount] = useState(0);
   const [activeRoutesList, setActiveRoutesList] = useState<any[]>([]);
+  const [latestActivity, setLatestActivity] = useState<string>("No new activity");
 
   const [loading, setLoading] = useState(true);
 
-  // Fetch ALL Live Data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch Bins, Alerts, Vehicles, Routes AND Zones
-        const [binRes, alertRes, vehicleRes, routeRes, zoneRes] = await Promise.all([
+        // Add analyticsAPI.getStats() to the Promise.all
+        const [binRes, alertRes, vehicleRes, routeRes, zoneRes, analyticsRes] = await Promise.all([
             binAPI.getAll(),
             alertAPI.getAll(),
             fleetAPI.getVehicles(),
             fleetAPI.getActiveRoutes(),
-            dumpingZoneAPI.getAll() // <--- Fetch Zones
+            dumpingZoneAPI.getAll(),
+            analyticsAPI.getStats() // <--- FETCH ANALYTICS
         ]);
 
-        // 1. Process Bins
+        // ... (Keep existing Bin/Zone/Alert processing logic) ...
         const formattedBins = binRes.data.map((b: any) => ({
            id: b.id.substring(0, 4),
            fullId: b.id,
            level: b.current_fill_percent,
            status: b.status,
-           lid: b.lid_status || "CLOSED", // Ensure these exist
+           lid: b.lid_status || "CLOSED", 
            weight: parseFloat(b.current_weight) || 0,
            lat: parseFloat(b.latitude),
-           lng: parseFloat(b.longitude)
+           lng: parseFloat(b.longitude),
+           last_updated: b.last_updated 
         }));
+
+        if (formattedBins.length > 0) {
+            const sortedBins = [...formattedBins].sort((a, b) => 
+                new Date(b.last_updated).getTime() - new Date(a.last_updated).getTime()
+            );
+            const latest = sortedBins[0];
+            setLatestActivity(`Bin ${latest.id} updated to ${latest.level}% fill level`);
+        }
         
-        // 2. Process Zones (Fix for Crash)
         const formattedZones = zoneRes.data.map((z: any) => ({
             id: z.id,
             name: z.name,
@@ -55,29 +68,29 @@ const Dashboard = () => {
             lng: parseFloat(z.longitude)
         }));
 
-        // 3. Process Alerts
         const formattedAlerts = alertRes.data.map((a: any) => ({
             type: a.severity === 'HIGH' ? 'critical' : 'info',
             msg: a.message,
             time: new Date(a.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
         }));
 
-        // 4. Process Vehicles
         const totalVehicles = vehicleRes.data.length;
         const activeVehicles = vehicleRes.data.filter((v: any) => v.status === 'ACTIVE').length;
         setVehicleStats(`${activeVehicles}/${totalVehicles}`);
 
-        // 5. Process Routes
         setRouteCount(routeRes.data.length);
         const widgetRoutes = routeRes.data.map((r: any, index: number) => ({
             id: `Route ${index + 1}`,
-            progress: 50, 
+            progress: r.total_stops > 0 ? Math.round((r.completed_stops / r.total_stops) * 100) : 0, 
             status: r.status
         }));
         setActiveRoutesList(widgetRoutes);
 
+        // --- SAVE NEW ANALYTICS DATA ---
+        setWasteData(analyticsRes.data.weeklyWaste); 
+
         setBins(formattedBins);
-        setZones(formattedZones); // <--- Set Zones
+        setZones(formattedZones); 
         setAlerts(formattedAlerts);
         setLoading(false);
       } catch (err) {
@@ -85,7 +98,10 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
+    
     fetchData();
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const criticalCount = bins.filter(b => b.level >= 90).length;
@@ -95,7 +111,7 @@ const Dashboard = () => {
     { title: "Critical Bins", value: criticalCount, subtitle: "≥90% full", danger: criticalCount > 0 },
     { title: "Active Vehicles", value: vehicleStats, subtitle: "Available today" }, 
     { title: "Routes Today", value: routeCount, subtitle: "In Progress" },
-    { title: "Overflow Risk", value: criticalCount, subtitle: "Predicted soon" },
+    { title: "Overflow Risk", value: criticalCount, subtitle: "Based on active alerts" },
   ];
 
   return (
@@ -122,17 +138,23 @@ const Dashboard = () => {
       </section>
 
       <section className="main-grid">
-        <AlertsWidget alerts={alerts.slice(0, 3)} /> 
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+             <AlertsWidget alerts={alerts.slice(0, 3)} /> 
+             {/* ADDED THE CHART HERE - LEFT COLUMN */}
+             <WasteChart data={wasteData} />
+        </div>
         
-        <div style={{ height: '100%', minHeight: '400px' }}> 
+        <div style={{ height: '100%', minHeight: '600px' }}> 
            <BinMap 
              bins={bins} 
-             zones={zones} // <--- FIX: Passing Zones Prop Prevents Crash
-             // removed invalid props like 'title' and 'selectedId' if BinMap doesn't support them
+             zones={zones} 
            />
         </div>
 
-        <RoutesWidget routes={activeRoutesList.length > 0 ? activeRoutesList : []} />
+        <RoutesWidget 
+            routes={activeRoutesList} 
+            latestActivity={latestActivity} 
+        />
       </section>
     </div>
   );

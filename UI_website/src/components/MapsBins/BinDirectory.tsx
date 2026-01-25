@@ -1,10 +1,20 @@
 import React from "react";
-import type { Bin } from "../../pages/MapsBinsPage"; // Fixed Type Import
+import type { Bin } from "../../pages/MapsBinsPage"; 
 import "../../style/MapsBinsPage.css"; 
 
 interface Props {
   bins: Bin[];
 }
+
+// --- HELPER: Format Weight ---
+const formatWeight = (grams: number) => {
+    if (grams >= 1000) {
+        // Convert to kg if 1000g or more
+        return `${(grams / 1000).toFixed(2)} kg`;
+    }
+    // Show grams otherwise
+    return `${Math.round(grams)} g`;
+};
 
 const BinDirectory: React.FC<Props> = ({ bins }) => {
   return (
@@ -17,7 +27,8 @@ const BinDirectory: React.FC<Props> = ({ bins }) => {
             <th style={{ padding: "12px", color: "#64748b" }}>ID</th>
             <th style={{ padding: "12px", color: "#64748b" }}>Location</th>
             <th style={{ padding: "12px", color: "#64748b" }}>Fill Level</th>
-            <th style={{ padding: "12px", color: "#64748b" }}>Weight (kg)</th> 
+            {/* REMOVED (kg) FROM HEADER */}
+            <th style={{ padding: "12px", color: "#64748b" }}>Weight</th> 
             <th style={{ padding: "12px", color: "#64748b" }}>Lid</th>
             <th style={{ padding: "12px", color: "#64748b" }}>Status</th>
             <th style={{ padding: "12px", color: "#64748b" }}>Updated</th>
@@ -41,7 +52,8 @@ const BinDirectory: React.FC<Props> = ({ bins }) => {
                 </div>
               </td>
 
-              <td style={{ padding: "12px", fontWeight: "bold" }}>{bin.weight}</td>
+              {/* APPLIED DYNAMIC FORMATTING */}
+              <td style={{ padding: "12px", fontWeight: "bold" }}>{formatWeight(bin.weight)}</td>
 
               <td style={{ padding: "12px" }}>
                   <span style={{ 

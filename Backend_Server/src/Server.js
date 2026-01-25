@@ -16,7 +16,7 @@ const areaRoutes = require('./routes/areaRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const wardRoutes = require('./routes/wardRoutes');
 const dumpingZoneRoutes = require('./routes/dumpingZoneRoutes');
-
+const analyticsRoutes = require('./routes/analyticsRoutes');
 const app = express();
 
 // Middleware Setup
@@ -39,7 +39,7 @@ app.use('/api/area', areaRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/wards', wardRoutes);
 app.use('/api/dumping-zones', dumpingZoneRoutes);
-
+app.use('/api/analytics', analyticsRoutes);
 // Server & Socket Initialization
 const server = http.createServer(app);
 const io = socket.init(server);

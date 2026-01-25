@@ -41,6 +41,7 @@ export const fleetAPI = {
   // Add this missing function:
   assignRoute: (data: { driver_id: string; ward_id: string }) => 
     api.post('/fleet/routes/create', data), 
+  cancelRoute: (routeId: string) => api.patch(`/fleet/routes/${routeId}/cancel`),
 };
 
 export const areaAPI = {
@@ -59,4 +60,9 @@ export const wardAPI = {
 export const driverAPI = {
   getAll: () => api.get('/driver/all'), // Fetches list for dropdown
 };
+
+export const analyticsAPI = {
+  getStats: () => api.get('/analytics/waste-stats'),
+};
+
 export default api;

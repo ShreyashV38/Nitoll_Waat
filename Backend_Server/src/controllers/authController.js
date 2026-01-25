@@ -120,3 +120,39 @@ exports.verify = async (req, res) => {
         res.json({ success: true, token, user });
     } catch (err) { res.status(500).json({ message: 'Server Error' }); }
 };
+
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; // From middleware
+
+    // 1. Get User Details
+    const userRes = await db.query(
+      'SELECT id, name, email, mobile, role, area_id FROM users WHERE id = $1', 
+      [userId]
+    );
+    
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const user = userRes.rows[0];
+
+    // 2. Get Vehicle Details (Only if Driver)
+    let vehicle = null;
+    if (user.role === 'DRIVER') {
+      const vehicleRes = await db.query(
+        'SELECT license_plate, type, status FROM vehicles WHERE driver_id = $1', 
+        [userId]
+      );
+      if (vehicleRes.rows.length > 0) {
+        vehicle = vehicleRes.rows[0];
+      }
+    }
+
+    // 3. Return Combined Data
+    res.json({ user, vehicle });
+
+  } catch (err) {
+    console.error("Get Profile Error:", err);
+    res.status(500).json({ error: 'Server Error' });
+  }
+};

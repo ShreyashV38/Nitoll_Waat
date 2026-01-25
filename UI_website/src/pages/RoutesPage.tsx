@@ -18,14 +18,13 @@ const RoutesPage = () => {
   const [selectedDriver, setSelectedDriver] = useState("");
   const [selectedWard, setSelectedWard] = useState("");
   const [loading, setLoading] = useState(false);
-  const [autoLoading, setAutoLoading] = useState(false); // For new feature
+  const [autoLoading, setAutoLoading] = useState(false); 
 
   const { area } = useAuth();
 
   // 1. Fetch All Data (Routes, Drivers, Wards)
   useEffect(() => {
     loadData();
-    // Auto-refresh live data every 30 seconds
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -38,15 +37,14 @@ const RoutesPage = () => {
             wardAPI.getAll()
         ]);
 
-        // Format Active Routes for the UI with Performance Tracking
         const formattedRoutes = routeRes.data.map((r: any, index: number) => ({
             id: index + 1,
             db_route_id: r.id,
             name: `Route ${index + 1}`,
             number: "Active", 
             driver: r.driver_name,
-            license_plate: r.license_plate, // For performance card
-            ward_name: r.ward_name,        // For performance card
+            license_plate: r.license_plate,
+            ward_name: r.ward_name,        
             completed_stops: r.completed_stops || 0,
             total_stops: r.total_stops || 0,
             progress: r.total_stops > 0 ? (r.completed_stops / r.total_stops) * 100 : 0,
@@ -64,7 +62,7 @@ const RoutesPage = () => {
     }
   };
 
-  // 2. Handle Manual Dispatch (Assign Ward)
+  // 2. Handle Manual Dispatch
   const handleDispatch = async () => {
     if(!selectedDriver || !selectedWard) return alert("Please select a Driver and a Ward");
     
@@ -87,17 +85,30 @@ const RoutesPage = () => {
     }
   };
 
-  // 3. NEW FEATURE: Auto-Dispatch Daily Operations
+  // 3. Handle Auto-Dispatch
   const handleAutoDispatch = async () => {
     setAutoLoading(true);
     try {
-        await fleetAPI.autoDispatch(); // Ensure this is added to your api.ts
+        await fleetAPI.autoDispatch(); 
         alert("Daily operations started! Drivers dispatched to assigned wards.");
         loadData();
     } catch (err: any) {
         alert(err.response?.data?.message || "Auto-dispatch failed");
     } finally {
         setAutoLoading(false);
+    }
+  };
+
+  // 4. NEW: Handle Route Cancellation (Remove Driver)
+  const handleCancelRoute = async (routeId: string) => {
+    if (!window.confirm("Are you sure you want to remove this driver from their route?")) return;
+
+    try {
+        await fleetAPI.cancelRoute(routeId);
+        alert("Route removed. Driver is now available.");
+        loadData(); // Refresh the list
+    } catch (err: any) {
+        alert(err.response?.data?.message || "Failed to remove route");
     }
   };
 
@@ -110,7 +121,6 @@ const RoutesPage = () => {
         subtitle="Dispatch Drivers & Monitor Active Routes"
       />
 
-      {/* --- NEW FEATURE: AUTO-DISPATCH ACTION --- */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px' }}>
           <button 
             onClick={handleAutoDispatch}
@@ -130,7 +140,6 @@ const RoutesPage = () => {
           </button>
       </div>
 
-      {/* --- DISPATCH BOARD --- */}
       <div className="assignment-card" style={{ 
           background: 'white', 
           padding: '24px', 
@@ -198,7 +207,6 @@ const RoutesPage = () => {
          </div>
       </div>
 
-      {/* --- NEW FEATURE: PERFORMANCE PROGRESS GRID --- */}
       <h3 style={{fontSize:'18px', color:'#334155', marginBottom:'15px'}}>Live Route Performance</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px', marginBottom: '30px' }}>
           {routes.map(route => (
@@ -208,7 +216,24 @@ const RoutesPage = () => {
                           <h4 style={{ margin: 0, color: '#1e293b' }}>{route.driver}</h4>
                           <span style={{ fontSize: '12px', color: '#64748b' }}>{route.license_plate} • {route.ward_name}</span>
                       </div>
-                      <span style={{ fontSize: '10px', background: '#dcfce7', color: '#16a34a', padding: '4px 8px', borderRadius: '12px', fontWeight: 'bold' }}>LIVE</span>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '10px', background: '#dcfce7', color: '#16a34a', padding: '4px 8px', borderRadius: '12px', fontWeight: 'bold' }}>LIVE</span>
+                        <button 
+                            onClick={() => handleCancelRoute(route.db_route_id)}
+                            style={{ 
+                                background: '#fee2e2', 
+                                color: '#ef4444', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                cursor: 'pointer', 
+                                fontSize: '10px', 
+                                padding: '4px 8px',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            REMOVE
+                        </button>
+                      </div>
                   </div>
                   
                   <div style={{ marginBottom: '10px' }}>
@@ -224,7 +249,6 @@ const RoutesPage = () => {
           ))}
       </div>
 
-      {/* --- ORIGINAL LIVE MONITORING SECTION --- */}
       <h3 style={{fontSize:'18px', color:'#334155', marginBottom:'15px'}}>Fleet Details</h3>
       
       {routes.length === 0 ? (
