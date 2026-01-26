@@ -69,11 +69,12 @@
                 android:padding="20dp">
 
                 <TextView
+                    android:id="@+id/tvSectionTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:fontFamily="sans-serif-medium"
-                    android:text="Assigned Trips"
+                    android:text="My Assignment"
                     android:textColor="#000000"
                     android:textSize="22sp"
                     android:textStyle="bold" />
@@ -82,7 +83,120 @@
                     android:id="@+id/recyclerWards"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false" />
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvNoRoute"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No route assigned for today yet.\nPlease wait for Admin."
+                    android:gravity="center"
+                    android:textSize="16sp"
+                    android:padding="30dp"
+                    android:background="@drawable/rounded_card_bg"
+                    android:textColor="#888"
+                    android:visibility="gone"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardRoute"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@android:color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:id="@+id/tvWardName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ward Name"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:textColor="#1976D2"/>
+
+                        <TextView
+                            android:id="@+id/tvVehicle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Vehicle: ..."
+                            android:textSize="16sp"
+                            android:layout_marginTop="5dp"
+                            android:textColor="#666"/>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#EEE"
+                            android:layout_marginVertical="15dp"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:weightSum="2">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Total Bins"
+                                    android:textSize="12sp"
+                                    android:textColor="#999"/>
+                                <TextView
+                                    android:id="@+id/tvTotalBins"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Pending"
+                                    android:textSize="12sp"
+                                    android:textColor="#999"/>
+                                <TextView
+                                    android:id="@+id/tvPendingBins"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#D32F2F"/>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/btnStartRoute"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Start Collection"
+                            android:backgroundTint="#4CAF50"
+                            android:textColor="@android:color/white"
+                            android:layout_marginTop="20dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -108,31 +222,16 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="16dp">
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="21 Sep • Ward 12 • 7/8 bins Completed"
-                            android:textColor="#666666"
-                            android:paddingVertical="8dp"/>
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:background="#EEEEEE" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="20 Sep • Ward 14 • 5/5 bins Completed"
+                            android:text="21 Sep • Ward 12 • Completed"
                             android:textColor="#666666"
                             android:paddingVertical="8dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp" />
+                <View android:layout_width="match_parent" android:layout_height="100dp" />
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

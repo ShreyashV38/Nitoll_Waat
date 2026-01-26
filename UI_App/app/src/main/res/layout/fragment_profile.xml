@@ -1,119 +1,252 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
-
-    <ImageView
-        android:id="@+id/profile_background"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/app_background"
-        android:alpha="0.1" />
+    android:background="#FFFFFF"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Header with Logo -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="20dp">
+            android:padding="24dp"
+            android:background="#FFFFFF">
 
             <ImageView
-                android:layout_width="75dp"
-                android:layout_height="75dp"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
                 android:src="@drawable/nitoll_logo"
                 android:scaleType="fitCenter" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="15dp"
+                android:layout_marginStart="16dp"
                 android:orientation="vertical">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Welcome to"
-                    android:textSize="16sp"
-                    android:textColor="#333333" />
+                    android:textColor="#666666"
+                    android:textSize="14sp" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="NitollWaat"
-                    android:textColor="#333333"
+                    android:textColor="#4CAF50"
                     android:textSize="32sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="-4dp" />
+                    android:fontFamily="sans-serif-black" />
             </LinearLayout>
         </LinearLayout>
 
-        <TextView
+        <!-- Content -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingVertical="20dp"
-            android:text="My Profile"
-            android:textColor="#333333"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:padding="20dp">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/login_card_bg"
-            android:padding="30dp"
-            android:elevation="8dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="My Profile"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#333333"
+                android:layout_marginBottom="24dp" />
 
-            <LinearLayout
+            <!-- Personal Details Card -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="10dp">
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                android:layout_marginBottom="20dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EEEEEE">
 
-                <EditText
-                    android:id="@+id/etProfileName"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:hint="Full Name"
-                    android:padding="12dp"
-                    android:drawableStart="@android:drawable/ic_menu_myplaces"
-                    android:drawablePadding="10dp"
-                    android:background="@drawable/bin_item_bg"
-                    android:layout_marginBottom="15dp"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:inputType="text"/>
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
 
-                <EditText
-                    android:id="@+id/etProfilePhone"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Personal Details"
+                        android:textStyle="bold"
+                        android:textColor="#4CAF50"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="18dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Full Name"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_marginBottom="12dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etProfileName"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:focusable="false"
+                            android:clickable="false"
+                            android:textSize="14sp"
+                            android:textColor="#333333" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Mobile Number"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_marginBottom="12dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etProfilePhone"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:focusable="false"
+                            android:clickable="false"
+                            android:textSize="14sp"
+                            android:textColor="#333333" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Email Address"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etProfileEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:focusable="false"
+                            android:clickable="false"
+                            android:textSize="14sp"
+                            android:textColor="#333333" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Vehicle Info Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardVehicleInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EEEEEE"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone">
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:hint="Phone No."
-                    android:padding="12dp"
-                    android:drawableStart="@android:drawable/ic_menu_call"
-                    android:drawablePadding="10dp"
-                    android:background="@drawable/bin_item_bg"
-                    android:focusable="false"
-                    android:clickable="false"
-                    android:inputType="phone"/>
-            </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
 
-            <Button
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Assigned Vehicle"
+                        android:textStyle="bold"
+                        android:textColor="#4CAF50"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="18dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/nitoll_logo"
+                            app:tint="#555" />
+
+                        <TextView
+                            android:id="@+id/tvLicensePlate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="GA-03-X-0000"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:layout_marginStart="12dp"
+                            android:textColor="#333333" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvVehicleType"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Type: TRUCK"
+                            android:background="#E8F5E9"
+                            android:textColor="#2E7D32"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:layout_marginEnd="10dp"
+                            android:gravity="center" />
+
+                        <TextView
+                            android:id="@+id/tvVehicleStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Status: ACTIVE"
+                            android:background="#E3F2FD"
+                            android:textColor="#1565C0"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="center" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Logout Button -->
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
-                android:layout_width="180dp"
-                android:layout_height="60dp"
-                android:layout_centerInParent="true"
-                android:backgroundTint="#4CAF50"
-                android:text="Log Out"
-                android:textAllCaps="false"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Logout"
+                android:textStyle="bold"
                 android:textSize="16sp"
-                android:elevation="4dp" />
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="20dp"
+                app:cornerRadius="26dp"
+                app:backgroundTint="#D32F2F"
+                app:elevation="4dp" />
 
-        </RelativeLayout>
+        </LinearLayout>
+
     </LinearLayout>
-</RelativeLayout>
+</ScrollView>

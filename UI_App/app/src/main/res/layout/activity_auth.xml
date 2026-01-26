@@ -6,175 +6,249 @@
     android:background="#FFFFFF"
     android:orientation="vertical">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="24dp">
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@drawable/nitoll_logo"
-            android:scaleType="fitCenter" />
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Welcome to"
-                android:textColor="#333333"
-                android:textSize="16sp" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="NitollWaat"
-                android:textColor="#333333"
-                android:textSize="32sp"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-black" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvAuthSubtext"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingBottom="20dp"
-        android:text="Welcome again! Please log in."
-        android:textColor="#333333" />
-
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginHorizontal="8dp"
-        app:cardCornerRadius="32dp"
-        app:cardElevation="12dp"
-        app:cardBackgroundColor="#E3F2FD"
-        app:strokeWidth="0dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="30dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
+            <!-- Header with Logo -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:padding="24dp"
+                android:background="#F5F5F5">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/nitoll_logo"
+                    android:scaleType="fitCenter" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Welcome to"
+                        android:textColor="#666666"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="NitollWaat"
+                        android:textColor="#4CAF50"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-black" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Main Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                app:cardCornerRadius="28dp"
-                app:cardBackgroundColor="#F1F1F1"
-                app:cardElevation="0dp">
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EEEEEE">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:padding="4dp">
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTabLogin"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:text="Login"
-                        android:textSize="20dp"
-                        android:textAllCaps="false"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="28dp">
+
+                    <!-- Tab Selector -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:background="#F5F5F5"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:padding="4dp"
+                        android:layout_marginBottom="28dp"
+                        app:cornerRadius="25dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTabLogin"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Login"
+                            android:textAllCaps="false"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="22dp"
+                            app:backgroundTint="#4CAF50"
+                            android:elevation="0dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnTabRegister"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Register"
+                            android:textAllCaps="false"
+                            android:textColor="#999999"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="22dp"
+                            android:elevation="0dp" />
+                    </LinearLayout>
+
+                    <!-- Full Name (Register Only) -->
+                    <EditText
+                        android:id="@+id/etFirstName"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/edit_text_rounded"
+                        android:hint="Full Name"
+                        android:paddingHorizontal="16dp"
+                        android:textSize="14sp"
                         android:textColor="#333333"
-                        app:cornerRadius="24dp"
-                        app:backgroundTint="#4CAF50" />
+                        android:textColorHint="#BBBBBB"
+                        android:gravity="center_vertical"
+                        android:visibility="gone" />
+
+                    <!-- Mobile Number (Register Only) -->
+                    <EditText
+                        android:id="@+id/etMobile"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/edit_text_rounded"
+                        android:hint="Mobile Number"
+                        android:inputType="phone"
+                        android:paddingHorizontal="16dp"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:textColorHint="#BBBBBB"
+                        android:gravity="center_vertical"
+                        android:visibility="gone" />
+
+                    <!-- Email -->
+                    <EditText
+                        android:id="@+id/etEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/edit_text_rounded"
+                        android:hint="Email Address"
+                        android:inputType="textEmailAddress"
+                        android:paddingHorizontal="16dp"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:textColorHint="#BBBBBB"
+                        android:gravity="center_vertical" />
+
+                    <!-- Password -->
+                    <EditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/edit_text_rounded"
+                        android:hint="Password"
+                        android:inputType="textPassword"
+                        android:paddingHorizontal="16dp"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:textColorHint="#BBBBBB"
+                        android:gravity="center_vertical" />
+
+                    <!-- Location Section (Register Only) -->
+                    <LinearLayout
+                        android:id="@+id/locationContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Select Your Zone:"
+                            android:layout_marginBottom="12dp"
+                            android:textStyle="bold"
+                            android:textColor="#333333"
+                            android:textSize="13sp" />
+
+                        <Spinner
+                            android:id="@+id/spinnerDistrict"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/spinner_rounded"
+                            android:spinnerMode="dropdown"
+                            android:paddingHorizontal="12dp"
+                            android:layout_marginBottom="12dp" />
+
+                        <Spinner
+                            android:id="@+id/spinnerTaluka"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/spinner_rounded"
+                            android:spinnerMode="dropdown"
+                            android:paddingHorizontal="12dp"
+                            android:layout_marginBottom="12dp" />
+
+                        <Spinner
+                            android:id="@+id/spinnerVillage"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/spinner_rounded"
+                            android:spinnerMode="dropdown"
+                            android:paddingHorizontal="12dp" />
+                    </LinearLayout>
+
+                    <!-- OTP (Register Only) -->
+                    <EditText
+                        android:id="@+id/etOtp"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="24dp"
+                        android:background="@drawable/edit_text_rounded"
+                        android:hint="Enter OTP"
+                        android:inputType="number"
+                        android:paddingHorizontal="16dp"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:textColorHint="#BBBBBB"
+                        android:gravity="center_vertical"
+                        android:visibility="gone" />
+
+                    <!-- Submit Button -->
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnTabRegister"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:text="Register"
-                        android:textSize="20dp"
-                        android:textAllCaps="false"
-                        android:textColor="#666666"
-                        app:cornerRadius="24dp" />
+                        android:id="@+id/btnSubmit"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="Login"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        android:textColor="#FFFFFF"
+                        app:cornerRadius="26dp"
+                        app:backgroundTint="#4CAF50"
+                        app:elevation="4dp" />
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <EditText
-                android:id="@+id/etFirstName"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="24dp"
-                android:background="@android:drawable/editbox_background"
-                android:hint="First Name"
-                android:textColor="#000000"
-                android:textColorHint="#333333"
-                android:padding="12dp"
-                android:visibility="gone" />
-
-            <EditText
-                android:id="@+id/etLastName"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                android:background="@android:drawable/editbox_background"
-                android:hint="Last Name"
-                android:textColor="#000000"
-                android:textColorHint="#333333"
-                android:padding="12dp"
-                android:visibility="gone" />
-
-            <EditText
-                android:id="@+id/etPhone"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="24dp"
-                android:background="@android:drawable/editbox_background"
-                android:hint="Phone No."
-                android:textColor="#000000"
-                android:textColorHint="#333333"
-                android:inputType="phone"
-                android:maxLength="10"
-                android:padding="12dp" />
-
-            <TextView
-                android:id="@+id/tvGenerateOtp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Generate OTP"
-                android:textColor="#1976D2"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:clickable="true" />
-
-            <EditText
-                android:id="@+id/etOtp"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                android:background="@android:drawable/editbox_background"
-                android:hint="Enter OTP"
-                android:textColor="#000000"
-                android:textColorHint="#333333"
-                android:inputType="number"
-                android:maxLength="4"
-                android:padding="12dp"
-                android:visibility="gone"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSubmit"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="40dp"
-                android:text="Login"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                app:backgroundTint="#4CAF50"
-                app:cornerRadius="32dp" />
-
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </ScrollView>
 </LinearLayout>

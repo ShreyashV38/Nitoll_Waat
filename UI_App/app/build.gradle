@@ -30,15 +30,23 @@ android {
 }
 
 dependencies {
+    // UI Components (Stable versions for SDK 34)
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    // OpenStreetMap
+    // CRITICAL FIXES: Pin these to versions compatible with SDK 34
+    implementation 'androidx.activity:activity:1.9.0'       // Was 1.12.2 (Too new)
+    implementation 'androidx.core:core-ktx:1.13.1'          // Fixes "core-ktx:1.16.0" error
+
+    // Maps
     implementation 'org.osmdroid:osmdroid-android:6.1.18'
-    implementation 'androidx.preference:preference:1.2.1'
 
     // Networking
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.google.android.gms:play-services-location:21.2.0'
+    implementation ('io.socket:socket.io-client:2.0.0') {
+        exclude group: 'org.json', module: 'json'
+    }
 }

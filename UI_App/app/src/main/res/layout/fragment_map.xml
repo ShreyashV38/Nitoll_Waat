@@ -5,100 +5,153 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
+    <!-- Header -->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingHorizontal="20dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:gravity="center_vertical">
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:gravity="center_vertical"
+        android:background="#F5F5F5">
 
         <ImageView
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:src="@drawable/nitoll_logo" />
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/nitoll_logo"
+            android:scaleType="fitCenter" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="16dp"
             android:orientation="vertical">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Active Route"
+                android:text="Route Optimizer"
                 android:textColor="#666666"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="NitollWaat"
-                android:textColor="#333333"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textColor="#4CAF50"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-black" />
         </LinearLayout>
     </LinearLayout>
 
-    <ScrollView
+    <!-- Content -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/header"
-        android:clipToPadding="false">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <LinearLayout
+        <!-- Filter Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="100dp">
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/map_card"
-                android:layout_width="match_parent"
-                android:layout_height="350dp"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="10dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="4dp">
-
-                <org.osmdroid.views.MapView
-                    android:id="@+id/map"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </androidx.cardview.widget.CardView>
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:strokeWidth="1dp"
+            app:strokeColor="#EEEEEE">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:background="@drawable/login_card_bg"
-                android:elevation="8dp"
                 android:orientation="vertical"
                 android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bin Action Panel"
-                    android:textColor="#4CAF50"
+                    android:text="Select Dumping Zone:"
+                    android:textSize="13sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="12dp"/>
+                    android:textColor="#333333"
+                    android:layout_marginBottom="12dp" />
 
-                <TextView
-                    android:id="@+id/tvRouteInfo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Target: Ward 10"
-                    android:textSize="16sp"
-                    android:layout_marginBottom="10dp"/>
-
-                <Button
-                    android:id="@+id/btnFinishRoute"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Mark Ward as Collected"
-                    android:backgroundTint="#4CAF50" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <Spinner
+                        android:id="@+id/spinnerZones"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/spinner_rounded"
+                        android:paddingHorizontal="12dp"
+                        android:layout_marginEnd="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnGenerateRoute"
+                        android:layout_width="56dp"
+                        android:layout_height="50dp"
+                        android:text="GO"
+                        android:textStyle="bold"
+                        android:textSize="14sp"
+                        android:textColor="#FFFFFF"
+                        app:cornerRadius="25dp"
+                        app:backgroundTint="#4CAF50"
+                        app:elevation="4dp" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Map Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:strokeWidth="1dp"
+            app:strokeColor="#EEEEEE">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <org.osmdroid.views.MapView
+                    android:id="@+id/mapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?attr/progressBarStyle"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnRecenter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_margin="20dp"
+                    android:src="@android:drawable/ic_menu_mylocation"
+                    app:backgroundTint="#4CAF50"
+                    app:tint="#FFFFFF"
+                    app:elevation="8dp" />
+
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
 </RelativeLayout>
