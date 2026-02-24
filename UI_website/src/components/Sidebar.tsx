@@ -1,7 +1,7 @@
-import React from 'react';
-import { LayoutGrid, Map, Truck, MessageSquare, User } from 'lucide-react'; 
+import React, { useState, useEffect } from 'react';
+import { LayoutGrid, Map, Truck, MessageSquare, User, Moon, Sun } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import GoaLogo from '../assets/Goa.png'; 
+import GoaLogo from '../assets/Goa.png';
 import '../style/Sidebar.css';
 
 interface NavItemProps {
@@ -11,6 +11,15 @@ interface NavItemProps {
 }
 
 const Sidebar: React.FC = () => {
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -26,21 +35,25 @@ const Sidebar: React.FC = () => {
       </div>
 
       <nav className="nav-menu">
-        <NavItem to="/dashboard" icon={<LayoutGrid size={22}/>} label="Dashboard" />
-        <NavItem to="/maps-bins" icon={<Map size={22}/>} label="Map and Bins" />
-        <NavItem to="/routes" icon={<Truck size={22}/>} label="Routes" />
-        <NavItem to="/vehicles" icon={<Truck size={22}/>} label="Vehicles" />
-        {/* REMOVED REPORTS ITEM */}
-        <NavItem to="/messages" icon={<MessageSquare size={22}/>} label="Messages" />
-        <NavItem to="/profile" icon={<User size={22}/>} label="Profile" />
+        <NavItem to="/dashboard" icon={<LayoutGrid size={22} />} label="Dashboard" />
+        <NavItem to="/maps-bins" icon={<Map size={22} />} label="Map and Bins" />
+        <NavItem to="/routes" icon={<Truck size={22} />} label="Routes" />
+        <NavItem to="/vehicles" icon={<Truck size={22} />} label="Vehicles" />
+        <NavItem to="/messages" icon={<MessageSquare size={22} />} label="Messages" />
+        <NavItem to="/profile" icon={<User size={22} />} label="Profile" />
       </nav>
+
+      <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+        {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+        {darkMode ? 'Light Mode' : 'Dark Mode'}
+      </button>
     </aside>
   );
 };
 
 const NavItem: React.FC<NavItemProps> = ({ icon, label, to }) => (
-  <NavLink 
-    to={to} 
+  <NavLink
+    to={to}
     className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
   >
     <span className="icon">{icon}</span>

@@ -7,25 +7,7 @@ import Apple from "../../assets/apple-logo.png"
 import Facebook from "../../assets/facebook.png"
 import "../../style/LoginForm.css"
 
-// --- GOA LOCATION DATA ---
-const LOCATION_DATA: any = {
-  "North Goa": {
-    "Tiswadi": ["Panaji", "Old Goa", "Dona Paula", "Bambolim", "Merces"],
-    "Bardez": ["Mapusa", "Calangute", "Candolim", "Porvorim", "Siolim"],
-    "Pernem": ["Pernem City", "Arambol", "Mandrem", "Morjim"],
-    "Bicholim": ["Bicholim City", "Sanquelim", "Mayem"],
-    "Sattari": ["Valpoi", "Birondem", "Pissurlem"],
-    "Ponda": ["Ponda City", "Farmagudi", "Shiroda", "Marcaim"]
-  },
-  "South Goa": {
-    "Salcete": ["Margao", "Fatorda", "Verna", "Colva", "Navelim"],
-    "Mormugao": ["Vasco da Gama", "Dabolim", "Chicalim", "Cansaulim"],
-    "Quepem": ["Quepem City", "Curchorem", "Balli"],
-    "Canacona": ["Canacona City", "Palolem", "Agonda"],
-    "Sanguem": ["Sanguem City", "Netravali"],
-    "Dharbandora": ["Dharbandora City", "Mollem"]
-  }
-};
+import GOA_LOCATIONS from "../../data/goaLocations";
 
 function SignupForm() {
     // Form State
@@ -34,7 +16,7 @@ function SignupForm() {
         email: "",
         mobile: "",
         role: "ADMIN",
-        password: "" 
+        password: ""
     });
 
     // --- NEW STATE FOR PASSWORD VISIBILITY ---
@@ -56,11 +38,11 @@ function SignupForm() {
     const handleDistrictChange = (e: any) => {
         const selectedDist = e.target.value;
         setDistrict(selectedDist);
-        setTaluka(""); 
-        setAreaName(""); 
-        
-        if (selectedDist && LOCATION_DATA[selectedDist]) {
-            setTalukaOptions(Object.keys(LOCATION_DATA[selectedDist]));
+        setTaluka("");
+        setAreaName("");
+
+        if (selectedDist && GOA_LOCATIONS[selectedDist]) {
+            setTalukaOptions(Object.keys(GOA_LOCATIONS[selectedDist]));
         } else {
             setTalukaOptions([]);
         }
@@ -70,10 +52,10 @@ function SignupForm() {
     const handleTalukaChange = (e: any) => {
         const selectedTaluka = e.target.value;
         setTaluka(selectedTaluka);
-        setAreaName(""); 
+        setAreaName("");
 
-        if (district && selectedTaluka && LOCATION_DATA[district][selectedTaluka]) {
-            setVillageOptions(LOCATION_DATA[district][selectedTaluka]);
+        if (district && selectedTaluka && GOA_LOCATIONS[district]?.[selectedTaluka]) {
+            setVillageOptions(GOA_LOCATIONS[district][selectedTaluka]);
         } else {
             setVillageOptions([]);
         }
@@ -88,7 +70,7 @@ function SignupForm() {
 
         try {
             setStatus({ type: 'success', msg: 'Creating Account...' });
-            
+
             // Send complete data to backend
             const payload = {
                 ...formData,
@@ -98,11 +80,11 @@ function SignupForm() {
             };
 
             await authAPI.register(payload);
-            
+
             setStatus({ type: 'success', msg: '🎉 Account created! Redirecting...' });
-            
+
             setTimeout(() => {
-                navigate('/'); 
+                navigate('/');
             }, 2000);
 
         } catch (err: any) {
@@ -134,21 +116,21 @@ function SignupForm() {
                                 type="text"
                                 placeholder="Full Name"
                                 value={formData.name}
-                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 className="input-field"
                             />
                             <input
                                 type="email"
                                 placeholder="Email Address"
                                 value={formData.email}
-                                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="input-field"
                             />
                             <input
                                 type="tel"
                                 placeholder="Mobile Number"
                                 value={formData.mobile}
-                                onChange={(e) => setFormData({...formData, mobile: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                                 className="input-field"
                             />
 
@@ -158,10 +140,10 @@ function SignupForm() {
                                     type={showPassword ? "text" : "password"} // Toggles Type
                                     placeholder="Create Password"
                                     value={formData.password}
-                                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     className="input-field"
                                 />
-                                <button 
+                                <button
                                     type="button"
                                     className="password-toggle-icon"
                                     onClick={() => setShowPassword(!showPassword)}
@@ -174,7 +156,7 @@ function SignupForm() {
                             {/* --- CASCADING DROPDOWNS --- */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                 {/* District */}
-                                <select 
+                                <select
                                     className="input-field"
                                     value={district}
                                     onChange={handleDistrictChange}
@@ -185,7 +167,7 @@ function SignupForm() {
                                 </select>
 
                                 {/* Taluka */}
-                                <select 
+                                <select
                                     className="input-field"
                                     value={taluka}
                                     onChange={handleTalukaChange}
@@ -199,7 +181,7 @@ function SignupForm() {
                             </div>
 
                             {/* Village/City */}
-                            <select 
+                            <select
                                 className="input-field"
                                 value={areaName}
                                 onChange={(e) => setAreaName(e.target.value)}
@@ -220,7 +202,7 @@ function SignupForm() {
                                     {status.msg}
                                 </div>
                             )}
-                            
+
                             <div className="otherMethods">
                                 <p>Or sign up via</p>
                                 <div className="methods">

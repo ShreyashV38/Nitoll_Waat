@@ -1,7 +1,7 @@
 /* Sidebar.css */
 .sidebar {
   width: 280px;
-  background-color: #c6f6d5;
+  background-color: var(--bg-sidebar);
   height: 100vh;
   position: fixed;
   left: 0;
@@ -28,7 +28,7 @@
 .brand-text {
   font-size: 18px;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
@@ -38,7 +38,12 @@
 }
 
 /* Nav Menu */
-.nav-menu { display: flex; flex-direction: column; gap: 10px; }
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
 
 .nav-item {
   display: flex;
@@ -46,12 +51,16 @@
   gap: 15px;
   padding: 12px 15px;
   text-decoration: none;
-  color: #4a5568;
+  color: var(--text-secondary);
   border-radius: 12px;
   font-weight: 600;
 }
 
+.nav-item:hover {
+  background-color: var(--bg-hover);
+}
+
 .nav-item.active {
-  background-color: #f0f4ff;
-  color: #5a67d8;
+  background-color: var(--nav-active-bg);
+  color: var(--nav-active-text);
 }

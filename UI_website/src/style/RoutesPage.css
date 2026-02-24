@@ -3,23 +3,21 @@
 .routes-page {
   flex: 1;
   padding: 30px;
-  background: #f8faf9;
-  /* ✅ FIX: Change min-height to height 100% and add overflow */
+  background: var(--bg-secondary);
   height: 100%;
-  overflow-y: auto; 
+  overflow-y: auto;
   box-sizing: border-box;
 }
-
-/* ... keep existing styles below ... */
 
 /* Header */
 .page-header h1 {
   font-size: 22px;
   margin-bottom: 4px;
+  color: var(--text-primary);
 }
 
 .page-header p {
-  color: #666;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -27,71 +25,78 @@
 .vehicle-tabs {
   display: flex;
   gap: 12px;
-  background: white;
+  background: var(--card-bg);
   padding: 16px;
   border-radius: 12px;
   margin: 24px 0;
-  flex-wrap: wrap; /* Allows wrapping on mobile */
+  flex-wrap: wrap;
+  border: 1px solid var(--border-color);
 }
 
 .tab {
   padding: 10px 18px;
   border-radius: 10px;
   border: none;
-  background: #e0e0e0;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;
   white-space: nowrap;
 }
 
 .tab.active {
-  background: #21c55d;
+  background: var(--accent-green);
   color: white;
 }
 
 /* Vehicle Card */
 .vehicle-card {
-  background: white;
+  background: var(--card-bg);
   padding: 24px;
   border-radius: 16px;
   width: 100%;
-  /* Removed max-width restriction to fill space */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
 }
 
 .vehicle-card h2 {
   margin-bottom: 16px;
+  color: var(--text-primary);
 }
 
 .vehicle-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive Grid */
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
 }
 
 .vehicle-grid span {
   font-size: 13px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .vehicle-grid strong {
   display: block;
   font-size: 15px;
   margin-top: 4px;
+  color: var(--text-primary);
 }
 
-/* Scrollbar Styling for Webkit browsers */
+/* Scrollbar Styling */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: transparent; 
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
+  background: var(--text-faint);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; 
+  background: var(--text-muted);
 }

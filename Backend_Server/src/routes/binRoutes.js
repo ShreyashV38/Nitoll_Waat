@@ -12,4 +12,6 @@ router.post('/update', binController.updateBinReading);
 
 
 router.post('/:id/collect', protect, binController.markBinCollected);
+router.put('/:id/calibration', protect, binController.updateCalibration);
+router.get('/health', protect, binController.getBinHealth);
 module.exports = router;

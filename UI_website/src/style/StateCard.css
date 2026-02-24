@@ -1,26 +1,38 @@
 .stat-card {
-  background: #fff;
+  background: var(--card-bg);
   padding: 18px;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .stat-card h4 {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .stat-card h2 {
   font-size: 26px;
   margin: 6px 0;
+  color: var(--text-primary);
 }
 
 .stat-card p {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-faint);
 }
 
 .stat-card.danger {
-  background: #ffe4e6;
-  border: 1px solid #fca5a5;
+  background: var(--alert-critical-bg, #fee2e2);
+  border: 1px solid var(--accent-red, #ef4444);
+}
+
+.stat-card.success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid #22c55e;
+}
+
+.stat-card.warning {
+  background: rgba(234, 179, 8, 0.1);
+  border: 1px solid #eab308;
 }

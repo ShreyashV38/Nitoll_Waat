@@ -1,0 +1,107 @@
+.prediction-widget {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.prediction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.prediction-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.prediction-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-main);
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.no-predictions {
+    color: var(--text-muted);
+    font-size: 14px;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.prediction-group {
+    margin-bottom: 14px;
+}
+
+.group-label {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    padding: 4px 0;
+}
+
+.group-label.urgent {
+    color: #ef4444;
+}
+
+.group-label.warning {
+    color: #eab308;
+}
+
+.group-label.safe {
+    color: #22c55e;
+}
+
+.prediction-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-main);
+    border-radius: 8px;
+    margin-bottom: 5px;
+}
+
+.prediction-row.urgent-row {
+    border-left: 3px solid #ef4444;
+}
+
+.pred-bin-id {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 100px;
+}
+
+.pred-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.pred-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.pred-time {
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 36px;
+    text-align: right;
+    color: var(--text-secondary);
+}
+
+.more-bins {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    margin: 8px 0 0;
+}

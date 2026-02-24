@@ -7,9 +7,9 @@ const CONFIG = {
     FILL_THRESHOLD_CRITICAL: 50, // User requested 50%
     FILL_THRESHOLD_WARNING: 45,  // Kept as a buffer (optional)
     PRIORITY_WEIGHTS: {
-        CRITICAL: 100,           
-        CRITICAL_SOON: 80,       
-        WARNING: 70,             
+        CRITICAL: 100,
+        CRITICAL_SOON: 80,
+        WARNING: 70,
         PREDICTED_OVERFLOW: 60,
         BLOCKED_VIEW: 40
         // removed NORMAL priority
@@ -17,20 +17,19 @@ const CONFIG = {
 };
 
 function getDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3; 
+    const R = 6371e3;
     const φ1 = lat1 * Math.PI / 180;
     const φ2 = lat2 * Math.PI / 180;
     const Δφ = (lat2 - lat1) * Math.PI / 180;
     const Δλ = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c; 
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
 }
 
 function generateRoute(startLocation, endLocation, bins) {
     const selectedBins = [];
-    const excludedBins = []; 
-    const blockedBins = [];
+    const excludedBins = [];
     const predictions = new Map();
 
     console.log(`\n=== Route Generation Started ===`);
@@ -53,40 +52,34 @@ function generateRoute(startLocation, endLocation, bins) {
             bin.priority = CONFIG.PRIORITY_WEIGHTS.BLOCKED_VIEW;
             bin.urgency = "MEDIUM";
             selectedBins.push(bin);
-        } 
-        else if (bin.fill >= CONFIG.FILL_THRESHOLD_CRITICAL) {
-            // ✅ Include: >= 50%
-            bin.reason = `FILL_${Math.round(bin.fill)}%_CRITICAL`;
-            bin.priority = CONFIG.PRIORITY_WEIGHTS.CRITICAL;
-            bin.urgency = "HIGH";
-            selectedBins.push(bin);
         }
         else if (analysis.status === "CRITICAL" || analysis.status === "CRITICAL_SOON") {
-            // ✅ Include: AI predicts it will be full very soon
+            // ✅ Include: AI predicts it will be full very soon (<6h) OR >90% full safely
             bin.reason = "PREDICTED_CRITICAL";
             bin.priority = CONFIG.PRIORITY_WEIGHTS.CRITICAL_SOON;
             bin.urgency = "HIGH";
             selectedBins.push(bin);
         }
         else if (analysis.status === "PREDICTED_OVERFLOW") {
-             // ✅ Include: AI predicts overflow within 24h
+            // ✅ Include: AI predicts overflow within 24h (today)
             bin.reason = "PREDICTED_OVERFLOW";
             bin.priority = CONFIG.PRIORITY_WEIGHTS.PREDICTED_OVERFLOW;
             bin.urgency = "MEDIUM";
             selectedBins.push(bin);
         }
-        else if (bin.fill >= CONFIG.FILL_THRESHOLD_WARNING) {
-            // (Optional) Include: 45-49% to be safe
-            bin.reason = `FILL_${Math.round(bin.fill)}%_WARNING`;
-            bin.priority = CONFIG.PRIORITY_WEIGHTS.WARNING;
-            bin.urgency = "MEDIUM";
+        else if (bin.fill >= 90) {
+            // Failsafe: If >90% full, collect it anyway
+            bin.reason = `CRITICAL_FILL_${Math.round(bin.fill)}%`;
+            bin.priority = CONFIG.PRIORITY_WEIGHTS.CRITICAL;
+            bin.urgency = "HIGH";
             selectedBins.push(bin);
         }
         else {
-            // ❌ EXCLUDE: Normal bins (e.g., 20% full) are SKIPPED
-            bin.reason = "NOT_URGENT";
+            // ❌ EXCLUDE: If it won't overflow today, completely remove from route
+            // Even if it's 50% or 60% full, we leave it for tomorrow's trip!
+            bin.reason = "NOT_OVERFLOWING_TODAY";
             bin.priority = 0;
-            excludedBins.push(bin); 
+            excludedBins.push(bin);
         }
     });
 
@@ -115,19 +108,19 @@ function generateRoute(startLocation, endLocation, bins) {
 
         unvisited.forEach((bin, idx) => {
             const distance = getDistance(
-                currentPos.latitude, 
-                currentPos.longitude, 
-                bin.latitude, 
+                currentPos.latitude,
+                currentPos.longitude,
+                bin.latitude,
                 bin.longitude
             );
 
             // Normalize distance (5km baseline)
             const normalizedDistance = Math.min(distance / 5000, 1);
-            
+
             // Priority vs Distance Weighting
             // Allows picking a "Predicted" bin nearby over a "Critical" bin far away
-            const distancePenalty = normalizedDistance * 60; 
-            
+            const distancePenalty = normalizedDistance * 60;
+
             const score = bin.priority - distancePenalty;
 
             if (score > bestScore) {
@@ -151,10 +144,10 @@ function generateRoute(startLocation, endLocation, bins) {
                 predicted_overflow_at: selectedBin.prediction.predicted_overflow_at,
                 hours_until_overflow: selectedBin.prediction.hours_until_overflow
             });
-            
-            currentPos = { 
-                latitude: selectedBin.latitude, 
-                longitude: selectedBin.longitude 
+
+            currentPos = {
+                latitude: selectedBin.latitude,
+                longitude: selectedBin.longitude
             };
             unvisited.splice(selectedIdx, 1);
         }
@@ -181,19 +174,11 @@ function generateRoute(startLocation, endLocation, bins) {
             current_status: b.prediction.status,
             hours_until_overflow: b.prediction.hours_until_overflow
         })),
-        blocked_bins: blockedBins.map(b => ({
-            bin_id: b.id,
-            name: b.area_name || "Bin",
-            latitude: b.latitude,
-            longitude: b.longitude,
-            fill: b.fill,
-            weight: b.weight,
-            reason: "Sensor Blocked"
-        })),
+        blocked_bins: [],
         meta: {
             total_stops: finalRoute.length,
             bins_to_collect: selectedBins.length,
-            bins_blocked: blockedBins.length,
+            bins_blocked: 0,
             bins_monitored: excludedBins.length,
             critical_now: selectedBins.filter(b => b.urgency === "HIGH").length,
             predicted_soon: selectedBins.filter(b => b.urgency === "MEDIUM").length

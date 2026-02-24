@@ -9,14 +9,16 @@ exports.getWasteStats = async (req, res) => {
     // Aggregates the 'weight' column from bin_readings
     const weeklyQuery = `
       SELECT 
-        TO_CHAR(recorded_at, 'Dy') as day, 
-        SUM(weight) as total_weight
-      FROM bin_readings 
-      WHERE recorded_at >= NOW() - INTERVAL '7 days'
-      GROUP BY 1, TO_CHAR(recorded_at, 'D')
-      ORDER BY TO_CHAR(recorded_at, 'D') ASC;
+        TO_CHAR(br.recorded_at, 'Dy') as day, 
+        SUM(br.weight) as total_weight
+      FROM bin_readings br
+      JOIN bins b ON br.bin_id = b.id
+      WHERE br.recorded_at >= NOW() - INTERVAL '7 days'
+        AND b.area_id = $1
+      GROUP BY 1, TO_CHAR(br.recorded_at, 'D')
+      ORDER BY TO_CHAR(br.recorded_at, 'D') ASC;
     `;
-    
+
     // 2. Bin Status Distribution (Critical vs Normal vs Warning)
     const statusQuery = `
       SELECT status, COUNT(*) as count 
@@ -36,7 +38,7 @@ exports.getWasteStats = async (req, res) => {
     `;
 
     const [weeklyRes, statusRes, driverRes] = await Promise.all([
-      db.query(weeklyQuery),
+      db.query(weeklyQuery, [area_id]),
       db.query(statusQuery, [area_id]),
       db.query(driverStatsQuery, [area_id])
     ]);

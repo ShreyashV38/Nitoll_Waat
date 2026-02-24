@@ -3,7 +3,7 @@
 .dashboard {
   flex: 1;
   padding: 30px;
-  background: #f8fafc;
+  background: var(--bg-secondary);
   height: 100vh;
   overflow-y: auto;
 }
@@ -12,20 +12,23 @@
 .dashboard-header {
   margin-bottom: 20px;
 }
+
 .dashboard-header h1 {
   font-size: 24px;
   margin-bottom: 4px;
+  color: var(--text-primary);
 }
+
 .dashboard-header p {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 14px;
 }
 
-/* Add this to your existing CSS */
+/* Alert box variants */
 .alert-box.success {
-  background-color: #dcfce7; /* Light Green */
-  border-left: 4px solid #22c55e; /* Dark Green */
-  color: #14532d;
+  background-color: var(--alert-success-bg);
+  border-left: 4px solid var(--alert-success-border);
+  color: var(--status-completed-text);
 }
 
 /* Overview Bar */
@@ -35,28 +38,34 @@
   align-items: center;
   margin-bottom: 20px;
 }
+
 .overview-text h3 {
   font-size: 18px;
   margin: 0;
+  color: var(--text-primary);
 }
+
 .overview-text span {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--text-faint);
 }
+
 .system-pill {
-  background: white;
+  background: var(--pill-bg);
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 13px;
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-secondary);
 }
+
 .system-pill .dot {
   width: 8px;
   height: 8px;
-  background-color: #22c55e;
+  background-color: var(--accent-green);
   border-radius: 50%;
 }
 
@@ -73,70 +82,81 @@
   display: grid;
   grid-template-columns: 1fr 1.5fr 1fr;
   gap: 24px;
-  /* ✅ FIX: Remove fixed heights. Grid automatically stretches children by default. */
-  align-items: stretch; 
-  /* Optional: Set a minimum so it doesn't collapse on empty data */
-  min-height: 500px; 
+  align-items: stretch;
+  min-height: 500px;
 }
+
 /* Card General Style */
 .dashboard-card {
-  background: white;
-  border-radius: 16px;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--border-color);
 }
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
-.card-header h3, .dashboard-card h3 {
+
+.card-header h3,
+.dashboard-card h3 {
   font-size: 16px;
   margin: 0 0 12px 0;
+  color: var(--text-primary);
 }
 
 /* Alerts Column */
 .alerts-card {
   gap: 12px;
 }
+
 .badge-count {
-  background: #ff5e5e;
-  color: white;
+  background: var(--accent-red);
+  color: var(--text-inverse);
   font-size: 12px;
   padding: 2px 8px;
   border-radius: 10px;
   font-weight: bold;
 }
+
 .alert-box {
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 10px;
 }
+
 .alert-box.critical {
-  background-color: #fee2e2;
-  border-left: 4px solid #ef4444;
+  background-color: var(--alert-critical-bg);
+  border-left: 4px solid var(--alert-critical-border);
 }
+
 .alert-box.info {
-  background-color: #eff6ff;
-  border-left: 4px solid #3b82f6;
+  background-color: var(--alert-info-bg);
+  border-left: 4px solid var(--alert-info-border);
 }
+
 .alert-msg {
   font-size: 13px;
   font-weight: 500;
   margin: 0 0 4px 0;
-  color: #1e293b;
+  color: var(--text-primary);
 }
+
 .alert-time {
   font-size: 11px;
-  color: #64748b;
+  color: var(--text-muted);
 }
+
 .view-all-btn {
   margin-top: auto;
-  background: #fbbf24;
-  color: white;
+  background: var(--accent-yellow);
+  color: var(--text-inverse);
   border: none;
   padding: 10px;
   border-radius: 8px;
@@ -147,17 +167,19 @@
 /* Map Column */
 .map-preview-box {
   flex: 1;
-  background: #e2e8f0;
+  background: var(--map-placeholder);
   border-radius: 12px;
   position: relative;
   overflow: hidden;
 }
+
 .map-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.6; /* Dimmed to show button clearly */
+  opacity: 0.6;
 }
+
 .map-overlay {
   position: absolute;
   inset: 0;
@@ -165,14 +187,15 @@
   align-items: center;
   justify-content: center;
 }
+
 .map-btn {
-  background: white;
-  color: #333;
+  background: var(--card-bg);
+  color: var(--text-primary);
   padding: 10px 20px;
   border-radius: 30px;
   border: none;
   font-weight: 600;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
 }
 
 /* Routes Column */
@@ -181,18 +204,23 @@
   flex-direction: column;
   gap: 20px;
 }
+
 .routes-card {
   flex: 1;
 }
+
 .route-item {
   margin-bottom: 16px;
 }
+
 .route-info {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
   margin-bottom: 6px;
+  color: var(--text-secondary);
 }
+
 .status-badge {
   padding: 2px 6px;
   border-radius: 4px;
@@ -200,15 +228,24 @@
   text-transform: uppercase;
   font-weight: bold;
 }
-.status-badge.inprogress { background: #ffedd5; color: #c2410c; }
-.status-badge.completed { background: #dcfce7; color: #15803d; }
+
+.status-badge.inprogress {
+  background: var(--status-inprogress-bg);
+  color: var(--status-inprogress-text);
+}
+
+.status-badge.completed {
+  background: var(--status-completed-bg);
+  color: var(--status-completed-text);
+}
 
 .progress-bg {
   height: 6px;
-  background: #f1f5f9;
+  background: var(--progress-bg);
   border-radius: 4px;
   overflow: hidden;
 }
+
 .progress-fill {
   height: 100%;
   border-radius: 4px;
@@ -218,8 +255,9 @@
 .feed-card {
   height: 120px;
 }
+
 .empty-feed {
-  color: #cbd5e1;
+  color: var(--text-faint);
   font-size: 14px;
   text-align: center;
   margin-top: 20px;
@@ -230,6 +268,7 @@
   .stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+
   .main-grid {
     grid-template-columns: 1fr;
     height: auto;

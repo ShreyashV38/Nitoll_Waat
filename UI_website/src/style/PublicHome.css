@@ -1,0 +1,296 @@
+/* source1/src/style/PublicHome.css */
+.public-container {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.public-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+.nav-brand small {
+    color: #27ae60;
+    background: #e8f5e9;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: 1px solid #27ae60;
+    color: #27ae60;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.nav-btn:hover {
+    background: #27ae60;
+    color: white;
+}
+
+.hero-box {
+    background: linear-gradient(135deg, #16a085, #2ecc71);
+    color: white;
+    padding: 4rem 1rem 6rem;
+    text-align: center;
+}
+
+.search-card {
+    background: white;
+    max-width: 900px;
+    margin: 2rem auto -5rem;
+    /* Overlap effect */
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 200px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.data-section {
+    max-width: 900px;
+    margin: 6rem auto 2rem;
+    padding: 0 1rem;
+}
+
+.summary-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    flex: 1;
+    background: white;
+    padding: 1.5rem;
+    text-align: center;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.summary-card h3 {
+    margin: 0;
+    color: #95a5a6;
+    font-size: 0.9rem;
+}
+
+.summary-card p {
+    margin: 5px 0 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.status-ok p {
+    color: #27ae60;
+}
+
+.bins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.bin-item {
+    background: white;
+    padding: 1.2rem;
+    border-radius: 8px;
+    border: 1px solid #ecf0f1;
+}
+
+.bin-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.status-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.status-badge.ok {
+    background: #e8f5e9;
+    color: #27ae60;
+}
+
+.status-badge.full {
+    background: #fdecea;
+    color: #c0392b;
+}
+
+.fill-bar-bg {
+    background: #ecf0f1;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.fill-bar {
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+.fill-text {
+    text-align: right;
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+.loading-spinner {
+    text-align: center;
+    margin-top: 5rem;
+    color: #7f8c8d;
+}
+
+/* Add this to src/style/PublicHome.css */
+
+.map-container-public {
+    height: 500px;
+    /* Give the map a fixed height */
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
+    margin-top: 2rem;
+    z-index: 1;
+    /* Ensure map stays below dropdowns if they overlap */
+}
+
+/* Ensure Leaflet tiles load correctly */
+.leaflet-container {
+    height: 100%;
+    width: 100%;
+}
+
+/* ---- Complaint Modal ---- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.complaint-modal {
+    background: white;
+    padding: 28px;
+    border-radius: 16px;
+    width: 420px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.complaint-modal h3 {
+    margin: 0 0 20px;
+    font-size: 20px;
+    color: #2c3e50;
+}
+
+.complaint-field {
+    margin-bottom: 14px;
+}
+
+.complaint-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.complaint-field select,
+.complaint-field input,
+.complaint-field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.complaint-field textarea {
+    resize: vertical;
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #f5f5f5;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-submit {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background: #27ae60;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-submit:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.btn-submit:not(:disabled):hover {
+    background: #219a52;
+}

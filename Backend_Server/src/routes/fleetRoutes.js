@@ -15,6 +15,7 @@ router.post('/routes/auto-dispatch', protect, fleetController.generateAutoRoutes
 router.get('/driver/active-route', protect, fleetController.getDriverActiveRoute);
 router.post('/driver/generate-route', protect, fleetController.generateOptimizedRoute);
 router.post('/driver/ignore-bin', protect, fleetController.ignoreBin);
+router.post('/driver/location', protect, fleetController.updateDriverLocation); // Geofencing
 
 // NEW: Prediction & Analytics
 router.get('/bins/need-collection', protect, fleetController.getBinsNeedingCollection);

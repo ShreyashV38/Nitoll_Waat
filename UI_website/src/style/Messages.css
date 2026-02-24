@@ -5,32 +5,35 @@
 .messages-page {
   flex: 1;
   padding: 30px;
-  background: #f8faf9;
+  background: var(--bg-secondary);
   min-height: 100vh;
 }
 
 /* Header */
 .page-header {
-  background: white;
+  background: var(--card-bg);
   padding: 16px;
   border-radius: 12px;
   margin-bottom: 20px;
+  border: 1px solid var(--border-color);
 }
 
 .page-header h1 {
   font-size: 18px;
+  color: var(--text-primary);
 }
 
 .page-header p {
   font-size: 13px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 /* Alerts container */
 .alerts-box {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 16px;
+  border: 1px solid var(--border-color);
 }
 
 /* Top row */
@@ -43,17 +46,20 @@
 
 .alerts-header h2 {
   font-size: 16px;
+  color: var(--text-primary);
 }
 
 .alerts-header span {
   font-size: 13px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .alerts-header select {
   padding: 6px 10px;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
+  background: var(--bg-input);
+  color: var(--text-primary);
 }
 
 /* Content */
@@ -65,32 +71,35 @@
 
 /* Inbox */
 .alerts-list {
-  background: #fafafa;
+  background: var(--bg-hover);
   border-radius: 10px;
   padding: 12px;
 }
 
 .alerts-list h4 {
   margin-bottom: 10px;
+  color: var(--text-primary);
 }
 
 .alert-item {
-  background: white;
+  background: var(--card-bg);
   border-radius: 8px;
   padding: 10px;
   margin-bottom: 10px;
   cursor: pointer;
   position: relative;
+  border: 1px solid var(--border-color);
 }
 
 .alert-item p {
   font-size: 13px;
   margin-top: 6px;
+  color: var(--text-secondary);
 }
 
 .alert-item .time {
   font-size: 11px;
-  color: #888;
+  color: var(--text-faint);
   position: absolute;
   right: 10px;
   top: 10px;
@@ -98,26 +107,29 @@
 
 /* Details */
 .alert-details {
-  background: #f4f4f4;
+  background: var(--bg-hover);
   border-radius: 12px;
   padding: 16px;
 }
 
 .alert-details h3 {
   margin: 10px 0;
+  color: var(--text-primary);
 }
 
 .alert-details .meta {
   font-size: 12px;
-  color: #666;
+  color: var(--text-muted);
   margin-bottom: 12px;
 }
 
 .message-box {
-  background: white;
+  background: var(--card-bg);
   padding: 14px;
   border-radius: 8px;
   font-size: 14px;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 /* Badges */
@@ -130,29 +142,29 @@
 }
 
 .badge.critical {
-  background: #fecaca;
-  color: #b91c1c;
+  background: var(--alert-critical-bg);
+  color: var(--accent-red);
 }
 
 .badge.warning {
-  background: #fde68a;
-  color: #92400e;
+  background: var(--status-inprogress-bg);
+  color: var(--accent-orange);
 }
 
 .badge.info {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: var(--alert-info-bg);
+  color: var(--accent-blue);
 }
 
 /* Inbox highlight */
 .alert-item.critical {
-  border-left: 6px solid #ef4444;
+  border-left: 6px solid var(--accent-red);
 }
 
 .alert-item.warning {
-  border-left: 6px solid #f59e0b;
+  border-left: 6px solid var(--accent-yellow);
 }
 
 .alert-item.info {
-  border-left: 6px solid #3b82f6;
+  border-left: 6px solid var(--accent-blue);
 }

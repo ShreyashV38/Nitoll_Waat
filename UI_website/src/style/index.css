@@ -1,22 +1,153 @@
 /* src/style/index.css */
+
+/* ================================
+   THEME SYSTEM — Light & Dark Mode
+   ================================ */
+
 :root {
+  /* Typography */
   font-family: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  /* Force Light Mode Variables */
-  color-scheme: light;
-  color: #213547;
-  background-color: #ffffff;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* === LIGHT THEME (default) === */
+  color-scheme: light;
+
+  /* Surfaces */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-sidebar: #c6f6d5;
+  --bg-input: #f9f9f9;
+  --bg-hover: #f1f5f9;
+
+  /* Text */
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Borders & Shadows */
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* Accents (unchanged in dark mode) */
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-blue: #3b82f6;
+  --accent-yellow: #fbbf24;
+  --accent-indigo: #5a67d8;
+  --accent-orange: #f97316;
+
+  /* Sidebar nav */
+  --nav-active-bg: #f0f4ff;
+  --nav-active-text: #5a67d8;
+
+  /* Cards */
+  --card-bg: #ffffff;
+  --card-radius: 16px;
+
+  /* Alerts */
+  --alert-critical-bg: #fee2e2;
+  --alert-critical-border: #ef4444;
+  --alert-info-bg: #eff6ff;
+  --alert-info-border: #3b82f6;
+  --alert-success-bg: #dcfce7;
+  --alert-success-border: #22c55e;
+
+  /* Progress/Status */
+  --progress-bg: #f1f5f9;
+  --status-inprogress-bg: #ffedd5;
+  --status-inprogress-text: #c2410c;
+  --status-completed-bg: #dcfce7;
+  --status-completed-text: #15803d;
+
+  /* System pill */
+  --pill-bg: #ffffff;
+
+  /* Map placeholder */
+  --map-placeholder: #e2e8f0;
+
+  /* Button */
+  --btn-bg: #f9f9f9;
+  --btn-hover-border: #646cff;
+
+  /* Link */
+  --link-color: #646cff;
+  --link-hover: #535bf2;
 }
 
-/* Consolidated Base Resets */
-html, body, #root {
+/* === DARK THEME === */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-sidebar: #1a2332;
+  --bg-input: #334155;
+  --bg-hover: #334155;
+
+  /* Text */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --text-inverse: #0f172a;
+
+  /* Borders & Shadows */
+  --border-color: #334155;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+
+  /* Sidebar nav */
+  --nav-active-bg: rgba(90, 103, 216, 0.15);
+  --nav-active-text: #818cf8;
+
+  /* Cards */
+  --card-bg: #1e293b;
+
+  /* Alerts */
+  --alert-critical-bg: rgba(239, 68, 68, 0.15);
+  --alert-info-bg: rgba(59, 130, 246, 0.15);
+  --alert-success-bg: rgba(34, 197, 94, 0.15);
+
+  /* Progress/Status */
+  --progress-bg: #334155;
+  --status-inprogress-bg: rgba(249, 115, 22, 0.2);
+  --status-inprogress-text: #fb923c;
+  --status-completed-bg: rgba(34, 197, 94, 0.2);
+  --status-completed-text: #4ade80;
+
+  /* System pill */
+  --pill-bg: #334155;
+
+  /* Map placeholder */
+  --map-placeholder: #334155;
+
+  /* Button */
+  --btn-bg: #334155;
+  --btn-hover-border: #818cf8;
+
+  /* Link */
+  --link-color: #818cf8;
+  --link-hover: #a5b4fc;
+}
+
+/* ================================
+   BASE RESETS
+   ================================ */
+
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -26,7 +157,10 @@ html, body, #root {
 body {
   min-width: 320px;
   min-height: 100vh;
-  display: block; /* Ensures standard block-level layout */
+  display: block;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Element Defaults */
@@ -38,12 +172,13 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #f9f9f9;
-  transition: border-color 0.25s;
+  background-color: var(--btn-bg);
+  color: var(--text-primary);
+  transition: border-color 0.25s, background-color 0.3s, color 0.3s;
 }
 
 button:hover {
-  border-color: #646cff;
+  border-color: var(--btn-hover-border);
 }
 
 button:focus,
@@ -53,15 +188,111 @@ button:focus-visible {
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--link-color);
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: var(--link-hover);
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  color: var(--text-primary);
+}
+
+/* ================================
+   DARK MODE TOGGLE BUTTON
+   ================================ */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  margin-top: auto;
+  margin-bottom: 10px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-indigo);
+  color: var(--accent-indigo);
+}
+
+/* Smooth transition for themed elements */
+.sidebar,
+.dashboard,
+.dashboard-card,
+.content-area,
+.nav-item,
+.system-pill,
+.stat-card,
+.map-preview-box,
+.alert-box,
+input,
+select,
+textarea {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* === DARK MODE GLOBAL TEXT OVERRIDES === */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] label,
+[data-theme="dark"] td,
+[data-theme="dark"] th {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .card-top-row h3,
+[data-theme="dark"] .detail-group label,
+[data-theme="dark"] .bold-id,
+[data-theme="dark"] .detail-value,
+[data-theme="dark"] .col-id,
+[data-theme="dark"] .col-text {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .directory-container h3,
+[data-theme="dark"] .directory-container td,
+[data-theme="dark"] .directory-container th {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .recharts-text,
+[data-theme="dark"] .recharts-cartesian-axis-tick-value {
+  fill: var(--text-muted) !important;
+}
+
+[data-theme="dark"] .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
 }

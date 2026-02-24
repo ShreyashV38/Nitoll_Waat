@@ -1,0 +1,84 @@
+.health-widget {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.health-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.health-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.health-score {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.health-metrics {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.health-metric {
+    flex: 1;
+    background: var(--bg-main);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.metric-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: block;
+}
+
+.flagged-list {
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+}
+
+.flagged-list h4 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.flagged-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: var(--bg-main);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.flagged-id {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.flagged-reason {
+    color: var(--text-muted);
+    font-size: 12px;
+}

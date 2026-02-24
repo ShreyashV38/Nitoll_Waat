@@ -22,12 +22,15 @@ export const authAPI = {
 export const binAPI = {
   getAll: () => api.get('/bins'),
   update: (bin_id: string, fill_percent: number) => api.post('/bins/update', { bin_id, fill_percent }),
-  create: (data: any) => api.post('/bins/create', data), 
+  create: (data: any) => api.post('/bins/create', data),
+  updateCalibration: (id: string, data: { empty_distance: number, full_distance: number }) =>
+    api.put(`/bins/${id}/calibration`, data),
+  getHealth: () => api.get('/bins/health'),
 };
 
 export const dumpingZoneAPI = {
   getAll: () => api.get('/dumping-zones'),
-  create: (data: { name: string, lat: number, lng: number }) => 
+  create: (data: { name: string, lat: number, lng: number }) =>
     api.post('/dumping-zones/create', data),
 };
 
@@ -35,13 +38,11 @@ export const fleetAPI = {
   getVehicles: () => api.get('/fleet/vehicles'),
   getActiveRoutes: () => api.get('/fleet/routes/active'),
   autoDispatch: () => api.post('/fleet/routes/auto-dispatch'),
-  
-  // Existing function for Routes Page (Driver + Ward)
-  assignRoute: (data: { driver_id: string; ward_id: string }) => 
-    api.post('/fleet/routes/create', data), 
-  
-  // ✅ ADD THIS NEW FUNCTION for Vehicles Page (Driver + Vehicle)
-  assignVehicle: (data: { driver_id: string; vehicle_id: string }) => 
+
+  assignRoute: (data: { driver_id: string; ward_id: string }) =>
+    api.post('/fleet/routes/create', data),
+
+  assignVehicle: (data: { driver_id: string; vehicle_id: string }) =>
     api.post('/fleet/vehicles/assign', data),
 
   cancelRoute: (routeId: string) => api.patch(`/fleet/routes/${routeId}/cancel`),
@@ -57,7 +58,7 @@ export const alertAPI = {
 
 export const wardAPI = {
   getAll: () => api.get('/wards'),
-  create: (data: { name: string; description?: string }) => 
+  create: (data: { name: string; description?: string }) =>
     api.post('/wards', data),
 };
 export const driverAPI = {
@@ -68,8 +69,10 @@ export const analyticsAPI = {
   getStats: () => api.get('/analytics/waste-stats'),
 };
 
-export const getWasteStats = async () => {
-    const response = await api.get('/analytics/waste-stats');
-    return response.data;
+export const complaintAPI = {
+  create: (data: any) => api.post('/complaints/create', data),
+  getAll: () => api.get('/complaints'),
+  resolve: (id: string) => api.put(`/complaints/${id}/resolve`),
 };
+
 export default api;

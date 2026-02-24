@@ -4,10 +4,11 @@ import BinMap from "../components/MapsBins/BinMap";
 import BinDirectory from "../components/MapsBins/BinDirectory";
 import AddBinModal from "../components/MapsBins/AddBinModal";
 import AddZoneModal from "../components/MapsBins/AddZoneModal";
-import AddWardModal from "../components/MapsBins/AddwardModal"; 
+import AddWardModal from "../components/MapsBins/AddwardModal";
 import { binAPI, wardAPI, dumpingZoneAPI } from "../services/api";
 import { socketService } from "../services/socket";
 import { useAuth } from "../context/AuthContext";
+import { findBoundaryForArea, isPointInBoundary } from "../data/goaBoundaries";
 import "../style/MapsBinsPage.css";
 
 // Interface for Real IoT Data
@@ -16,11 +17,11 @@ export interface Bin {
   lat: number;
   lng: number;
   level: number;
-  status: "NORMAL" | "WARNING" | "CRITICAL" | "BLOCKED"; 
+  status: "NORMAL" | "WARNING" | "CRITICAL" | "BLOCKED";
   lid: string;
   weight: number;
-  lastUpdated: string; 
-  last_updated: string; 
+  lastUpdated: string;
+  last_updated: string;
   address: string;
   prediction?: {
     predicted_overflow_at: string | null;
@@ -39,16 +40,16 @@ export interface Zone {
 
 const MapsBinsPage = () => {
   const [activeTab, setActiveTab] = useState<"map" | "directory">("map");
-  
+
   // Modals state
   const [showBinModal, setShowBinModal] = useState(false);
   const [showZoneModal, setShowZoneModal] = useState(false);
-  const [showWardModal, setShowWardModal] = useState(false); 
-  
+  const [showWardModal, setShowWardModal] = useState(false);
+
   // ✅ FIX: Removed "WARD" from Add Mode (Wards don't need map clicks)
   const [addMode, setAddMode] = useState<"NONE" | "BIN" | "ZONE">("NONE");
-  
-  const [selectedLocation, setSelectedLocation] = useState<{lat: number, lng: number} | null>(null);
+
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number, lng: number } | null>(null);
   const [bins, setBins] = useState<Bin[]>([]);
   const [wards, setWards] = useState<any[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
@@ -58,7 +59,7 @@ const MapsBinsPage = () => {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 10000); 
+    const interval = setInterval(loadData, 10000);
 
     const socket = socketService.connect();
     socket.on("connect", () => {
@@ -82,7 +83,7 @@ const MapsBinsPage = () => {
               lid: updatedBin.lid_status,
               weight: parseFloat(updatedBin.weight) || 0,
               lastUpdated: now.toLocaleTimeString(),
-              last_updated: now.toISOString() 
+              last_updated: now.toISOString()
             };
           }
           return bin;
@@ -142,9 +143,15 @@ const MapsBinsPage = () => {
     loadData();
   };
 
-  // ✅ FIX: Map click only handles Bins and Zones (Items with locations)
+  // ✅ Map click with BOUNDARY VALIDATION
   const handleMapClick = (lat: number, lng: number) => {
     if (addMode === "NONE") return;
+
+    // Check if the clicked point is within the admin's area boundary
+    if (area?.taluka && !isPointInBoundary(lat, lng, area.taluka)) {
+      alert(`⚠️ Cannot place here! This location is outside ${area.taluka} boundary.\n\nPlease click inside your assigned area (${area.area_name}).`);
+      return;
+    }
 
     setSelectedLocation({ lat, lng });
 
@@ -158,27 +165,27 @@ const MapsBinsPage = () => {
   const handleCloseModal = () => {
     setShowBinModal(false);
     setShowZoneModal(false);
-    setShowWardModal(false); 
+    setShowWardModal(false);
     setSelectedLocation(null);
   };
 
   return (
     <div className="maps-bins-page">
       <PageHeader title={area ? `${area.area_name}` : "Operations"} subtitle="Monitor Bins & Zones">
-         <div style={{
-             background: isConnected ? '#dcfce7' : '#fee2e2', 
-             color: isConnected ? '#166534' : '#991b1b',
-             padding: '6px 12px', borderRadius: '20px', 
-             fontSize: '12px', fontWeight: 'bold', 
-             display: 'flex', alignItems: 'center', gap: '6px'
-         }}>
-             <span style={{
-                 width: '8px', height: '8px', 
-                 background: isConnected ? '#22c55e' : '#ef4444', 
-                 borderRadius: '50%'
-             }}></span>
-             {isConnected ? "LIVE SOCKET ACTIVE" : "SOCKET DISCONNECTED"}
-         </div>
+        <div style={{
+          background: isConnected ? '#dcfce7' : '#fee2e2',
+          color: isConnected ? '#166534' : '#991b1b',
+          padding: '6px 12px', borderRadius: '20px',
+          fontSize: '12px', fontWeight: 'bold',
+          display: 'flex', alignItems: 'center', gap: '6px'
+        }}>
+          <span style={{
+            width: '8px', height: '8px',
+            background: isConnected ? '#22c55e' : '#ef4444',
+            borderRadius: '50%'
+          }}></span>
+          {isConnected ? "LIVE SOCKET ACTIVE" : "SOCKET DISCONNECTED"}
+        </div>
       </PageHeader>
 
       <div className="actions-bar">
@@ -193,90 +200,94 @@ const MapsBinsPage = () => {
 
         <div className="buttons">
           <button className="refresh-btn" onClick={handleRefresh}>🔄 Refresh</button>
-          
+
           {/* ✅ FIX: Ward Button now opens Modal DIRECTLY (No Map Click needed) */}
-          <button 
-            className="add-btn ward-btn" 
+          <button
+            className="add-btn ward-btn"
             onClick={() => setShowWardModal(true)}
             style={{
-                backgroundColor: "#ec4899", 
-                border: "none",
-                color: 'white'
+              backgroundColor: "#ec4899",
+              border: "none",
+              color: 'white'
             }}
           >
-             + Add Ward
+            + Add Ward
           </button>
 
-          <button 
-            className={`add-btn zone-btn ${addMode === "ZONE" ? "active-mode" : ""}`} 
+          <button
+            className={`add-btn zone-btn ${addMode === "ZONE" ? "active-mode" : ""}`}
             onClick={() => setAddMode(addMode === "ZONE" ? "NONE" : "ZONE")}
             style={{
-                backgroundColor: addMode === "ZONE" ? "#7e22ce" : "#9333ea", 
-                border: addMode === "ZONE" ? "2px solid #000" : "none"
+              backgroundColor: addMode === "ZONE" ? "#7e22ce" : "#9333ea",
+              border: addMode === "ZONE" ? "2px solid #000" : "none"
             }}
           >
-             {addMode === "ZONE" ? "📍 Click Map to Set Zone" : "+ Add Zone"}
+            {addMode === "ZONE" ? "📍 Click Map to Set Zone" : "+ Add Zone"}
           </button>
 
-          <button 
-            className={`add-btn ${addMode === "BIN" ? "active-mode" : ""}`} 
+          <button
+            className={`add-btn ${addMode === "BIN" ? "active-mode" : ""}`}
             onClick={() => setAddMode(addMode === "BIN" ? "NONE" : "BIN")}
             style={{
-                border: addMode === "BIN" ? "2px solid #000" : "none"
+              border: addMode === "BIN" ? "2px solid #000" : "none"
             }}
           >
-             {addMode === "BIN" ? "📍 Click Map to Set Bin" : "+ Add Bin"}
+            {addMode === "BIN" ? "📍 Click Map to Set Bin" : "+ Add Bin"}
           </button>
         </div>
       </div>
 
       {/* ✅ FIX: Updated Info Banner */}
       {addMode !== "NONE" && (
-        <div style={{background: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', padding: '10px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold'}}>
-           Adding {addMode === "BIN" ? "Smart Bin" : "Dumping Zone"}: Click a location on the map to place it.
+        <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', padding: '10px', textAlign: 'center', fontSize: '14px', fontWeight: 'bold' }}>
+          Adding {addMode === "BIN" ? "Smart Bin" : "Dumping Zone"}: Click a location on the map to place it.
         </div>
       )}
 
       <div className="content-area">
         {loading ? (
-            <p style={{padding: '20px', textAlign: 'center'}}>Loading IoT Data...</p>
+          <p style={{ padding: '20px', textAlign: 'center' }}>Loading IoT Data...</p>
         ) : (
-            <>
-                {activeTab === "map" ? (
-                    <BinMap 
-                        bins={bins} 
-                        zones={zones} 
-                        onMapClick={handleMapClick} 
-                    />
-                ) : (
-                    <BinDirectory bins={bins} />
-                )}
-            </>
+          <>
+            {activeTab === "map" ? (
+              <BinMap
+                bins={bins}
+                zones={zones}
+                onMapClick={handleMapClick}
+                boundary={area?.taluka ? (() => {
+                  const b = findBoundaryForArea(area.taluka);
+                  return b ? { ...b, fillColor: b.fillColor } : undefined;
+                })() : undefined}
+              />
+            ) : (
+              <BinDirectory bins={bins} />
+            )}
+          </>
         )}
       </div>
 
       {showBinModal && (
-        <AddBinModal 
-            onClose={handleCloseModal} 
-            refreshData={loadData} 
-            wards={wards} 
-            location={selectedLocation} 
+        <AddBinModal
+          onClose={handleCloseModal}
+          refreshData={loadData}
+          wards={wards}
+          location={selectedLocation}
         />
       )}
-      
+
       {showZoneModal && (
-        <AddZoneModal 
-            onClose={handleCloseModal} 
-            refreshData={loadData} 
-            location={selectedLocation} 
+        <AddZoneModal
+          onClose={handleCloseModal}
+          refreshData={loadData}
+          location={selectedLocation}
         />
       )}
 
       {showWardModal && (
-        <AddWardModal 
-            onClose={handleCloseModal} 
-            refreshData={loadData} 
-            // Location is no longer needed/passed
+        <AddWardModal
+          onClose={handleCloseModal}
+          refreshData={loadData}
+        // Location is no longer needed/passed
         />
       )}
     </div>

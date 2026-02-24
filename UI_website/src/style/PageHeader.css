@@ -1,25 +1,26 @@
 /* src/style/PageHeader.css */
 .common-page-header {
-  background: white;
+  background: var(--card-bg);
   padding: 20px 24px;
   border-radius: 12px;
   margin-bottom: 24px;
   display: flex;
-  justify-content: space-between; /* Pushes button to right */
+  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Optional: adds subtle depth */
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .header-content h1 {
   font-size: 20px;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 }
 
 .header-content p {
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-muted);
   margin: 0;
   font-weight: 500;
 }

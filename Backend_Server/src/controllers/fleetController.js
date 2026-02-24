@@ -4,12 +4,14 @@ const db = require('../config/db');
 // 1. GET VEHICLES (For Admin Fleet View)
 exports.getVehicles = async (req, res) => {
   try {
+    const area_id = req.user.area_id;
     const result = await db.query(`
       SELECT v.*, u.name as driver_name 
       FROM vehicles v 
       LEFT JOIN routes r ON v.id = r.vehicle_id AND r.status = 'IN_PROGRESS'
       LEFT JOIN users u ON r.driver_id = u.id
-    `);
+      WHERE v.area_id = $1
+    `, [area_id]);
     res.json(result.rows);
   } catch (err) { res.status(500).json({ error: 'Server Error' }); }
 };
@@ -17,13 +19,14 @@ exports.getVehicles = async (req, res) => {
 // 2. GET ACTIVE ROUTES (For Admin Dashboard)
 exports.getActiveRoutes = async (req, res) => {
   try {
-    const area_id = req.user.area_id; 
-    const result = await db.query(`
+    const area_id = req.user.area_id;
+    const routesResult = await db.query(`
       SELECT 
         r.id, 
         r.status, 
         u.name as driver_name,
         v.license_plate,
+        w.id as ward_id,
         w.name as ward_name,
         (SELECT COUNT(*) FROM route_stops WHERE route_id = r.id) as total_stops,
         (SELECT COUNT(*) FROM route_stops WHERE route_id = r.id AND status = 'COLLECTED') as completed_stops
@@ -33,17 +36,44 @@ exports.getActiveRoutes = async (req, res) => {
       JOIN wards w ON r.ward_id = w.id
       WHERE r.status = 'IN_PROGRESS' AND r.area_id = $1
     `, [area_id]);
-    res.json(result.rows);
-  } catch (err) { 
-    console.error(err);
-    res.status(500).json({ error: 'Server Error' }); 
+
+    const activeRoutes = routesResult.rows;
+
+    // For Hackathon Visuals: Fetch geometry points for drawing lines and ghosting
+    for (let route of activeRoutes) {
+      // 1. Get the assigned path (ordered bins)
+      const pointsRes = await db.query(`
+        SELECT b.id, b.latitude, b.longitude, b.current_fill_percent as fill, rs.sequence_order
+        FROM route_stops rs
+        JOIN bins b ON rs.bin_id = b.id
+        WHERE rs.route_id = $1 AND b.latitude IS NOT NULL AND b.longitude IS NOT NULL
+        ORDER BY rs.sequence_order ASC
+      `, [route.id]);
+      route.route_points = pointsRes.rows;
+
+      // 2. Get the skipped bins in the exact same ward for "ghosting"
+      const skippedRes = await db.query(`
+        SELECT b.id, b.latitude, b.longitude, b.current_fill_percent as fill
+        FROM bins b
+        WHERE b.ward_id = $1 AND b.latitude IS NOT NULL AND b.longitude IS NOT NULL 
+        AND b.id NOT IN (
+          SELECT bin_id FROM route_stops WHERE route_id = $2
+        )
+      `, [route.ward_id, route.id]);
+      route.skipped_bins = skippedRes.rows;
+    }
+
+    res.json(activeRoutes);
+  } catch (err) {
+    console.error("Get Active Routes Error:", err);
+    res.status(500).json({ error: 'Server Error' });
   }
 };
 
 // 3. REGISTER VEHICLE
 exports.registerVehicle = async (req, res) => {
   const { license_plate, type } = req.body;
-  const area_id = req.user.area_id; 
+  const area_id = req.user.area_id;
 
   if (!license_plate || !type) {
     return res.status(400).json({ success: false, message: 'License Plate and Type are required' });
@@ -92,8 +122,8 @@ exports.createRoute = async (req, res) => {
     );
 
     await db.query(
-        `UPDATE users SET assigned_ward_id = $1 WHERE id = $2`,
-        [ward_id, driver_id]
+      `UPDATE users SET assigned_ward_id = $1 WHERE id = $2`,
+      [ward_id, driver_id]
     );
 
     res.status(201).json({ success: true, route: newRoute.rows[0] });
@@ -127,8 +157,8 @@ exports.generateAutoRoutes = async (req, res) => {
       await db.query(
         `INSERT INTO routes (id, area_id, driver_id, vehicle_id, ward_id, status, route_date, created_at)
          VALUES (uuid_generate_v4(), $1, $2, $3, $4, 'IN_PROGRESS', CURRENT_DATE, NOW())
-         ON CONFLICT (driver_id, route_date) DO NOTHING`, 
-         [area_id, row.driver_id, row.vehicle_id, row.ward_id]
+         ON CONFLICT (driver_id, route_date) DO NOTHING`,
+        [area_id, row.driver_id, row.vehicle_id, row.ward_id]
       );
     }
 
@@ -154,10 +184,10 @@ exports.cancelRoute = async (req, res) => {
 
     const route = result.rows[0];
     if (route.driver_id) {
-        await db.query(
-            `UPDATE users SET assigned_ward_id = NULL WHERE id = $1`,
-            [route.driver_id]
-        );
+      await db.query(
+        `UPDATE users SET assigned_ward_id = NULL WHERE id = $1`,
+        [route.driver_id]
+      );
     }
 
     res.json({ success: true, message: 'Route removed successfully', route: result.rows[0] });
@@ -170,7 +200,7 @@ exports.cancelRoute = async (req, res) => {
 // 7. GET ACTIVE ROUTE (For Driver App)
 exports.getDriverActiveRoute = async (req, res) => {
   try {
-    const driver_id = req.user.id; 
+    const driver_id = req.user.id;
     const query = `
       SELECT 
         r.id as route_id,
@@ -212,13 +242,13 @@ exports.generateOptimizedRoute = async (req, res) => {
   try {
     // 1. Get Driver's Assigned Ward
     const driverRes = await db.query(
-        `SELECT assigned_ward_id FROM users WHERE id = $1`, 
-        [driver_id]
+      `SELECT assigned_ward_id FROM users WHERE id = $1`,
+      [driver_id]
     );
     const assignedWardId = driverRes.rows[0]?.assigned_ward_id;
 
     if (!assignedWardId) {
-        return res.status(400).json({ message: "You are not assigned to any ward." });
+      return res.status(400).json({ message: "You are not assigned to any ward." });
     }
 
     // 2. Get Dumping Zone
@@ -251,53 +281,53 @@ exports.generateOptimizedRoute = async (req, res) => {
 
     const startLoc = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
     const endLoc = { latitude: parseFloat(dumpingZone.latitude), longitude: parseFloat(dumpingZone.longitude), name: dumpingZone.name };
-    
+
     // Generate route using custom engine
     const optimizationResult = routeEngine.generateRoute(startLoc, endLoc, processedBins);
 
     // ============================================================
     // ✅ NEW STEP: SAVE STOPS TO DATABASE FOR TRACKING
     // ============================================================
-    
+
     const routeCheck = await db.query(
-        `SELECT id FROM routes WHERE driver_id = $1 AND status = 'IN_PROGRESS' LIMIT 1`,
-        [driver_id]
+      `SELECT id FROM routes WHERE driver_id = $1 AND status = 'IN_PROGRESS' LIMIT 1`,
+      [driver_id]
     );
 
     if (routeCheck.rows.length > 0) {
-        const routeId = routeCheck.rows[0].id;
-        const binsToCollect = optimizationResult.route_points; 
+      const routeId = routeCheck.rows[0].id;
+      const binsToCollect = optimizationResult.route_points;
 
-        // Clear old stops
-        await db.query(`DELETE FROM route_stops WHERE route_id = $1 AND status = 'PENDING'`, [routeId]);
+      // Clear old stops
+      await db.query(`DELETE FROM route_stops WHERE route_id = $1 AND status = 'PENDING'`, [routeId]);
 
-        // Insert new stops (FIXED: Added sequence_order)
-        for (let i = 0; i < binsToCollect.length; i++) {
-            const stop = binsToCollect[i];
-            
-            if (stop.type === 'COLLECTION_POINT') { 
-                await db.query(
-                    `INSERT INTO route_stops (id, route_id, bin_id, status, sequence_order)
+      // Insert new stops (FIXED: Added sequence_order)
+      for (let i = 0; i < binsToCollect.length; i++) {
+        const stop = binsToCollect[i];
+
+        if (stop.type === 'COLLECTION_POINT') {
+          await db.query(
+            `INSERT INTO route_stops (id, route_id, bin_id, status, sequence_order)
                      VALUES (uuid_generate_v4(), $1, $2, 'PENDING', $3)
                      ON CONFLICT DO NOTHING`,
-                    [routeId, stop.bin_id, i + 1] // ✅ Passing 'i + 1' as the sequence order
-                );
-            }
+            [routeId, stop.bin_id, i + 1] // ✅ Passing 'i + 1' as the sequence order
+          );
         }
-        
-        const io = require('../config/socket').getIO();
-        if(io) io.emit('route_update', { message: 'New route generated' });
+      }
+
+      const io = require('../config/socket').getIO();
+      if (io) io.emit('route_update', { message: 'New route generated' });
     }
     // ============================================================
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       data: optimizationResult,
       summary: { message: "Route generated and saved.", bins: optimizationResult.meta.bins_to_collect }
     });
 
   } catch (err) {
-    console.error("Route Generation Error:", err); 
+    console.error("Route Generation Error:", err);
     res.status(500).json({ message: "Server Error", details: err.message });
   }
 };
@@ -337,8 +367,8 @@ exports.getBinsNeedingCollection = async (req, res) => {
     const binPredictions = [];
 
     binsRes.rows.forEach(bin => {
-      const isCritical = bin.current_fill_percent >= 50; 
-      
+      const isCritical = bin.current_fill_percent >= 50;
+
       if (isCritical) {
         binPredictions.push({
           bin_id: bin.id,
@@ -362,23 +392,23 @@ exports.getBinsNeedingCollection = async (req, res) => {
 };
 
 exports.ignoreBin = async (req, res) => {
-    const { bin_id, reason } = req.body;
-    try {
-        const alertRes = await db.query(
-            `INSERT INTO alerts (bin_id, message, severity, created_at)
+  const { bin_id, reason } = req.body;
+  try {
+    const alertRes = await db.query(
+      `INSERT INTO alerts (bin_id, message, severity, created_at)
              VALUES ($1, $2, 'MEDIUM', NOW())
              RETURNING *`,
-            [bin_id, `Skipped: ${reason}`]
-        );
+      [bin_id, `Skipped: ${reason}`]
+    );
 
-        const io = require('../config/socket').getIO();
-        if(io) io.emit('new_alert', alertRes.rows[0]);
+    const io = require('../config/socket').getIO();
+    if (io) io.emit('new_alert', alertRes.rows[0]);
 
-        res.json({ success: true });
-    } catch (e) { 
-        console.error("Ignore Bin Error:", e);
-        res.status(500).json({ error: e.message }); 
-    }
+    res.json({ success: true });
+  } catch (e) {
+    console.error("Ignore Bin Error:", e);
+    res.status(500).json({ error: e.message });
+  }
 };
 
 exports.assignVehicle = async (req, res) => {
@@ -390,15 +420,15 @@ exports.assignVehicle = async (req, res) => {
 
   try {
     if (!driver_id) {
-        const result = await db.query(
-            `UPDATE vehicles SET driver_id = NULL WHERE id = $1 RETURNING *`,
-            [vehicle_id]
-        );
-        return res.json({ 
-            success: true, 
-            message: "Driver unassigned successfully", 
-            vehicle: result.rows[0] 
-        });
+      const result = await db.query(
+        `UPDATE vehicles SET driver_id = NULL WHERE id = $1 RETURNING *`,
+        [vehicle_id]
+      );
+      return res.json({
+        success: true,
+        message: "Driver unassigned successfully",
+        vehicle: result.rows[0]
+      });
     }
 
     await db.query(`UPDATE vehicles SET driver_id = NULL WHERE driver_id = $1`, [driver_id]);
@@ -412,14 +442,37 @@ exports.assignVehicle = async (req, res) => {
       return res.status(404).json({ message: "Vehicle not found" });
     }
 
-    res.json({ 
-      success: true, 
-      message: "Driver assigned successfully", 
-      vehicle: result.rows[0] 
+    res.json({
+      success: true,
+      message: "Driver assigned successfully",
+      vehicle: result.rows[0]
     });
 
   } catch (err) {
     console.error("Assign Vehicle Error:", err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// 12. UPDATE DRIVER LOCATION (Geofencing Tracker)
+exports.updateDriverLocation = async (req, res) => {
+  const { latitude, longitude } = req.body;
+  const driver_id = req.user.id;
+
+  if (!latitude || !longitude) {
+    return res.status(400).json({ message: "Latitude and longitude required" });
+  }
+
+  try {
+    // Note: We are currently just acknowledging the location update.
+    // In the future, this can be used to track driver history on the map.
+    // Auto-collection via 50m geofencing was disabled per user request,
+    // so drivers must manually mark bins as collected in the app.
+
+    res.json({ success: true, message: "Location processed successfully" });
+
+  } catch (err) {
+    console.error("Location Tracker Error:", err);
     res.status(500).json({ error: "Server Error" });
   }
 };

@@ -1,13 +1,14 @@
 const db = require('../config/db');
 const { getIO } = require('../config/socket');
 const { predictBinOverflow } = require('../services/predictionEngine');
+const { isPointInBoundary } = require('../services/boundaryValidator');
 
 
 // 1. GET ALL BINS
 exports.getAllBins = async (req, res) => {
   try {
-    const area_id = req.user.area_id; 
-    
+    const area_id = req.user.area_id;
+
     // Fetch bins with their last 48 hours of readings for prediction
     const result = await db.query(`
       SELECT 
@@ -35,17 +36,17 @@ exports.getAllBins = async (req, res) => {
 
     // Calculate predictions for each bin
     const binsWithPredictions = result.rows.map(bin => {
-        const readings = bin.readings || [];
-        const prediction = predictBinOverflow(bin.id, readings);
-        
-        return {
-            ...bin,
-            prediction: {
-                status: prediction.status,
-                predicted_overflow_at: prediction.predicted_overflow_at,
-                hours_until_overflow: prediction.hours_until_overflow
-            }
-        };
+      const readings = bin.readings || [];
+      const prediction = predictBinOverflow(bin.id, readings);
+
+      return {
+        ...bin,
+        prediction: {
+          status: prediction.status,
+          predicted_overflow_at: prediction.predicted_overflow_at,
+          hours_until_overflow: prediction.hours_until_overflow
+        }
+      };
     });
 
     res.json(binsWithPredictions);
@@ -55,12 +56,23 @@ exports.getAllBins = async (req, res) => {
   }
 };
 
-// 2. CREATE BIN
+// 2. CREATE BIN (with boundary validation)
 exports.createBin = async (req, res) => {
-  const { id, level, lat, lng, ward_id } = req.body; 
+  const { id, level, lat, lng, ward_id } = req.body;
   const area_id = req.user.area_id;
 
   try {
+    // Validate coordinates are within the admin's area boundary
+    const areaRes = await db.query('SELECT taluka FROM areas WHERE id = $1', [area_id]);
+    if (areaRes.rows.length > 0) {
+      const taluka = areaRes.rows[0].taluka;
+      if (!isPointInBoundary(lat, lng, taluka)) {
+        return res.status(400).json({
+          error: `Location (${lat.toFixed(4)}, ${lng.toFixed(4)}) is outside ${taluka} boundary. Cannot create bin outside your assigned area.`
+        });
+      }
+    }
+
     const binIdToInsert = (id && id.trim() !== "") ? id : null;
 
     const newBin = await db.query(
@@ -88,52 +100,67 @@ exports.updateBinReading = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Missing Data' });
   }
 
-  const cleanBinId = bin_id.trim(); 
+  const cleanBinId = bin_id.trim();
 
   try {
+    // 1. Fetch the previous data to compare (Make sure to select 'status')
     const prevRes = await db.query(
-        'SELECT current_fill_percent, current_weight FROM bins WHERE id = $1', 
-        [cleanBinId]
+      'SELECT current_fill_percent, current_weight, status FROM bins WHERE id = $1',
+      [cleanBinId]
     );
-    const prevData = prevRes.rows[0] || { current_fill_percent: 0, current_weight: 0 };
+
+    // Default to NORMAL if no previous data found
+    const prevData = prevRes.rows[0] || { current_fill_percent: 0, current_weight: 0, status: 'NORMAL' };
 
     let status = 'NORMAL';
-    const fillDiff = fill_percent - prevData.current_fill_percent;
-    const weightDiff = Math.abs(weight - prevData.current_weight);
 
-    if (fillDiff > 20 && weightDiff < 0.20) {
-        status = 'BLOCKED';
-    } else if (fill_percent >= 50) {
-        status = 'CRITICAL'; 
+    // 2. Calculate differences
+    const fillDiff = fill_percent - prevData.current_fill_percent;
+    const weightDiff = weight - prevData.current_weight;
+
+    // 3. Status Logic
+    // Condition A: New Blockage Detected (Fill jumps > 20%, but weight change is small)
+    // We use 100 as the weight threshold per your request
+    const isNewBlockage = (fillDiff > 20 && Math.abs(weightDiff) < 100);
+
+    // Condition B: Persisting Blockage (Was already BLOCKED and fill is still high)
+    // This prevents it from flipping to 'CRITICAL' on the next heartbeat when fillDiff becomes 0
+    const isPersistingBlockage = (prevData.status === 'BLOCKED' && fill_percent > 80);
+
+    if (isNewBlockage || isPersistingBlockage) {
+      status = 'BLOCKED';
+    }
+    else if (fill_percent >= 90) {
+      status = 'CRITICAL';
+    }
+    else if (fill_percent >= 50) {
+      status = 'FULL'; // Optional: Differentiate between 50% and 90%
     }
 
+    // 4. Update the database
     await db.query(
       `UPDATE bins 
        SET current_fill_percent = $1, status = $2, lid_status = $3, lid_angle = $4, current_weight = $5, last_updated = NOW() 
        WHERE id = $6`,
       [fill_percent, status, lid_status || 'CLOSED', lid_angle || 0, weight || 0.00, cleanBinId]
-    );  
-
-    await db.query(
-      `INSERT INTO bin_readings (bin_id, fill_percent, status, weight, lid_status, lid_angle, recorded_at) 
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-      [cleanBinId, fill_percent, status, weight || 0.00, lid_status || 'CLOSED', lid_angle || 0]
     );
 
+    // 5. Emit Socket updates for the website
     const socket = getIO();
-    if(socket) {
-      socket.emit('bin_update', { 
-          id: cleanBinId, 
-          fill_percent, 
-          status, 
-          lid_status: lid_status || 'CLOSED', 
-          weight: weight || 0.0 
+    if (socket) {
+      socket.emit('bin_update', {
+        id: cleanBinId,
+        fill_percent,
+        status,
+        lid_status: lid_status || 'CLOSED',
+        weight: weight || 0.0
       });
 
-      if (status === 'CRITICAL' || status === 'BLOCKED') {
-        const alertMsg = status === 'BLOCKED' 
-            ? `Bin ${cleanBinId.substring(0,8)} sensor BLOCKED!`
-            : `Bin ${cleanBinId.substring(0,8)} is CRITICAL (${fill_percent}%)`;
+      // 6. Create Alert (Only if status CHANGED to Blocked/Critical to avoid spamming alerts on every heartbeat)
+      if ((status === 'CRITICAL' || status === 'BLOCKED') && prevData.status !== status) {
+        const alertMsg = status === 'BLOCKED'
+          ? `Bin ${cleanBinId.substring(0, 8)} sensor BLOCKED (High Fill, Low Weight Change)!`
+          : `Bin ${cleanBinId.substring(0, 8)} is CRITICAL (${fill_percent}%)`;
 
         const alertRes = await db.query(
           `INSERT INTO alerts (bin_id, message, severity, created_at) VALUES ($1, $2, 'HIGH', NOW()) RETURNING *`,
@@ -153,43 +180,43 @@ exports.updateBinReading = async (req, res) => {
 
 // 4. MARK BIN AS COLLECTED (UPDATED FOR DRIVER ALERTS)
 exports.markBinCollected = async (req, res) => {
-    const { id } = req.params;
-    const driverId = req.user.id;
+  const { id } = req.params;
+  const driverId = req.user.id;
 
-    try {
-        // A. Reset bin state
-        await db.query(
-            `UPDATE bins 
+  try {
+    // A. Reset bin state
+    await db.query(
+      `UPDATE bins 
              SET current_fill_percent = 0, current_weight = 0, status = 'NORMAL', last_updated = NOW()
              WHERE id = $1`,
-            [id]
-        );
+      [id]
+    );
 
-        // B. Log reading
-        await db.query(
-            `INSERT INTO bin_readings (bin_id, fill_percent, weight, status, recorded_at)
+    // B. Log reading
+    await db.query(
+      `INSERT INTO bin_readings (bin_id, fill_percent, weight, status, recorded_at)
              VALUES ($1, 0, 0, 'NORMAL', NOW())`,
-            [id]
-        );
+      [id]
+    );
 
-        const socket = getIO();
+    const socket = getIO();
 
-        // C. Alert: bin collected
-        const binAlertMsg = `Bin collected by ${req.user.name || 'Driver'}`;
-        const binAlertRes = await db.query(
-            `INSERT INTO alerts (bin_id, message, severity, created_at)
+    // C. Alert: bin collected
+    const binAlertMsg = `Bin collected by ${req.user.name || 'Driver'}`;
+    const binAlertRes = await db.query(
+      `INSERT INTO alerts (bin_id, message, severity, created_at)
              VALUES ($1, $2, 'INFO', NOW())
              RETURNING *`,
-            [id, binAlertMsg]
-        );
+      [id, binAlertMsg]
+    );
 
-        if (socket) {
-            socket.emit('new_alert', binAlertRes.rows[0]);
-        }
+    if (socket) {
+      socket.emit('new_alert', binAlertRes.rows[0]);
+    }
 
-        // D. Route logic: mark stop collected
-        const updateStopRes = await db.query(
-            `UPDATE route_stops rs
+    // D. Route logic: mark stop collected
+    const updateStopRes = await db.query(
+      `UPDATE route_stops rs
              SET status = 'COLLECTED', collected_at = NOW()
              FROM routes r
              WHERE rs.route_id = r.id
@@ -198,81 +225,149 @@ exports.markBinCollected = async (req, res) => {
                AND rs.bin_id = $2
                AND rs.status != 'COLLECTED'
              RETURNING rs.route_id`,
-            [driverId, id]
-        );
+      [driverId, id]
+    );
 
-        // ✅ REAL-TIME ROUTE PROGRESS UPDATE (THIS IS WHAT YOU ASKED FOR)
-        if (socket && updateStopRes.rows.length > 0) {
-            socket.emit('route_update', {
-                bin_id: id,
-                status: 'COLLECTED',
-                driver_id: driverId
-            });
-        }
+    // ✅ REAL-TIME ROUTE PROGRESS UPDATE (THIS IS WHAT YOU ASKED FOR)
+    if (socket && updateStopRes.rows.length > 0) {
+      socket.emit('route_update', {
+        bin_id: id,
+        status: 'COLLECTED',
+        driver_id: driverId
+      });
+    }
 
-        // E. Check if route is completed
-        if (updateStopRes.rows.length > 0) {
-    const routeId = updateStopRes.rows[0].route_id;
+    // E. Check if route is completed
+    if (updateStopRes.rows.length > 0) {
+      const routeId = updateStopRes.rows[0].route_id;
 
-    const pendingCount = await db.query(
+      const pendingCount = await db.query(
         `SELECT COUNT(*) FROM route_stops 
          WHERE route_id = $1 AND status != 'COLLECTED'`,
         [routeId]
-    );
+      );
 
-    if (parseInt(pendingCount.rows[0].count) === 0) {
+      if (parseInt(pendingCount.rows[0].count) === 0) {
         // 1. Mark the route as COMPLETED in the database
         await db.query(
-            `UPDATE routes 
+          `UPDATE routes 
              SET status = 'COMPLETED', completed_at = NOW()
              WHERE id = $1`,
-            [routeId]
+          [routeId]
         );
 
         // 2. Clear the driver's vehicle assignment
         await db.query(
-            `UPDATE vehicles SET driver_id = NULL WHERE driver_id = $1`,
-            [driverId]
+          `UPDATE vehicles SET driver_id = NULL WHERE driver_id = $1`,
+          [driverId]
         );
 
         // 3. Create a detailed alert message
         const driverName = req.user.name || 'Driver';
-        const routeMsg = `Route #${routeId.substring(0,8)} Completed. ${driverName} has finished all stops and is now AVAILABLE.`;
-        
+        const routeMsg = `Route #${routeId.substring(0, 8)} Completed. ${driverName} has finished all stops and is now AVAILABLE.`;
+
         const routeAlertRes = await db.query(
-            `INSERT INTO alerts (bin_id, message, severity, created_at)
+          `INSERT INTO alerts (bin_id, message, severity, created_at)
              VALUES (NULL, $1, 'SUCCESS', NOW())
              RETURNING *`,
-            [routeMsg]
+          [routeMsg]
         );
 
         // 4. Send the alert and status updates via Socket.io
         if (socket) {
-            socket.emit('new_alert', routeAlertRes.rows[0]); // Notifies the admin alert widget
-            socket.emit('drivers_refresh');
-            socket.emit('route_update', { 
-                route_id: routeId, 
-                status: 'COMPLETED',
-                message: "Progress 100% complete" 
-            });
+          socket.emit('new_alert', routeAlertRes.rows[0]); // Notifies the admin alert widget
+          socket.emit('drivers_refresh');
+          socket.emit('route_update', {
+            route_id: routeId,
+            status: 'COMPLETED',
+            message: "Progress 100% complete"
+          });
         }
+      }
     }
-}
 
-        // F. Map update
-        if (socket) {
-            socket.emit('bin_update', {
-                id,
-                fill_percent: 0,
-                weight: 0,
-                status: 'NORMAL'
-            });
-        }
-
-        res.json({ success: true, message: "Bin collected" });
-
-    } catch (err) {
-        console.error("Mark Bin Error:", err);
-        res.status(500).json({ error: "Server Error" });
+    // F. Map update
+    if (socket) {
+      socket.emit('bin_update', {
+        id,
+        fill_percent: 0,
+        weight: 0,
+        status: 'NORMAL'
+      });
     }
+
+    res.json({ success: true, message: "Bin collected" });
+
+  } catch (err) {
+    console.error("Mark Bin Error:", err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+// 5. UPDATE BIN CALIBRATION
+exports.updateCalibration = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { empty_distance, full_distance } = req.body;
+    const result = await db.query(
+      `UPDATE bins SET empty_distance = $1, full_distance = $2 WHERE id = $3 RETURNING *`,
+      [empty_distance, full_distance, id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Bin not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Calibration Error:", err);
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
+// 6. BIN HEALTH ANALYTICS
+exports.getBinHealth = async (req, res) => {
+  try {
+    const area_id = req.user.area_id;
+
+    // Get offline bins and their offline duration
+    const offlineBins = await db.query(
+      `SELECT id, 
+              SUBSTRING(id::text, 1, 8) as short_id,
+              latitude, longitude,
+              status, 
+              last_updated,
+              EXTRACT(EPOCH FROM (NOW() - last_updated)) / 3600 as hours_offline
+       FROM bins 
+       WHERE area_id = $1
+       ORDER BY last_updated ASC`,
+      [area_id]
+    );
+
+    const bins = offlineBins.rows;
+    const totalBins = bins.length;
+    const offlineCount = bins.filter(b => b.status === 'OFFLINE').length;
+    const staleCount = bins.filter(b => b.hours_offline > 24).length;
+    const healthyCount = bins.filter(b => b.status !== 'OFFLINE' && b.hours_offline <= 24).length;
+
+    // Flagged bins: offline OR stale (>24h since last update)
+    const flaggedBins = bins
+      .filter(b => b.status === 'OFFLINE' || b.hours_offline > 24)
+      .map(b => ({
+        id: b.id,
+        short_id: b.short_id,
+        status: b.status,
+        hours_offline: Math.round(b.hours_offline * 10) / 10,
+        last_updated: b.last_updated,
+        needs_maintenance: b.hours_offline > 48
+      }));
+
+    res.json({
+      totalBins,
+      healthyCount,
+      offlineCount,
+      staleCount,
+      reliabilityScore: totalBins > 0 ? Math.round((healthyCount / totalBins) * 100) : 100,
+      flaggedBins
+    });
+  } catch (err) {
+    console.error("Bin Health Error:", err);
+    res.status(500).json({ error: 'Server Error' });
+  }
 };

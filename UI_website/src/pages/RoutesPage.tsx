@@ -158,7 +158,7 @@ const RoutesPage = () => {
                 boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
             }}
           >
-              {autoLoading ? "Starting Operations..." : "🚀 Start Daily Operations"}
+              {autoLoading ? "Starting Operations..." : "Start Daily Operations"}
           </button>
       </div>
 
@@ -225,7 +225,7 @@ const RoutesPage = () => {
                     transition: 'all 0.2s'
                 }}
              >
-                 {loading ? "Dispatching..." : "Start Route 🚀"}
+                 {loading ? "Dispatching..." : "Start Route"}
              </button>
          </div>
       </div>
