@@ -6,6 +6,8 @@ const morgan = require('morgan');
 require('dotenv').config();
 
 const socket = require('./config/socket');
+const firebaseAdmin = require('./config/firebase'); // Initialize Firebase Admin
+
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
