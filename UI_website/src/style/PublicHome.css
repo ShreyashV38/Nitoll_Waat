@@ -10,7 +10,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background: white;
+    background: var(--bg-primary);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -44,18 +44,18 @@
 
 .nav-btn:hover {
     background: #27ae60;
-    color: white;
+    color: var(--text-inverse);
 }
 
 .hero-box {
     background: linear-gradient(135deg, #16a085, #2ecc71);
-    color: white;
+    color: var(--text-inverse);
     padding: 4rem 1rem 6rem;
     text-align: center;
 }
 
 .search-card {
-    background: white;
+    background: var(--bg-primary);
     max-width: 900px;
     margin: 2rem auto -5rem;
     /* Overlap effect */
@@ -102,7 +102,7 @@
 
 .summary-card {
     flex: 1;
-    background: white;
+    background: var(--bg-primary);
     padding: 1.5rem;
     text-align: center;
     border-radius: 8px;
@@ -133,7 +133,7 @@
 }
 
 .bin-item {
-    background: white;
+    background: var(--bg-primary);
     padding: 1.2rem;
     border-radius: 8px;
     border: 1px solid #ecf0f1;
@@ -221,7 +221,7 @@
 }
 
 .complaint-modal {
-    background: white;
+    background: var(--bg-primary);
     padding: 28px;
     border-radius: 16px;
     width: 420px;
@@ -281,7 +281,7 @@
     border-radius: 8px;
     border: none;
     background: #27ae60;
-    color: white;
+    color: var(--text-inverse);
     font-weight: 600;
     cursor: pointer;
 }

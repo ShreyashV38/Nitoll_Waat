@@ -202,6 +202,12 @@ const Dashboard = () => {
         ))}
       </section>
 
+      {/* Health Analytics + Prediction Timeline — Positioned prominently */}
+      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
+        <BinHealthWidget />
+        <PredictionTimeline bins={bins} />
+      </section>
+
       <section className="main-grid">
         <AlertsWidget alerts={alerts.slice(0, 3)} />
         <div style={{ height: '100%', minHeight: '300px' }}>
@@ -215,12 +221,6 @@ const Dashboard = () => {
 
       <section className="chart-section" style={{ marginTop: '24px' }}>
         <WasteChart data={chartData} labels={chartLabels} />
-      </section>
-
-      {/* New: Health Analytics + Prediction Timeline */}
-      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
-        <BinHealthWidget />
-        <PredictionTimeline bins={bins} />
       </section>
     </div>
   );

@@ -1,0 +1,129 @@
+/* src/components/MapsBins/BinMap.css */
+
+/* Custom Leaflet Popup for Dark/Light Mode */
+.custom-bin-popup .leaflet-popup-content-wrapper,
+.custom-bin-popup .leaflet-popup-tip {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-md);
+    border-radius: 12px;
+}
+
+.custom-bin-popup .leaflet-popup-content {
+    margin: 16px;
+    width: 240px !important;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Close button override */
+.custom-bin-popup .leaflet-popup-close-button {
+    color: var(--text-muted) !important;
+    right: 8px !important;
+    top: 8px !important;
+    font-size: 18px !important;
+}
+
+/* Bin Popup Content Styling */
+.bin-popup-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+}
+
+.bin-popup-header h4 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+}
+
+.bin-ghost-tag {
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.bin-popup-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.popup-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.popup-label {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.popup-value {
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.popup-value.critical {
+    color: var(--accent-red);
+}
+
+.popup-value.warning {
+    color: var(--accent-yellow);
+}
+
+.popup-value.safe {
+    color: var(--accent-green);
+}
+
+/* Progress bar in popup */
+.popup-progress-bg {
+    width: 70px;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.popup-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+/* Prediction Alert Box */
+.popup-alert {
+    margin-top: 14px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.popup-alert-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-orange, #f59e0b);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.popup-alert-time {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}

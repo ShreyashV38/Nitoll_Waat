@@ -29,7 +29,8 @@
   background: transparent;
   color: #333;
   border: 1px solid #695454;
-  border-radius: 50px; /* Pill shape */
+  border-radius: 50px;
+  /* Pill shape */
   padding: 10px 24px;
   font-size: 14px;
   font-weight: 600;
@@ -49,27 +50,33 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  flex: 1; /* Fills remaining vertical space */
+  flex: 1;
+  /* Fills remaining vertical space */
   width: 100%;
-  
+
   /* --- PADDING FOR SCROLLING --- */
   padding-top: 40px;
-  padding-bottom: 100px; /* Extra space at bottom for scrolling */
+  padding-bottom: 100px;
+  /* Extra space at bottom for scrolling */
 }
 
 .form-container {
   width: 100%;
-  max-width: 440px; /* Constrains form width */
+  max-width: 440px;
+  /* Constrains form width */
   padding: 20px;
-  background-color:#34C75919; /* Light green tint */
+  background-color: #34C75919;
+  /* Light green tint */
   border: 0.5px solid #52be1c;
-  border-radius: 24px; /* Fixed standard radius */
+  border-radius: 24px;
+  /* Fixed standard radius */
 }
 
 /* Headings */
 .Greetings {
   margin-bottom: 40px;
-  text-align: left; /* Align to left like modern forms */
+  text-align: left;
+  /* Align to left like modern forms */
 }
 
 .Greetings h2 {
@@ -92,9 +99,9 @@
 /* The Card itself */
 .loginForm {
   background-color: #ffffff;
-  border: 1px solid #f0f0f0; 
+  border: 1px solid #f0f0f0;
   border-radius: 24px;
-  padding: 10px; 
+  padding: 10px;
   width: 100%;
 }
 
@@ -144,11 +151,12 @@
 }
 
 /* Buttons */
-.sendOtp-btn, .next-btn {
+.sendOtp-btn,
+.next-btn {
   width: 100%;
   padding: 16px;
   background-color: #27ae60;
-  color: white;
+  color: var(--text-inverse);
   border: none;
   border-radius: 12px;
   font-size: 16px;
@@ -159,12 +167,14 @@
   box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2);
 }
 
-.sendOtp-btn:hover, .next-btn:hover {
+.sendOtp-btn:hover,
+.next-btn:hover {
   background-color: #219146;
   transform: translateY(-1px);
 }
 
-.sendOtp-btn:active, .next-btn:active {
+.sendOtp-btn:active,
+.next-btn:active {
   transform: translateY(1px);
 }
 
@@ -190,7 +200,8 @@
 .otherMethods p {
   position: relative;
   display: inline-block;
-  background-color: #fff; /* Masks the line behind text */
+  background-color: #fff;
+  /* Masks the line behind text */
   padding: 0 15px;
   color: #aaa;
   font-size: 13px;
@@ -250,8 +261,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --- NEW STYLES FOR PASSWORD TOGGLE --- */

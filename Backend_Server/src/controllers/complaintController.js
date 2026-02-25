@@ -6,9 +6,16 @@ exports.createComplaint = async (req, res) => {
     try {
         const { bin_id, type, description, reporter_name, reporter_contact } = req.body;
 
+        // --- ADDED: Validation Check ---
+        if (!bin_id || !type) {
+            console.warn(`[COMPLAINT_ERR] Missing required fields: bin_id=${bin_id}, type=${type}`);
+            return res.status(400).json({ error: 'bin_id and type are required' });
+        }
+
         // Get area_id from the bin
         const binRes = await db.query('SELECT area_id FROM bins WHERE id = $1', [bin_id]);
         if (binRes.rows.length === 0) {
+            console.warn(`[COMPLAINT_ERR] Bin not found for ID: ${bin_id}`);
             return res.status(404).json({ error: 'Bin not found' });
         }
         const area_id = binRes.rows[0].area_id;
@@ -26,9 +33,12 @@ exports.createComplaint = async (req, res) => {
             [bin_id, `Citizen complaint: ${type} - ${description || 'No details'}`]
         );
 
+        // --- ADDED: Delivery / Routing Log ---
+        console.log(`[COMPLAINT_SUCCESS] Routed complaint ${result.rows[0].id} to Admin of area ${area_id}`);
+
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error(err);
+        console.error(`[COMPLAINT_API_ERR] Server error during createComplaint:`, err);
         res.status(500).json({ error: 'Server Error' });
     }
 };
@@ -37,6 +47,10 @@ exports.createComplaint = async (req, res) => {
 exports.getComplaints = async (req, res) => {
     try {
         const area_id = req.user.area_id;
+
+        // --- ADDED: Delivery Verification Log ---
+        console.log(`[COMPLAINT_FETCH] Admin for area ${area_id} requested complaints`);
+
         const result = await db.query(
             `SELECT c.*, b.latitude, b.longitude 
        FROM complaints c
@@ -47,6 +61,7 @@ exports.getComplaints = async (req, res) => {
         );
         res.json(result.rows);
     } catch (err) {
+        console.error(`[COMPLAINT_FETCH_ERR] Server error during getComplaints:`, err);
         res.status(500).json({ error: 'Server Error' });
     }
 };

@@ -35,7 +35,7 @@
 
 .logout-btn {
   background: var(--accent-red);
-  color: white;
+  color: var(--text-inverse);
   border: none;
   padding: 8px 14px;
   border-radius: 6px;

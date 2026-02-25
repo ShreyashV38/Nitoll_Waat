@@ -4,7 +4,7 @@
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--bg-primary);
 }
 
 .branding-column {
@@ -57,22 +57,42 @@
   margin-bottom: 30px;
 }
 
-.page-header h2 { font-size: 28px; margin: 0; color: #333; }
-.page-header h1 { font-size: 52px; margin: 0; color: #333; line-height: 1; }
+.page-header h2 {
+  font-size: 28px;
+  margin: 0;
+  color: #333;
+}
+
+.page-header h1 {
+  font-size: 52px;
+  margin: 0;
+  color: #333;
+  line-height: 1;
+}
 
 /* AUTH CARD */
 .auth-card {
-  background-color: #E8F5E9; /* Soft mint green */
+  background-color: #E8F5E9;
+  /* Soft mint green */
   border-radius: 24px;
   padding: 50px 40px;
   width: 100%;
   max-width: 500px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   text-align: center;
 }
 
-.card-header h1 { font-size: 32px; color: #333; margin-bottom: 5px; }
-.card-header p { font-size: 15px; color: #555; margin-bottom: 35px; }
+.card-header h1 {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.card-header p {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 35px;
+}
 
 /* FORM ELEMENTS */
 .input-group {
@@ -92,8 +112,9 @@
 
 .submit-btn {
   width: 100%;
-  background-color: #4CAF50; /* Vibrant green from image */
-  color: white;
+  background-color: #4CAF50;
+  /* Vibrant green from image */
+  color: var(--text-inverse);
   border: none;
   padding: 16px;
   border-radius: 12px;
@@ -103,7 +124,11 @@
 }
 
 /* SOCIAL LOGIN */
-.social-divider p { color: #888; font-size: 13px; margin: 25px 0 15px; }
+.social-divider p {
+  color: #888;
+  font-size: 13px;
+  margin: 25px 0 15px;
+}
 
 .social-icons {
   display: flex;
@@ -116,12 +141,15 @@
   height: 50px;
   border-radius: 50%;
   border: none;
-  background: white;
+  background: var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.icon-circle img { width: 24px; height: 24px; }
+.icon-circle img {
+  width: 24px;
+  height: 24px;
+}

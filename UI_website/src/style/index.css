@@ -20,6 +20,7 @@
   /* Surfaces */
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
+  --bg-main: #fcfcfc;
   --bg-card: #ffffff;
   --bg-sidebar: #c6f6d5;
   --bg-input: #f9f9f9;
@@ -90,6 +91,7 @@
   /* Surfaces */
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
+  --bg-main: #283748;
   --bg-card: #1e293b;
   --bg-sidebar: #1a2332;
   --bg-input: #334155;

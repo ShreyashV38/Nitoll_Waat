@@ -145,6 +145,13 @@ exports.updateBinReading = async (req, res) => {
       [fill_percent, status, lid_status || 'CLOSED', lid_angle || 0, weight || 0.00, cleanBinId]
     );
 
+    // 4b. Log reading into bin_readings for analytics (Waste Collection Trends chart)
+    await db.query(
+      `INSERT INTO bin_readings (bin_id, fill_percent, weight, status, recorded_at)
+       VALUES ($1, $2, $3, $4, NOW())`,
+      [cleanBinId, fill_percent, weight || 0, status]
+    );
+
     // 5. Emit Socket updates for the website
     const socket = getIO();
     if (socket) {

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { LayoutGrid, Map, Truck, MessageSquare, User, Moon, Sun } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import GoaLogo from '../assets/Goa.png';
 import '../style/Sidebar.css';
+import { useTheme } from '../context/ThemeContext';
 
 interface NavItemProps {
   to: string;
@@ -11,14 +12,8 @@ interface NavItemProps {
 }
 
 const Sidebar: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem('theme') === 'dark';
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
+  const { theme, toggleTheme } = useTheme();
+  const darkMode = theme === 'dark';
 
   return (
     <aside className="sidebar">
@@ -43,7 +38,7 @@ const Sidebar: React.FC = () => {
         <NavItem to="/profile" icon={<User size={22} />} label="Profile" />
       </nav>
 
-      <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+      <button className="theme-toggle" onClick={toggleTheme}>
         {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         {darkMode ? 'Light Mode' : 'Dark Mode'}
       </button>

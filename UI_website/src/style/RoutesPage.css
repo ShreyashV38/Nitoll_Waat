@@ -46,7 +46,7 @@
 
 .tab.active {
   background: var(--accent-green);
-  color: white;
+  color: var(--text-inverse);
 }
 
 /* Vehicle Card */

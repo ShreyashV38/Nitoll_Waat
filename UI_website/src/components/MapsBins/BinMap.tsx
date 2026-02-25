@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polygon, Tooltip, Polyline, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import './BinMap.css';
 
 // Fix for default markers in React-Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -200,6 +201,7 @@ const BinMap: React.FC<Props> = ({ bins, zones, onMapClick, boundary, activeRout
 
         const isGhosted = skippedBinIds.has(bin.id);
 
+        // ... inside the bins.map return statement ...
         return (
           <Marker
             key={bin.id}
@@ -207,32 +209,54 @@ const BinMap: React.FC<Props> = ({ bins, zones, onMapClick, boundary, activeRout
             icon={icon}
             opacity={isGhosted ? 0.35 : 1.0} // Fade out skipped bins
           >
-            <Popup>
-              <div style={{ minWidth: '180px' }}>
-                <h4 style={{ margin: '0 0 5px 0', color: '#1e293b' }}>
-                  Bin #{bin.id.substring(0, 6)} {isGhosted && <span style={{ color: '#94a3b8', fontSize: '11px' }}>(Skipped)</span>}
-                </h4>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '13px' }}>
-                  <span>Fill Level:</span>
-                  <strong style={{ color: bin.level >= 50 ? '#ef4444' : '#22c55e' }}>{bin.level}%</strong>
+            <Popup className="custom-bin-popup">
+              <div className="bin-popup-container">
+                <div className="bin-popup-header">
+                  <h4>
+                    Bin #{bin.id.substring(0, 6)}
+                    {isGhosted && <span className="bin-ghost-tag">Skipped</span>}
+                  </h4>
                 </div>
 
-                <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>
-                  Weight: <strong>{bin.weight} kg</strong><br />
-                  Status: {bin.status}
+                <div className="bin-popup-body">
+                  <div className="popup-row">
+                    <span className="popup-label">Fill Level</span>
+                    <div className="popup-value">
+                      <div className="popup-progress-bg">
+                        <div
+                          className="popup-progress-fill"
+                          style={{
+                            width: `${bin.level}%`,
+                            background: bin.level >= 80 ? 'var(--accent-red)' : bin.level >= 50 ? 'var(--accent-yellow)' : 'var(--accent-green)'
+                          }}
+                        />
+                      </div>
+                      <span className={bin.level >= 80 ? 'critical' : bin.level >= 50 ? 'warning' : 'safe'}>
+                        {bin.level}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="popup-row">
+                    <span className="popup-label">Weight</span>
+                    <span className="popup-value">{bin.weight} kg</span>
+                  </div>
+
+                  <div className="popup-row">
+                    <span className="popup-label">Status</span>
+                    <span className={`popup-value ${bin.status === 'ACTIVE' ? 'safe' : 'warning'}`} style={{ textTransform: 'capitalize' }}>
+                      {bin.status.toLowerCase()}
+                    </span>
+                  </div>
                 </div>
 
-                {/* ALERT BOX */}
+                {/* OVERFLOW PREDICTION ALERT */}
                 {bin.prediction && bin.prediction.predicted_overflow_at && (
-                  <div style={{
-                    marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #e2e8f0',
-                    fontSize: '12px', background: '#fffbeb', padding: '8px', borderRadius: '6px'
-                  }}>
-                    <div style={{ fontWeight: 'bold', color: '#f59e0b', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div className="popup-alert">
+                    <div className="popup-alert-title">
                       ⚠️ Predicted Overflow
                     </div>
-                    <div style={{ color: '#1e293b' }}>
+                    <div className="popup-alert-time">
                       {formatTime(bin.prediction.predicted_overflow_at)}
                     </div>
                   </div>

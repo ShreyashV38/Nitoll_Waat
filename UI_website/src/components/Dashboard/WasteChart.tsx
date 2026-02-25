@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import type { ApexOptions } from 'apexcharts';
+import { useTheme } from '../../context/ThemeContext';
 
 // ✅ 1. Define Props Interface
 interface Props {
@@ -9,13 +10,18 @@ interface Props {
 }
 
 const WasteChart: React.FC<Props> = ({ data, labels }) => {
+    const { theme } = useTheme();
     // ✅ 2. Dynamic Options
     const options: ApexOptions = {
+        theme: {
+            mode: theme === 'dark' ? 'dark' : 'light'
+        },
         chart: {
             type: 'area',
             height: 350,
             toolbar: { show: false },
-            fontFamily: 'Inter, sans-serif'
+            fontFamily: 'Inter, sans-serif',
+            background: 'transparent'
         },
         colors: ['#22c55e'], // Green color for waste/recycling
         dataLabels: { enabled: false },
@@ -38,6 +44,7 @@ const WasteChart: React.FC<Props> = ({ data, labels }) => {
             }
         },
         tooltip: {
+            theme: theme === 'dark' ? 'dark' : 'light',
             y: {
                 formatter: function (val) {
                     return val + " kg";
@@ -56,11 +63,11 @@ const WasteChart: React.FC<Props> = ({ data, labels }) => {
         <div className="dashboard-card" style={{ height: '100%' }}>
             <h3>Waste Collection Trends</h3>
             <div className="chart-container">
-                <ReactApexChart 
-                    options={options} 
-                    series={series} 
-                    type="area" 
-                    height={320} 
+                <ReactApexChart
+                    options={options}
+                    series={series}
+                    type="area"
+                    height={320}
                 />
             </div>
         </div>
