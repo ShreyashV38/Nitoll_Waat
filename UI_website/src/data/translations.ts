@@ -36,6 +36,7 @@ interface TranslationSet {
     other: string;
     complaintSuccess: string;
     language: string;
+    tapBinInstruction: string;
 }
 
 const translations: Record<Language, TranslationSet> = {
@@ -69,7 +70,8 @@ const translations: Record<Language, TranslationSet> = {
         missingBin: "Missing Bin",
         other: "Other",
         complaintSuccess: "Complaint submitted! Thank you.",
-        language: "Language"
+        language: "Language",
+        tapBinInstruction: "Tap a bin on the map to report an issue, or use the button below"
     },
     kn: {
         title: "कचरो वेवस्थापन नकशो",
@@ -101,7 +103,8 @@ const translations: Record<Language, TranslationSet> = {
         missingBin: "डबो ना",
         other: "हेर",
         complaintSuccess: "तक्रार नोंद जाली! धन्यवाद.",
-        language: "भास"
+        language: "भास",
+        tapBinInstruction: "नकश्यार डबो दामून तक्रार नोंदयात"
     },
     mr: {
         title: "कचरा व्यवस्थापन नकाशा",
@@ -133,7 +136,8 @@ const translations: Record<Language, TranslationSet> = {
         missingBin: "कुंडी गहाळ",
         other: "इतर",
         complaintSuccess: "तक्रार नोंद झाली! धन्यवाद.",
-        language: "भाषा"
+        language: "भाषा",
+        tapBinInstruction: "नकाशावर कुंडी दाबा तक्रार नोंदवा"
     },
     hi: {
         title: "कचरा प्रबंधन मानचित्र",
@@ -165,7 +169,8 @@ const translations: Record<Language, TranslationSet> = {
         missingBin: "कूड़ेदान गायब",
         other: "अन्य",
         complaintSuccess: "शिकायत दर्ज हुई! धन्यवाद.",
-        language: "भाषा"
+        language: "भाषा",
+        tapBinInstruction: "नक्शे पर कूड़ेदान दबाएं शिकायत दर्ज करें"
     }
 };
 

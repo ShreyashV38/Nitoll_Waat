@@ -46,8 +46,11 @@ exports.getAreaPublicData = async (req, res) => {
     const [binsRes, wardsRes] = await Promise.all([
       // ADDED: latitude, longitude to this query
       db.query(
-        `SELECT id, latitude, longitude, current_fill_percent, status, last_updated 
-         FROM bins WHERE area_id = $1`,
+        `SELECT b.id, b.latitude, b.longitude, b.current_fill_percent, b.status, b.last_updated,
+                w.name as ward_name
+         FROM bins b
+         LEFT JOIN wards w ON b.ward_id = w.id
+         WHERE b.area_id = $1`,
         [area_id]
       ),
       db.query(`SELECT id, name FROM wards WHERE area_id = $1`, [area_id])

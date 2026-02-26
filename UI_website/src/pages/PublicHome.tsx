@@ -38,6 +38,7 @@ const PublicHome: React.FC = () => {
   // Data State
   const [areaData, setAreaData] = useState<{ bins: any[], wards: any[] } | null>(null);
   const [mapBins, setMapBins] = useState<any[]>([]);
+  const [selectedBin, setSelectedBin] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Complaint form state
@@ -73,21 +74,43 @@ const PublicHome: React.FC = () => {
       setLoading(true);
       api.get(`/public/data/${id}`).then(res => {
         const rawBins = res.data.bins;
-        const formattedBins = rawBins.map((b: any) => ({
-          id: b.id,
-          lat: parseFloat(b.latitude),
-          lng: parseFloat(b.longitude),
-          level: b.current_fill_percent,
-          status: b.status,
-          lid: 'UNKNOWN',
-          weight: 0,
-          last_updated: b.last_updated
-        }));
+        // Group bins by ward for sequential numbering
+        const wardCounters: Record<string, number> = {};
+        const formattedBins = rawBins.map((b: any) => {
+          const wardName = b.ward_name || null;
+          const wardKey = wardName || '__no_ward__';
+          wardCounters[wardKey] = (wardCounters[wardKey] || 0) + 1;
+          const seqNum = wardCounters[wardKey];
+          // Build a human-readable label
+          const label = wardName
+            ? `${wardName} #${seqNum}`
+            : `Bin near ${parseFloat(b.latitude).toFixed(4)}°N, ${parseFloat(b.longitude).toFixed(4)}°E`;
+          return {
+            id: b.id,
+            lat: parseFloat(b.latitude),
+            lng: parseFloat(b.longitude),
+            level: b.current_fill_percent,
+            status: b.status,
+            lid: 'UNKNOWN',
+            weight: 0,
+            last_updated: b.last_updated,
+            ward_name: wardName,
+            label
+          };
+        });
         setAreaData(res.data);
         setMapBins(formattedBins);
         setLoading(false);
       });
     }
+  };
+
+  // Handler for map bin click — opens complaint modal with that bin selected
+  const handleBinClick = (bin: any) => {
+    const found = mapBins.find((b: any) => b.id === bin.id);
+    setComplaintBinId(bin.id);
+    setSelectedBin(found || bin);
+    setShowComplaint(true);
   };
 
   const handleComplaintSubmit = async () => {
@@ -108,6 +131,7 @@ const PublicHome: React.FC = () => {
         setComplaintDesc('');
         setComplaintName('');
         setComplaintContact('');
+        setSelectedBin(null);
       }, 2000);
     } catch {
       alert('Error submitting complaint');
@@ -178,6 +202,7 @@ const PublicHome: React.FC = () => {
             <BinMap
               bins={mapBins}
               zones={[]}
+              onBinClick={handleBinClick}
               boundary={selectedTaluka ? (() => {
                 const b = findBoundaryForArea(selectedTaluka);
                 return b ? { ...b, fillColor: b.fillColor } : undefined;
@@ -185,13 +210,16 @@ const PublicHome: React.FC = () => {
             />
           </div>
 
-          {/* Report Issue Button */}
+          {/* Instructional text + Report Issue Button */}
           {mapBins.length > 0 && (
             <div style={{ textAlign: 'center', margin: '16px 0' }}>
+              <p style={{ color: '#94a3b8', fontSize: 14, marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                👆 {t.tapBinInstruction || 'Tap a bin on the map to view details & report an issue'}
+              </p>
               <button
                 className="nav-btn"
                 style={{ background: '#ef4444', color: 'white', border: 'none', padding: '10px 24px', borderRadius: 8, fontWeight: 600, cursor: 'pointer' }}
-                onClick={() => { setComplaintBinId(mapBins[0]?.id || ''); setShowComplaint(true); }}
+                onClick={() => { setComplaintBinId(mapBins[0]?.id || ''); setSelectedBin(mapBins[0] || null); setShowComplaint(true); }}
               >
                 🚨 {t.reportIssue}
               </button>
@@ -240,12 +268,35 @@ const PublicHome: React.FC = () => {
                 </div>
                 <div className="complaint-field">
                   <label>Bin</label>
-                  <select value={complaintBinId} onChange={e => setComplaintBinId(e.target.value)}>
+                  <select value={complaintBinId} onChange={e => {
+                    setComplaintBinId(e.target.value);
+                    setSelectedBin(mapBins.find((b: any) => b.id === e.target.value) || null);
+                  }}>
+                    <option value="">-- Select a bin --</option>
                     {mapBins.map(b => (
-                      <option key={b.id} value={b.id}>Bin {b.id.substring(0, 8)}... ({b.level}%)</option>
+                      <option key={b.id} value={b.id}>📍 {b.label} ({b.level}%)</option>
                     ))}
                   </select>
                 </div>
+                {/* Selected bin confirmation card */}
+                {selectedBin && (
+                  <div style={{
+                    background: 'rgba(59,130,246,0.1)',
+                    border: '1px solid rgba(59,130,246,0.3)',
+                    borderRadius: 8,
+                    padding: '10px 14px',
+                    marginBottom: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10
+                  }}>
+                    <span style={{ fontSize: 22 }}>📍</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: '#e2e8f0' }}>{selectedBin.label}</div>
+                      <div style={{ fontSize: 12, color: '#94a3b8' }}>Fill: {selectedBin.level}% · Status: {selectedBin.status}</div>
+                    </div>
+                  </div>
+                )}
                 <div className="complaint-field">
                   <label>{t.description}</label>
                   <textarea

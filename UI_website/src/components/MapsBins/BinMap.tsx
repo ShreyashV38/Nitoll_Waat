@@ -93,13 +93,14 @@ interface Props {
   bins: Bin[];
   zones: Zone[];
   onMapClick?: (lat: number, lng: number) => void;
+  onBinClick?: (bin: Bin) => void;
   boundary?: BoundaryData;
   activeRoutes?: any[]; // For Hackathon Rendering
 }
 
 const ROUTE_COLORS = ['#3b82f6', '#ec4899', '#f59e0b', '#8b5cf6', '#10b981'];
 
-const BinMap: React.FC<Props> = ({ bins, zones, onMapClick, boundary, activeRoutes = [] }) => {
+const BinMap: React.FC<Props> = ({ bins, zones, onMapClick, onBinClick, boundary, activeRoutes = [] }) => {
   const defaultLat = 15.4909;
   const defaultLng = 73.8278;
   const centerLat = bins.length > 0 ? bins[0].lat : defaultLat;
@@ -260,6 +261,34 @@ const BinMap: React.FC<Props> = ({ bins, zones, onMapClick, boundary, activeRout
                       {formatTime(bin.prediction.predicted_overflow_at)}
                     </div>
                   </div>
+                )}
+
+                {/* REPORT ISSUE BUTTON */}
+                {onBinClick && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onBinClick(bin); }}
+                    style={{
+                      width: '100%',
+                      marginTop: 10,
+                      padding: '8px 0',
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 6,
+                      fontWeight: 600,
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#dc2626')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#ef4444')}
+                  >
+                    🚨 Report Issue
+                  </button>
                 )}
               </div>
             </Popup>
