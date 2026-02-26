@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { sendError } = require('../middleware/errorHelper');
 
 // Get all wards for the logged-in Admin's Area
 exports.getWards = async (req, res) => {
@@ -8,7 +9,7 @@ exports.getWards = async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get Wards');
   }
 };
 
@@ -23,7 +24,7 @@ exports.createWard = async (req, res) => {
     // 1. Check if name already exists in this area to prevent duplicates
     const check = await db.query('SELECT * FROM wards WHERE area_id = $1 AND name = $2', [area_id, name]);
     if (check.rows.length > 0) {
-        return res.status(400).json({ message: 'Ward name already exists' });
+      return res.status(400).json({ message: 'Ward name already exists' });
     }
 
     // 2. Insert only valid columns (id, area_id, name, description, created_at)
@@ -32,17 +33,17 @@ exports.createWard = async (req, res) => {
       VALUES (uuid_generate_v4(), $1, $2, $3, NOW()) 
       RETURNING *
     `;
-    
+
     const newWard = await db.query(query, [
-      area_id, 
-      name, 
-      description || '' 
+      area_id,
+      name,
+      description || ''
     ]);
 
     res.status(201).json(newWard.rows[0]);
   } catch (err) {
     console.error("Create Ward Error:", err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Create Ward');
   }
 };
 
@@ -69,7 +70,7 @@ exports.getWardStats = async (req, res) => {
     `;
 
     const result = await db.query(query, [area_id]);
-    
+
     // Map to match Android 'Ward' model
     const formattedData = result.rows.map(row => ({
       wardName: row.ward_name,
@@ -81,6 +82,6 @@ exports.getWardStats = async (req, res) => {
     res.json(formattedData);
   } catch (err) {
     console.error("Get Ward Stats Error:", err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Ward Stats');
   }
 };

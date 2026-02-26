@@ -1,5 +1,6 @@
 const routeEngine = require('../services/routeEngine');
 const db = require('../config/db');
+const { sendError } = require('../middleware/errorHelper');
 
 // 1. GET VEHICLES (For Admin Fleet View)
 exports.getVehicles = async (req, res) => {
@@ -13,7 +14,7 @@ exports.getVehicles = async (req, res) => {
       WHERE v.area_id = $1
     `, [area_id]);
     res.json(result.rows);
-  } catch (err) { res.status(500).json({ error: 'Server Error' }); }
+  } catch (err) { sendError(res, err, 'Get Vehicles'); }
 };
 
 // 2. GET ACTIVE ROUTES (For Admin Dashboard)
@@ -66,7 +67,7 @@ exports.getActiveRoutes = async (req, res) => {
     res.json(activeRoutes);
   } catch (err) {
     console.error("Get Active Routes Error:", err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get Active Routes');
   }
 };
 
@@ -91,7 +92,7 @@ exports.registerVehicle = async (req, res) => {
 
   } catch (err) {
     console.error("Add Vehicle Error:", err);
-    res.status(500).json({ success: false, message: 'Server Error' });
+    sendError(res, err, 'Register Vehicle');
   }
 };
 exports.addVehicle = exports.registerVehicle;
@@ -130,7 +131,7 @@ exports.createRoute = async (req, res) => {
 
   } catch (err) {
     console.error("Create Route Error:", err);
-    res.status(500).json({ message: 'Server Error' });
+    sendError(res, err, 'Create Route');
   }
 };
 
@@ -165,7 +166,7 @@ exports.generateAutoRoutes = async (req, res) => {
     res.status(201).json({ success: true, message: "Daily routes generated." });
   } catch (err) {
     console.error("Auto Dispatch Error:", err);
-    res.status(500).json({ message: 'Server Error' });
+    sendError(res, err, 'Auto Dispatch');
   }
 };
 
@@ -193,7 +194,7 @@ exports.cancelRoute = async (req, res) => {
     res.json({ success: true, message: 'Route removed successfully', route: result.rows[0] });
   } catch (err) {
     console.error("Cancel Route Error:", err);
-    res.status(500).json({ success: false, error: 'Server Error' });
+    sendError(res, err, 'Cancel Route');
   }
 };
 
@@ -225,7 +226,7 @@ exports.getDriverActiveRoute = async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error("Get Driver Route Error:", err);
-    res.status(500).json({ error: "Server Error" });
+    sendError(res, err, 'Get Driver Route');
   }
 };
 
@@ -328,7 +329,7 @@ exports.generateOptimizedRoute = async (req, res) => {
 
   } catch (err) {
     console.error("Route Generation Error:", err);
-    res.status(500).json({ message: "Server Error", details: err.message });
+    sendError(res, err, 'Route Generation');
   }
 };
 
@@ -387,7 +388,7 @@ exports.getBinsNeedingCollection = async (req, res) => {
 
   } catch (err) {
     console.error("Get Bins Error:", err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get Bins Needing Collection');
   }
 };
 
@@ -407,7 +408,7 @@ exports.ignoreBin = async (req, res) => {
     res.json({ success: true });
   } catch (e) {
     console.error("Ignore Bin Error:", e);
-    res.status(500).json({ error: e.message });
+    sendError(res, e, 'Ignore Bin');
   }
 };
 
@@ -450,7 +451,7 @@ exports.assignVehicle = async (req, res) => {
 
   } catch (err) {
     console.error("Assign Vehicle Error:", err);
-    res.status(500).json({ error: "Server Error" });
+    sendError(res, err, 'Assign Vehicle');
   }
 };
 
@@ -473,6 +474,6 @@ exports.updateDriverLocation = async (req, res) => {
 
   } catch (err) {
     console.error("Location Tracker Error:", err);
-    res.status(500).json({ error: "Server Error" });
+    sendError(res, err, 'Driver Location');
   }
 };

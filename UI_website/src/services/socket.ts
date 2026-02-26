@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-const SOCKET_URL = "http://localhost:5000"; 
+const SOCKET_URL = "http://localhost:5000";
 
 // Allow undefined type
 export let socket: Socket | undefined;
@@ -9,19 +9,21 @@ export const socketService = {
   connect: () => {
     // 1. Create new connection if none exists
     if (!socket) {
+      const token = localStorage.getItem('token');
       socket = io(SOCKET_URL, {
-        transports: ["websocket"], 
+        transports: ["websocket"],
         reconnectionAttempts: 5, // Stop trying after 5 fails
+        auth: { token: token || '' }, // Pass JWT for server-side validation
       });
 
       socket.on("connect", () => console.log("🟢 Web Socket Connected!", socket?.id));
       socket.on("connect_error", (err) => console.error("🔴 Connection Failed:", err));
-    } 
+    }
     // 2. If socket exists but was disconnected, reconnect it
     else if (socket.disconnected) {
-        socket.connect();
+      socket.connect();
     }
-    
+
     return socket;
   },
 
@@ -34,13 +36,13 @@ export const socketService = {
 
   onBinUpdate: (callback: (data: any) => void) => {
     if (!socket) return;
-    
+
     // Remove old listeners to prevent duplicates (e.g. running twice in React Strict Mode)
-    socket.off("bin_update"); 
-    
+    socket.off("bin_update");
+
     socket.on("bin_update", (data) => {
-        console.log("📩 Service Received Bin Update:", data);
-        callback(data);
+      console.log("📩 Service Received Bin Update:", data);
+      callback(data);
     });
   }
 };

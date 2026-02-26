@@ -37,10 +37,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
     if (storedToken && storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setToken(storedToken);
-      setUser(parsedUser);
-      fetchAreaInfo(parsedUser.area_id); // Fetch area on reload
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setToken(storedToken);
+        setUser(parsedUser);
+        fetchAreaInfo(parsedUser.area_id);
+      } catch {
+        // Corrupted data — clear auth and start fresh
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
@@ -62,7 +68,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
     setArea(null);

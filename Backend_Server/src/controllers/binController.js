@@ -2,6 +2,7 @@ const db = require('../config/db');
 const { getIO } = require('../config/socket');
 const { predictBinOverflow } = require('../services/predictionEngine');
 const { isPointInBoundary } = require('../services/boundaryValidator');
+const { sendError } = require('../middleware/errorHelper');
 
 
 // 1. GET ALL BINS
@@ -52,7 +53,7 @@ exports.getAllBins = async (req, res) => {
     res.json(binsWithPredictions);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get All Bins');
   }
 };
 
@@ -88,7 +89,7 @@ exports.createBin = async (req, res) => {
     if (err.code === '22P02') {
       return res.status(400).json({ error: 'Invalid Bin ID Format.' });
     }
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Create Bin');
   }
 };
 
@@ -181,7 +182,7 @@ exports.updateBinReading = async (req, res) => {
 
   } catch (err) {
     console.error("IoT Update Error:", err);
-    res.status(500).json({ error: err.message });
+    sendError(res, err, 'IoT Update');
   }
 };
 
@@ -307,7 +308,7 @@ exports.markBinCollected = async (req, res) => {
 
   } catch (err) {
     console.error("Mark Bin Error:", err);
-    res.status(500).json({ error: "Server Error" });
+    sendError(res, err, 'Mark Bin Collected');
   }
 };
 
@@ -324,7 +325,7 @@ exports.updateCalibration = async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     console.error("Calibration Error:", err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Calibration');
   }
 };
 
@@ -375,6 +376,6 @@ exports.getBinHealth = async (req, res) => {
     });
   } catch (err) {
     console.error("Bin Health Error:", err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Bin Health');
   }
 };

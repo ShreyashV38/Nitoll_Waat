@@ -1,5 +1,6 @@
 // src/controllers/publicController.js
 const db = require('../config/db');
+const { sendError } = require('../middleware/errorHelper');
 
 // 1. Get List of Districts
 exports.getDistricts = async (req, res) => {
@@ -7,7 +8,7 @@ exports.getDistricts = async (req, res) => {
     const result = await db.query('SELECT DISTINCT district FROM areas ORDER BY district');
     res.json(result.rows.map(row => row.district));
   } catch (err) {
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get Districts');
   }
 };
 
@@ -21,7 +22,7 @@ exports.getTalukas = async (req, res) => {
     );
     res.json(result.rows.map(row => row.taluka));
   } catch (err) {
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get Talukas');
   }
 };
 
@@ -35,7 +36,7 @@ exports.getAreas = async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get Areas');
   }
 };
 
@@ -62,6 +63,6 @@ exports.getAreaPublicData = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Public Area Data');
   }
 };

@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { sendError } = require('../middleware/errorHelper');
 
 // GET /api/analytics/waste-stats
 exports.getWasteStats = async (req, res) => {
@@ -51,6 +52,6 @@ exports.getWasteStats = async (req, res) => {
 
   } catch (err) {
     console.error("Analytics Error:", err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Analytics');
   }
 };

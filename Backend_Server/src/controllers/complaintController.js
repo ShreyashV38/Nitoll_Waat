@@ -1,5 +1,6 @@
 // src/controllers/complaintController.js
 const db = require('../config/db');
+const { sendError } = require('../middleware/errorHelper');
 
 // 1. Create complaint (Public - no auth required)
 exports.createComplaint = async (req, res) => {
@@ -39,7 +40,7 @@ exports.createComplaint = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error(`[COMPLAINT_API_ERR] Server error during createComplaint:`, err);
-        res.status(500).json({ error: 'Server Error' });
+        sendError(res, err, 'Create Complaint');
     }
 };
 
@@ -62,7 +63,7 @@ exports.getComplaints = async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error(`[COMPLAINT_FETCH_ERR] Server error during getComplaints:`, err);
-        res.status(500).json({ error: 'Server Error' });
+        sendError(res, err, 'Get Complaints');
     }
 };
 
@@ -76,6 +77,6 @@ exports.resolveComplaint = async (req, res) => {
         );
         res.json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: 'Server Error' });
+        sendError(res, err, 'Resolve Complaint');
     }
 };

@@ -1,13 +1,19 @@
 const db = require('../config/db');
-const transporter = require('../config/nodemailer'); 
+const transporter = require('../config/nodemailer');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const { sendError } = require('../middleware/errorHelper');
 require('dotenv').config();
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 exports.register = async (req, res) => {
   const { name, email, mobile, password, role, district, taluka, area_name } = req.body;
+
+  // SECURITY: Only allow valid roles. The area-based logic below provides additional
+  // protection: ADMINs must create a NEW area, DRIVERs can only join EXISTING areas.
+  const validRoles = ['ADMIN', 'DRIVER'];
+  const userRole = validRoles.includes(role) ? role : 'DRIVER';
 
   // 1. Validate ALL fields (Now required for Drivers too)
   if (!email || !name || !password || !district || !taluka || !area_name) {
@@ -17,8 +23,8 @@ exports.register = async (req, res) => {
   try {
     // 2. Check User Existence
     const userCheck = await db.query(
-        'SELECT * FROM users WHERE email = $1 OR (mobile IS NOT NULL AND mobile = $2)', 
-        [email, mobile || '']
+      'SELECT * FROM users WHERE email = $1 OR (mobile IS NOT NULL AND mobile = $2)',
+      [email, mobile || '']
     );
     if (userCheck.rows.length > 0) return res.status(400).json({ success: false, message: 'User already exists' });
 
@@ -32,18 +38,18 @@ exports.register = async (req, res) => {
 
     if (areaCheck.rows.length > 0) {
       // --- SCENARIO A: Area Exists ---
-      if (role !== 'DRIVER') {
-         // If a new Admin tries to claim an existing area -> Block them
-         return res.status(409).json({ success: false, message: `The zone '${area_name}' is already taken.` });
+      if (userRole !== 'DRIVER') {
+        // If a new Admin tries to claim an existing area -> Block them
+        return res.status(409).json({ success: false, message: `The zone '${area_name}' is already taken.` });
       }
       // If Driver -> LINK THEM to this ID
       areaId = areaCheck.rows[0].id;
 
     } else {
       // --- SCENARIO B: Area Does Not Exist ---
-      if (role === 'DRIVER') {
-         // Driver cannot create new areas
-         return res.status(404).json({ success: false, message: 'This Area is not registered! Please ask your Admin to register first.' });
+      if (userRole === 'DRIVER') {
+        // Driver cannot create new areas
+        return res.status(404).json({ success: false, message: 'This Area is not registered! Please ask your Admin to register first.' });
       }
       // If Admin -> Create New Area
       const newArea = await db.query(
@@ -62,69 +68,69 @@ exports.register = async (req, res) => {
       `INSERT INTO users (id, name, email, mobile, password_hash, role, area_id)
        VALUES (uuid_generate_v4(), $1, $2, $3, $4, $5, $6)
        RETURNING id, name, email, role, area_id`,
-      [name, email, mobile || null, passwordHash, role || 'DRIVER', areaId]
+      [name, email, mobile || null, passwordHash, userRole, areaId]
     );
 
     // 6. Generate Token
     const token = jwt.sign(
-        { id: newUser.rows[0].id, role: newUser.rows[0].role, area_id: newUser.rows[0].area_id },
-        process.env.JWT_SECRET,
-        { expiresIn: '30d' }
+      { id: newUser.rows[0].id, role: newUser.rows[0].role, area_id: newUser.rows[0].area_id },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' }
     );
 
     res.status(201).json({ success: true, message: 'Registration Successful', token, user: newUser.rows[0] });
 
   } catch (err) {
     console.error("Register Error:", err);
-    res.status(500).json({ success: false, message: err.message });
+    sendError(res, err, 'Register');
   }
 };
 
 // ... (Keep existing login and verify functions) ...
 exports.login = async (req, res) => {
-    // ... existing login code ...
-    const { email, password } = req.body; 
-    if (!email || !password) return res.status(400).json({ message: 'Missing fields' });
+  // ... existing login code ...
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ message: 'Missing fields' });
 
-    try {
-        const userCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userCheck.rows.length === 0) return res.status(404).json({ message: 'User not found.' });
+  try {
+    const userCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (userCheck.rows.length === 0) return res.status(404).json({ message: 'User not found.' });
 
-        const user = userCheck.rows[0];
-        const isMatch = await bcrypt.compare(password, user.password_hash);
-        if (!isMatch) return res.status(401).json({ message: 'Invalid Credentials' });
+    const user = userCheck.rows[0];
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) return res.status(401).json({ message: 'Invalid Credentials' });
 
-        const otp = generateOTP();
-        await db.query('DELETE FROM otps WHERE email = $1', [email]);
-        await db.query(`INSERT INTO otps (email, code, expires_at) VALUES ($1, $2, NOW() + interval '5 minutes')`, [email, otp]);
+    const otp = generateOTP();
+    await db.query('DELETE FROM otps WHERE email = $1', [email]);
+    await db.query(`INSERT INTO otps (email, code, expires_at) VALUES ($1, $2, NOW() + interval '5 minutes')`, [email, otp]);
 
-        const mailOptions = { from: process.env.EMAIL_USER, to: email, subject: 'Login Code', text: `Code: ${otp}` };
-        transporter.sendMail(mailOptions, (err) => {
-            if (err) return res.status(500).json({ message: 'Email failed' });
-            res.json({ success: true, message: `OTP sent` });
-        });
-    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+    const mailOptions = { from: process.env.EMAIL_USER, to: email, subject: 'Login Code', text: `Code: ${otp}` };
+    transporter.sendMail(mailOptions, (err) => {
+      if (err) return res.status(500).json({ message: 'Email failed' });
+      res.json({ success: true, message: `OTP sent` });
+    });
+  } catch (err) { res.status(500).json({ message: 'Server Error' }); }
 };
 
 exports.verify = async (req, res) => {
-    // ... existing verify code ...
-    const { email, otp } = req.body;
-    try {
-        const otpCheck = await db.query(`SELECT * FROM otps WHERE email = $1 AND code = $2 AND expires_at > NOW()`, [email, otp]);
-        if (otpCheck.rows.length === 0) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+  // ... existing verify code ...
+  const { email, otp } = req.body;
+  try {
+    const otpCheck = await db.query(`SELECT * FROM otps WHERE email = $1 AND code = $2 AND expires_at > NOW()`, [email, otp]);
+    if (otpCheck.rows.length === 0) return res.status(400).json({ success: false, message: 'Invalid OTP' });
 
-        const user = (await db.query('SELECT * FROM users WHERE email = $1', [email])).rows[0];
-        const token = jwt.sign({ id: user.id, role: user.role, area_id: user.area_id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-        
-        await db.query('DELETE FROM otps WHERE email = $1', [email]);
-        res.json({ success: true, token, user });
-    } catch (err) { res.status(500).json({ message: 'Server Error' }); }
+    const user = (await db.query('SELECT id, name, email, mobile, role, area_id, assigned_ward_id FROM users WHERE email = $1', [email])).rows[0];
+    const token = jwt.sign({ id: user.id, role: user.role, area_id: user.area_id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+    await db.query('DELETE FROM otps WHERE email = $1', [email]);
+    res.json({ success: true, token, user });
+  } catch (err) { res.status(500).json({ message: 'Server Error' }); }
 };
 
 
 exports.getProfile = async (req, res) => {
   try {
-    const userId = req.user.id; 
+    const userId = req.user.id;
 
     // 1. Get User Details WITH Ward Name (LEFT JOIN)
     const userRes = await db.query(`
@@ -135,7 +141,7 @@ exports.getProfile = async (req, res) => {
       LEFT JOIN wards w ON u.assigned_ward_id = w.id
       WHERE u.id = $1
     `, [userId]);
-    
+
     if (userRes.rows.length === 0) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -145,7 +151,7 @@ exports.getProfile = async (req, res) => {
     let vehicle = null;
     if (user.role === 'DRIVER') {
       const vehicleRes = await db.query(
-        'SELECT license_plate, type, status FROM vehicles WHERE driver_id = $1', 
+        'SELECT license_plate, type, status FROM vehicles WHERE driver_id = $1',
         [userId]
       );
       if (vehicleRes.rows.length > 0) {
@@ -158,6 +164,6 @@ exports.getProfile = async (req, res) => {
 
   } catch (err) {
     console.error("Get Profile Error:", err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get Profile');
   }
 };

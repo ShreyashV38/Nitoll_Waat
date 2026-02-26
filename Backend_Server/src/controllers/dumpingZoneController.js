@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { isPointInBoundary } = require('../services/boundaryValidator');
+const { sendError } = require('../middleware/errorHelper');
 
 // GET all zones for the area
 exports.getZones = async (req, res) => {
@@ -8,7 +9,7 @@ exports.getZones = async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Get Zones');
   }
 };
 
@@ -38,6 +39,6 @@ exports.createZone = async (req, res) => {
     res.status(201).json(newZone.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Server Error' });
+    sendError(res, err, 'Create Zone');
   }
 };
