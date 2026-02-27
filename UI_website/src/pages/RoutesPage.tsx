@@ -175,27 +175,27 @@ const RoutesPage = () => {
 
             {/* Dispatch Card */}
             <div className="assignment-card" style={{
-                background: 'white',
+                background: 'var(--card-bg)',
                 padding: '24px',
                 borderRadius: '16px',
                 marginBottom: '20px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                boxShadow: 'var(--shadow-md)'
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                     <div>
-                        <h3 style={{ margin: 0, color: '#1e293b', fontSize: '18px' }}>Manual Dispatch</h3>
-                        <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '13px' }}>Assign a driver to a specific ward manually.</p>
+                        <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '18px' }}>Manual Dispatch</h3>
+                        <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '13px' }}>Assign a driver to a specific ward manually.</p>
                     </div>
-                    <div style={{ background: '#eff6ff', color: '#2563eb', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>
+                    <div style={{ background: 'var(--alert-info-bg)', color: '#2563eb', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>
                         {drivers.length} Drivers Available
                     </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '20px', alignItems: 'end' }}>
                     <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: '#64748b', marginBottom: '8px' }}>Select Driver</label>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Select Driver</label>
                         <select
-                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#f8fafc' }}
+                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
                             value={selectedDriver}
                             onChange={(e) => setSelectedDriver(e.target.value)}
                         >
@@ -209,9 +209,9 @@ const RoutesPage = () => {
                     </div>
 
                     <div style={{ flex: 1 }}>
-                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: '#64748b', marginBottom: '8px' }}>Target Ward</label>
+                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '8px' }}>Target Ward</label>
                         <select
-                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', background: '#f8fafc' }}
+                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '14px', background: 'var(--bg-input)', color: 'var(--text-primary)' }}
                             value={selectedWard}
                             onChange={(e) => setSelectedWard(e.target.value)}
                         >
@@ -241,7 +241,7 @@ const RoutesPage = () => {
                 </div>
             </div>
 
-            <h3 style={{ fontSize: '18px', color: '#334155', marginBottom: '15px' }}>Live Route Performance</h3>
+            <h3 style={{ fontSize: '18px', color: 'var(--text-primary)', marginBottom: '15px' }}>Live Route Performance</h3>
 
             {/* ✅ FIX: Reduced Height & Added Auto Scroll */}
             <div style={{
@@ -255,11 +255,11 @@ const RoutesPage = () => {
                 paddingRight: '8px'
             }}>
                 {routes.map(route => (
-                    <div key={route.db_route_id} style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', height: 'fit-content', border: '1px solid #f1f5f9' }}>
+                    <div key={route.db_route_id} style={{ background: 'var(--card-bg)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow-sm)', height: 'fit-content', border: '1px solid var(--border-color)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '15px' }}>
                             <div>
-                                <h4 style={{ margin: 0, color: '#1e293b' }}>{route.driver}</h4>
-                                <span style={{ fontSize: '12px', color: '#64748b' }}>{route.license_plate} • {route.ward_name}</span>
+                                <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>{route.driver}</h4>
+                                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{route.license_plate} • {route.ward_name}</span>
                             </div>
                             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 <span style={{ fontSize: '10px', background: '#dcfce7', color: '#16a34a', padding: '4px 8px', borderRadius: '12px', fontWeight: 'bold' }}>LIVE</span>
@@ -286,7 +286,7 @@ const RoutesPage = () => {
                                 <span>Bins Collected</span>
                                 <strong>{route.bins}</strong>
                             </div>
-                            <div style={{ height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '8px', background: 'var(--progress-bg)', borderRadius: '4px', overflow: 'hidden' }}>
                                 <div style={{ width: `${route.progress}%`, height: '100%', background: '#22c55e', transition: 'width 0.5s ease' }} />
                             </div>
                         </div>
@@ -294,12 +294,12 @@ const RoutesPage = () => {
                 ))}
             </div>
 
-            <h3 style={{ fontSize: '18px', color: '#334155', marginBottom: '15px' }}>Fleet Details</h3>
+            <h3 style={{ fontSize: '18px', color: 'var(--text-primary)', marginBottom: '15px' }}>Fleet Details</h3>
 
             {/* Fleet Details Section */}
             <div style={{ paddingBottom: '40px' }}> {/* ✅ Added padding bottom so it doesn't touch edge */}
                 {routes.length === 0 ? (
-                    <div className="empty-state-card" style={{ padding: '40px', background: 'white', borderRadius: '12px', textAlign: 'center', color: '#94a3b8', border: '2px dashed #e2e8f0' }}>
+                    <div className="empty-state-card" style={{ padding: '40px', background: 'var(--card-bg)', borderRadius: '12px', textAlign: 'center', color: 'var(--text-faint)', border: '2px dashed var(--border-color)' }}>
                         <p style={{ fontSize: '16px' }}>No active routes. Start operations to see fleet details.</p>
                     </div>
                 ) : (

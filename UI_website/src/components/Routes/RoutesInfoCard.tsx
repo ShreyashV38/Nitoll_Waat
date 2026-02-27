@@ -56,27 +56,27 @@ const RouteInfoCard: React.FC<Props> = ({ vehicle }) => {
 
   return (
     <div className="route-info-card" style={{
-      background: 'white',
+      background: 'var(--card-bg)',
       borderRadius: '16px',
       padding: '24px',
       marginTop: '20px',
-      border: '1px solid #e2e8f0',
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      border: '1px solid var(--border-color)',
+      boxShadow: 'var(--shadow-md)',
       display: 'flex',
       flexDirection: 'column',
       gap: '20px'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div>
-          <h3 style={{ margin: 0, color: '#1e293b', fontSize: '20px' }}>{vehicle.name} Details</h3>
-          <p style={{ margin: '6px 0 0 0', color: '#64748b', fontSize: '14px' }}>
-            Driver: <span style={{ fontWeight: 'bold', color: '#334155' }}>{vehicle.driver}</span>
+          <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '20px' }}>{vehicle.name} Details</h3>
+          <p style={{ margin: '6px 0 0 0', color: 'var(--text-muted)', fontSize: '14px' }}>
+            Driver: <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{vehicle.driver}</span>
           </p>
         </div>
         <div style={{ textAlign: 'right' }}>
           <span style={{
-            background: vehicle.status === 'IN_PROGRESS' ? '#dcfce7' : '#f1f5f9',
-            color: vehicle.status === 'IN_PROGRESS' ? '#16a34a' : '#64748b',
+            background: vehicle.status === 'IN_PROGRESS' ? 'var(--status-completed-bg)' : 'var(--bg-input)',
+            color: vehicle.status === 'IN_PROGRESS' ? 'var(--status-completed-text)' : 'var(--text-muted)',
             padding: '8px 14px',
             borderRadius: '20px',
             fontSize: '12px',
@@ -90,21 +90,21 @@ const RouteInfoCard: React.FC<Props> = ({ vehicle }) => {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) 2fr', gap: '20px' }}>
         {/* Left Stats Column */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '12px', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Vehicle</span>
-            <span style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '18px' }}>{vehicle.license_plate}</span>
+          <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Vehicle</span>
+            <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '18px' }}>{vehicle.license_plate}</span>
           </div>
-          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '12px', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Target Ward</span>
-            <span style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '18px' }}>{vehicle.ward_name}</span>
+          <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Target Ward</span>
+            <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '18px' }}>{vehicle.ward_name}</span>
           </div>
-          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '12px', color: '#64748b', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Progress ({vehicle.bins})</span>
+          <div style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', fontWeight: 600 }}>Progress ({vehicle.bins})</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-              <div style={{ flex: 1, height: '8px', background: '#cbd5e1', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${vehicle.progress}%`, height: '100%', background: '#3b82f6', transition: 'width 0.5s ease' }} />
+              <div style={{ flex: 1, height: '8px', background: 'var(--progress-bg)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{ width: `${vehicle.progress}%`, height: '100%', background: 'var(--accent-blue)', transition: 'width 0.5s ease' }} />
               </div>
-              <span style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '16px' }}>{Math.round(vehicle.progress)}%</span>
+              <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '16px' }}>{Math.round(vehicle.progress)}%</span>
             </div>
           </div>
         </div>
@@ -114,8 +114,8 @@ const RouteInfoCard: React.FC<Props> = ({ vehicle }) => {
           height: '350px',
           borderRadius: '12px',
           overflow: 'hidden',
-          border: '1px solid #e2e8f0',
-          background: '#f8fafc',
+          border: '1px solid var(--border-color)',
+          background: 'var(--bg-input)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
@@ -153,7 +153,7 @@ const RouteInfoCard: React.FC<Props> = ({ vehicle }) => {
 
             </MapContainer>
           ) : (
-            <div style={{ color: '#94a3b8', textAlign: 'center' }}>
+            <div style={{ color: 'var(--text-faint)', textAlign: 'center' }}>
               <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🗺️</span>
               No route path available for this active vehicle.
             </div>

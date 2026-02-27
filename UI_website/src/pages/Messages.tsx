@@ -77,6 +77,28 @@ const Messages = () => {
     }
   }, [filter, filteredMessages.length]);
 
+  // Resolve a complaint
+  const handleResolve = async (dbId: string | number) => {
+    try {
+      await complaintAPI.resolve(String(dbId));
+
+      // Update local state so UI reflects immediately
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.dbId === dbId && msg.source === 'COMPLAINT'
+            ? { ...msg, status: 'RESOLVED' }
+            : msg
+        )
+      );
+
+      // Also update the selected message if it's the one being resolved
+      setSelectedMessage((prev: any) =>
+        prev && prev.dbId === dbId ? { ...prev, status: 'RESOLVED' } : prev
+      );
+    } catch (err) {
+      console.error("Failed to resolve complaint", err);
+    }
+  };
 
   return (
     <div className="messages-page">
@@ -111,7 +133,7 @@ const Messages = () => {
           />
 
           {selectedMessage ? (
-            <MessageDetail alert={selectedMessage} />
+            <MessageDetail alert={selectedMessage} onResolve={handleResolve} />
           ) : (
             <div className="alert-details" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <p style={{ color: 'var(--text-muted)' }}>No messages found.</p>

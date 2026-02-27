@@ -57,6 +57,10 @@ const MapsBinsPage = () => {
   const { area } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
 
+  // Filters
+  const [filterWard, setFilterWard] = useState<string>('ALL');
+  const [filterStatus, setFilterStatus] = useState<string>('ALL');
+
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 10000);
@@ -137,6 +141,13 @@ const MapsBinsPage = () => {
       setLoading(false);
     }
   };
+
+  // Filtered bins
+  const filteredBins = bins.filter(b => {
+    if (filterWard !== 'ALL' && b.address !== `Ward ${filterWard}`) return false;
+    if (filterStatus !== 'ALL' && b.status !== filterStatus) return false;
+    return true;
+  });
 
   const handleRefresh = () => {
     setLoading(true);
@@ -244,6 +255,61 @@ const MapsBinsPage = () => {
         </div>
       )}
 
+      {/* Ward & Status Filters */}
+      <div style={{
+        display: 'flex', gap: '12px', alignItems: 'center', padding: '10px 16px',
+        background: 'var(--card-bg, #fff)', borderBottom: '1px solid var(--border-color, #e2e8f0)',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Ward:</label>
+          <select
+            value={filterWard}
+            onChange={e => setFilterWard(e.target.value)}
+            style={{
+              padding: '6px 10px', borderRadius: '8px', fontSize: '13px',
+              border: '1px solid var(--border-color, #e2e8f0)',
+              background: 'var(--bg-color, #f8fafc)', color: 'var(--text-color, #1e293b)'
+            }}
+          >
+            <option value="ALL">All Wards ({bins.length} bins)</option>
+            {wards.map((w: any) => {
+              const count = bins.filter(b => b.address === `Ward ${w.id}`).length;
+              return <option key={w.id} value={w.id}>{w.name} ({count})</option>;
+            })}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Status:</label>
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {['ALL', 'CRITICAL', 'WARNING', 'NORMAL', 'BLOCKED'].map(s => (
+              <button
+                key={s}
+                onClick={() => setFilterStatus(s)}
+                style={{
+                  padding: '5px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  border: filterStatus === s ? '2px solid var(--text-color, #1e293b)' : '1px solid var(--border-color, #e2e8f0)',
+                  background: filterStatus === s
+                    ? s === 'CRITICAL' ? '#fecaca' : s === 'WARNING' ? '#fef3c7' : s === 'NORMAL' ? '#dcfce7' : 'var(--card-bg, #e2e8f0)'
+                    : 'transparent',
+                  color: filterStatus === s
+                    ? s === 'CRITICAL' ? '#991b1b' : s === 'WARNING' ? '#92400e' : s === 'NORMAL' ? '#166534' : 'var(--text-color, #1e293b)'
+                    : 'var(--text-secondary, #64748b)'
+                }}
+              >
+                {s === 'ALL' ? `All` : s.charAt(0) + s.slice(1).toLowerCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <span style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--text-secondary, #64748b)', fontWeight: 500 }}>
+          Showing {filteredBins.length} of {bins.length} bins
+        </span>
+      </div>
+
       <div className="content-area">
         {loading ? (
           <p style={{ padding: '20px', textAlign: 'center' }}>Loading IoT Data...</p>
@@ -251,7 +317,7 @@ const MapsBinsPage = () => {
           <>
             {activeTab === "map" ? (
               <BinMap
-                bins={bins}
+                bins={filteredBins}
                 zones={zones}
                 onMapClick={handleMapClick}
                 boundary={area?.taluka ? (() => {
@@ -260,7 +326,7 @@ const MapsBinsPage = () => {
                 })() : undefined}
               />
             ) : (
-              <BinDirectory bins={bins} />
+              <BinDirectory bins={filteredBins} />
             )}
           </>
         )}

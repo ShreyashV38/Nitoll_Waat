@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import StateCard from "../components/StateCard";
 import AlertsWidget from "../components/Dashboard/AlertsWidget";
 import BinMap from "../components/MapsBins/BinMap";
@@ -152,15 +152,9 @@ const Dashboard = () => {
 
   const criticalCount = bins.filter(b => b.level >= 50).length;
 
-  // Calculate Hackathon Impact Metric
-  let savedBinsCount = 0;
-  activeRoutesList.forEach(r => {
-    savedBinsCount += r.skipped_bins?.length || 0;
-  });
-
   const stats = [
     { title: "Total Bins", value: bins.length, subtitle: "Active in zone" },
-    { title: "AI Bins Skipped", value: savedBinsCount, subtitle: `~${(savedBinsCount * 0.8).toFixed(1)}L fuel saved!`, success: savedBinsCount > 0 },
+    { title: "Alerts Today", value: alerts.length, subtitle: alerts.length > 0 ? "Needs attention" : "All clear", danger: alerts.length > 3 },
     { title: "Routes Today", value: routeCount, subtitle: "In Progress" },
     { title: "Active Vehicles", value: vehicleStats, subtitle: "Available today" },
     { title: "Overflow Risk", value: criticalCount, subtitle: "Based on active alerts", danger: criticalCount > 0 },
@@ -183,10 +177,20 @@ const Dashboard = () => {
         </div>
         <button
           onClick={() => exportToCSV(bins.map(b => ({
-            ID: b.fullId, Fill: `${b.level}%`, Status: b.status,
-            Weight: `${b.weight}kg`, Lat: b.lat, Lng: b.lng,
-            LastUpdate: b.last_updated
-          })), 'bin_report')}
+            Bin_ID: b.fullId,
+            Fill_Level: `${b.level}%`,
+            Status: b.status,
+            Lid_Status: b.lid,
+            Weight_kg: `${b.weight}`,
+            Latitude: b.lat,
+            Longitude: b.lng,
+            Prediction_Status: b.prediction?.status || 'N/A',
+            Hours_Until_Overflow: b.prediction?.hours_until_overflow ?? 'N/A',
+            Predicted_Overflow: b.prediction?.predicted_overflow_at
+              ? new Date(b.prediction.predicted_overflow_at).toLocaleString() : 'N/A',
+            Needs_Collection: b.level >= 50 ? 'YES' : 'NO',
+            Last_Updated: new Date(b.last_updated).toLocaleString()
+          })), `bin_report_${area?.area_name || 'zone'}`)}
           style={{
             padding: '8px 16px', borderRadius: 20, border: '1px solid var(--border-color)',
             background: 'var(--card-bg)', color: 'var(--text-secondary)', fontSize: 13,
@@ -202,12 +206,6 @@ const Dashboard = () => {
         ))}
       </section>
 
-      {/* Health Analytics + Prediction Timeline — Positioned prominently */}
-      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
-        <BinHealthWidget />
-        <PredictionTimeline bins={bins} />
-      </section>
-
       <section className="main-grid">
         <AlertsWidget alerts={alerts.slice(0, 3)} />
         <div style={{ height: '100%', minHeight: '300px' }}>
@@ -221,6 +219,12 @@ const Dashboard = () => {
 
       <section className="chart-section" style={{ marginTop: '24px' }}>
         <WasteChart data={chartData} labels={chartLabels} />
+      </section>
+
+      {/* Bin Health & Overflow Predictions */}
+      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
+        <BinHealthWidget />
+        <PredictionTimeline bins={bins} />
       </section>
     </div>
   );

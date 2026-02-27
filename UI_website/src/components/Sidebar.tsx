@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, Map, Truck, MessageSquare, User, Moon, Sun } from 'lucide-react';
+import { LayoutGrid, Map, Route, Truck, MessageSquare, User, Moon, Sun } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import GoaLogo from '../assets/Goa.png';
 import '../style/Sidebar.css';
@@ -32,7 +32,7 @@ const Sidebar: React.FC = () => {
       <nav className="nav-menu">
         <NavItem to="/dashboard" icon={<LayoutGrid size={22} />} label="Dashboard" />
         <NavItem to="/maps-bins" icon={<Map size={22} />} label="Map and Bins" />
-        <NavItem to="/routes" icon={<Truck size={22} />} label="Routes" />
+        <NavItem to="/routes" icon={<Route size={22} />} label="Routes" />
         <NavItem to="/vehicles" icon={<Truck size={22} />} label="Vehicles" />
         <NavItem to="/messages" icon={<MessageSquare size={22} />} label="Messages" />
         <NavItem to="/profile" icon={<User size={22} />} label="Profile" />
