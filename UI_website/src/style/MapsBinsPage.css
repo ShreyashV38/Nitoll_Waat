@@ -145,14 +145,14 @@
 }
 
 /* Content Area - Perfect Fit */
-.content-area {
+.maps-bins-content {
   flex: 1;
   overflow: hidden;
   background: var(--card-bg);
   position: relative;
 }
 
-.content-area>* {
+.maps-bins-content>* {
   height: 100%;
   width: 100%;
 }

@@ -98,7 +98,7 @@ function SignupForm() {
         <div className="login-page-wrapper">
             <div className="switchToSignUp">
                 <h3>Already have an account?</h3>
-                <button onClick={() => navigate('/')}>LogIn</button>
+                <button onClick={() => navigate('/login')}>LogIn</button>
             </div>
 
             <div className="form-wrap-center">

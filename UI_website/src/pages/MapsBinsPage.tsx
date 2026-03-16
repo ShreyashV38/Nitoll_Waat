@@ -257,27 +257,48 @@ const MapsBinsPage = () => {
 
       {/* Ward & Status Filters */}
       <div style={{
-        display: 'flex', gap: '12px', alignItems: 'center', padding: '10px 16px',
+        display: 'flex', gap: '16px', alignItems: 'center', padding: '10px 16px',
         background: 'var(--card-bg, #fff)', borderBottom: '1px solid var(--border-color, #e2e8f0)',
         flexWrap: 'wrap'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)' }}>Ward:</label>
-          <select
-            value={filterWard}
-            onChange={e => setFilterWard(e.target.value)}
-            style={{
-              padding: '6px 10px', borderRadius: '8px', fontSize: '13px',
-              border: '1px solid var(--border-color, #e2e8f0)',
-              background: 'var(--bg-color, #f8fafc)', color: 'var(--text-color, #1e293b)'
-            }}
-          >
-            <option value="ALL">All Wards ({bins.length} bins)</option>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: '300px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary, #64748b)', whiteSpace: 'nowrap' }}>Ward Filter:</label>
+          <div style={{
+            display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px',
+            scrollbarWidth: 'thin', msOverflowStyle: 'none', scrollbarColor: 'var(--border-color) transparent'
+          }} className="ward-filter-container">
+            <button
+              onClick={() => setFilterWard('ALL')}
+              style={{
+                padding: '5px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 600,
+                cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+                border: filterWard === 'ALL' ? '2px solid var(--text-color, #1e293b)' : '1px solid var(--border-color, #e2e8f0)',
+                background: filterWard === 'ALL' ? 'var(--text-color, #1e293b)' : 'transparent',
+                color: filterWard === 'ALL' ? 'var(--card-bg, #fff)' : 'var(--text-secondary, #64748b)'
+              }}
+            >
+              All Wards ({bins.length})
+            </button>
             {wards.map((w: any) => {
               const count = bins.filter(b => b.address === `Ward ${w.id}`).length;
-              return <option key={w.id} value={w.id}>{w.name} ({count})</option>;
+              const isActive = filterWard === w.id;
+              return (
+                <button
+                  key={w.id}
+                  onClick={() => setFilterWard(w.id)}
+                  style={{
+                    padding: '5px 12px', borderRadius: '16px', fontSize: '12px', fontWeight: 600,
+                    cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
+                    border: isActive ? '2px solid #3b82f6' : '1px solid var(--border-color, #e2e8f0)',
+                    background: isActive ? '#eff6ff' : 'transparent',
+                    color: isActive ? '#2563eb' : 'var(--text-secondary, #64748b)'
+                  }}
+                >
+                  {w.name} ({count})
+                </button>
+              );
             })}
-          </select>
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -295,7 +316,7 @@ const MapsBinsPage = () => {
                     ? s === 'CRITICAL' ? '#fecaca' : s === 'WARNING' ? '#fef3c7' : s === 'NORMAL' ? '#dcfce7' : 'var(--card-bg, #e2e8f0)'
                     : 'transparent',
                   color: filterStatus === s
-                    ? s === 'CRITICAL' ? '#991b1b' : s === 'WARNING' ? '#92400e' : s === 'NORMAL' ? '#166534' : 'var(--text-color, #1e293b)'
+                    ? s === 'CRITICAL' ? '#991b1b' : s === 'WARNING' ? '#92400e' : s === 'NORMAL' ? '#166534' : 'var(--text-primary, #1e293b)'
                     : 'var(--text-secondary, #64748b)'
                 }}
               >
@@ -310,7 +331,7 @@ const MapsBinsPage = () => {
         </span>
       </div>
 
-      <div className="content-area">
+      <div className="maps-bins-content">
         {loading ? (
           <p style={{ padding: '20px', textAlign: 'center' }}>Loading IoT Data...</p>
         ) : (
