@@ -1,0 +1,98 @@
+@startuml ER_Diagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam linetype polyline
+skinparam nodesep 10
+skinparam ranksep 15
+left to right direction
+
+title **Smart Waste Collection — Entity Relationship Diagram**
+
+' Colors from the photo: Blue rectangles, Red Diamonds, Pink Ovals
+skinparam rectangle {
+    BackgroundColor #5B6C86
+    FontColor white
+    BorderColor #2C3E50
+    FontStyle bold
+}
+skinparam diamond {
+    BackgroundColor #D96A6A
+    FontColor white
+    BorderColor #A93226
+}
+skinparam usecase {
+    BackgroundColor #F1A9A0
+    BorderColor #CD6155
+    FontColor black
+}
+
+' ==== Entities ====
+rectangle "BINS" as BN
+rectangle "SENSOR_READINGS" as SR
+rectangle "ROUTES" as RT
+rectangle "DRIVERS" as DR
+rectangle "VEHICLES" as VH
+
+' ==== Relationships ====
+diamond "Generates" as rel1
+diamond "Optimized_Into" as rel2
+diamond "Assigned_To" as rel3
+diamond "Drives" as rel4
+
+' ==== Link Entities to Relationships ====
+BN -down- rel1
+rel1 -down- SR
+
+BN -right- rel2
+rel2 -right- RT
+
+RT -right- rel3
+rel3 -right- DR
+
+DR -down- rel4
+rel4 -down- VH
+
+' ==== Attributes for BINS ====
+usecase "**BID**" as bn_id
+usecase "Latitude" as bn_lat
+usecase "Longitude" as bn_long
+usecase "Status" as bn_status
+BN -- bn_id
+BN -- bn_lat
+BN -up- bn_long
+BN -up- bn_status
+
+' ==== Attributes for SENSOR_READINGS ====
+usecase "**SRID**" as sr_id
+usecase "Fill_Pct" as sr_pct
+usecase "Time" as sr_time
+SR -- sr_id
+SR -- sr_pct
+SR -down- sr_time
+
+' ==== Attributes for ROUTES ====
+usecase "**RID**" as rt_id
+usecase "Dist_Km" as rt_dist
+usecase "Est_Time" as rt_time
+RT -- rt_id
+RT -up- rt_dist
+RT -up- rt_time
+
+' ==== Attributes for DRIVERS ====
+usecase "**DID**" as dr_id
+usecase "Name" as dr_name
+usecase "Phone" as dr_phone
+DR -- dr_id
+DR -up- dr_name
+DR -right- dr_phone
+
+' ==== Attributes for VEHICLES ====
+usecase "**VID**" as vh_id
+usecase "Reg_No" as vh_reg
+usecase "Fuel" as vh_fuel
+VH -- vh_id
+VH -right- vh_reg
+VH -down- vh_fuel
+
+@enduml

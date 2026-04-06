@@ -1,0 +1,56 @@
+@startuml Data_Flow_Diagram_Level1
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam shadowing false
+
+title **Data Flow Diagram — Level 1 (Detailed)**
+
+' ── External Entities ──
+rectangle "IoT Sensors /\nDataset Source" as EXT #E3F2FD
+rectangle "Admin" as ADMIN #E8F5E9
+rectangle "Driver" as DRIVER #FFF3E0
+
+' ── Processes ──
+usecase "1.0\nData Loading &\nPreprocessing" as P1 #FFCDD2
+usecase "2.0\nFeature\nEngineering" as P2 #FFCDD2
+usecase "3.0\nModel Training\n(Random Forest)" as P3 #FFCDD2
+usecase "4.0\nBin Fill\nPrediction" as P4 #FFCDD2
+usecase "5.0\nK-Means\nClustering" as P5 #FFCDD2
+usecase "6.0\nRoute\nOptimization" as P6 #FFCDD2
+usecase "7.0\nVisualization &\nReporting" as P7 #FFCDD2
+
+' ── Data Stores ──
+database "D1: Raw Data\nStore" as DS1 #FFFDE7
+database "D2: Processed\nFeatures" as DS2 #FFFDE7
+database "D3: Trained\nModel" as DS3 #FFFDE7
+database "D4: Predictions\nStore" as DS4 #FFFDE7
+database "D5: Clusters &\nRoutes" as DS5 #FFFDE7
+
+' ── Data Flows ──
+
+EXT -down-> P1 : "  Raw sensor\n  readings  "
+
+P1 -right-> DS1 : "  Cleaned data  "
+DS1 -right-> P2 : "  Clean data  "
+
+P2 -down-> DS2 : "  Feature\n  matrix  "
+
+DS2 -right-> P3 : "  Training\n  features  "
+P3 -down-> DS3 : "  Trained RF\n  model (.pkl)  "
+
+DS3 -left-> P4 : "  Model  "
+DS2 -down-> P4 : "  All bin\n  features  "
+
+P4 -down-> DS4 : "  Predictions\n  (full/not full)  "
+
+DS4 -right-> P5 : "  Full bins\n  + GPS coords  "
+P5 -right-> P6 : "  Clustered\n  bins  "
+
+P6 -down-> DS5 : "  Optimized\n  routes  "
+
+DS5 -down-> P7 : "  Routes +\n  metrics  "
+DS5 -right-> DRIVER : "  Assigned\n  route  "
+P7 -down-> ADMIN : "  Reports,\n  visualizations  "
+
+@enduml

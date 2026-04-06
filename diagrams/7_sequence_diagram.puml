@@ -1,0 +1,179 @@
+@startuml Sequence_Diagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam ParticipantBackgroundColor #E8EAF6
+skinparam ParticipantBorderColor #3F51B5
+
+title **Smart Waste Collection Optimization — Sequence Diagram**
+
+actor "User / Admin" as USER
+participant "Pipeline" as PL #E8F5E9
+participant "DataLoader" as DL #FFF3E0
+participant "FeatureEngineer" as FE #FFF3E0
+participant "BinFillPredictor\n(Random Forest)" as RF #FFCDD2
+participant "BinClusterer\n(K-Means)" as KM #BBDEFB
+participant "RouteOptimizer\n(Nearest Neighbor)" as RO #BBDEFB
+participant "Visualizer" as VZ #F3E5F5
+
+== **Phase 0 — Data Preparation** ==
+
+USER -> PL : run_full_pipeline()
+activate PL
+
+PL -> DL : load_csv("sensor_data.csv")
+activate DL
+DL --> PL : raw DataFrame (5000 rows x 12 cols)
+deactivate DL
+
+PL -> DL : validate_data()
+activate DL
+DL --> PL : is_valid = True
+deactivate DL
+
+PL -> DL : handle_missing_values()
+activate DL
+DL --> PL : cleaned DataFrame (4892 rows)
+deactivate DL
+
+PL -> FE : extract_time_features(data)
+activate FE
+FE --> PL : DataFrame + (hour, day, is_weekend, month)
+deactivate FE
+
+PL -> FE : extract_location_features(data)
+activate FE
+FE --> PL : DataFrame + (ward_zone, rolling_avg)
+deactivate FE
+
+PL -> FE : normalize_features()
+activate FE
+FE --> PL : scaled DataFrame
+deactivate FE
+
+PL -> FE : split_train_test(test_size=0.2)
+activate FE
+FE --> PL : X_train, X_test, y_train, y_test
+deactivate FE
+
+== **Phase 1 — Bin Fill Prediction (Random Forest)** ==
+
+PL -> RF : train(X_train, y_train)
+activate RF
+note right of RF
+    Random Forest Classifier
+    n_estimators = 100
+    max_depth = 12
+    criterion = "gini"
+end note
+RF --> PL : model trained successfully
+deactivate RF
+
+PL -> RF : predict(X_test)
+activate RF
+RF --> PL : predictions array (980 values)
+deactivate RF
+
+PL -> RF : evaluate(y_test, predictions)
+activate RF
+RF --> PL : metrics {accuracy: 0.91, precision: 0.88, recall: 0.92, f1: 0.89}
+deactivate RF
+
+PL -> VZ : plot_confusion_matrix(y_test, predictions)
+activate VZ
+VZ --> PL : confusion_matrix.png saved
+deactivate VZ
+
+PL -> RF : get_feature_importance()
+activate RF
+RF --> PL : feature importances DataFrame
+deactivate RF
+
+PL -> VZ : plot_feature_importance(importances)
+activate VZ
+VZ --> PL : feature_importance.png saved
+deactivate VZ
+
+PL -> VZ : plot_roc_curve(y_test, predict_proba)
+activate VZ
+VZ --> PL : roc_curve.png saved
+deactivate VZ
+
+PL -> RF : predict(all_bins_features)
+activate RF
+RF --> PL : full_bins_list (47 bins predicted FULL)
+deactivate RF
+
+== **Phase 2 — Route Optimization (K-Means + Nearest Neighbor)** ==
+
+PL -> KM : find_optimal_k(max_k=10)
+activate KM
+note right of KM
+    Uses Elbow Method
+    + Silhouette Score
+    to find best K
+end note
+KM --> PL : optimal_k = 4
+deactivate KM
+
+PL -> KM : fit(full_bins_gps_coordinates)
+activate KM
+KM --> PL : 4 clusters formed
+deactivate KM
+
+PL -> KM : calculate_silhouette_score()
+activate KM
+KM --> PL : silhouette_score = 0.72
+deactivate KM
+
+PL -> VZ : plot_clusters_on_map(coordinates, labels)
+activate VZ
+VZ --> PL : cluster_map.png saved
+deactivate VZ
+
+PL -> VZ : plot_elbow_curve(inertia_scores)
+activate VZ
+VZ --> PL : elbow_curve.png saved
+deactivate VZ
+
+loop For each cluster (1 to 4)
+    PL -> RO : nearest_neighbor_route(cluster_bins_coords)
+    activate RO
+    RO --> PL : optimized_order, cluster_distance
+    deactivate RO
+    
+    PL -> VZ : plot_optimized_route(route, coords)
+    activate VZ
+    VZ --> PL : route_cluster_N.png saved
+    deactivate VZ
+end
+
+PL -> RO : get_savings_percentage()
+activate RO
+RO --> PL : savings = 34.2% distance reduction
+deactivate RO
+
+PL -> VZ : plot_before_after_comparison()
+activate VZ
+VZ --> PL : comparison.png saved
+deactivate VZ
+
+== **Output** ==
+
+PL -> PL : compile_results()
+PL --> USER : Results dict {metrics, routes,\nvisualizations, savings_pct}
+
+note over USER, VZ
+    **Final Output:**
+    • Stage 1 Metrics: Accuracy=91%, F1=0.89
+    • Stage 2 Savings: 34.2% route distance reduction
+    • 12 visualization plots generated
+    • 4 optimized routes (one per cluster)
+end note
+
+deactivate PL
+
+@enduml

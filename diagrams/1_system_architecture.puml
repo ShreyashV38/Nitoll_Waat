@@ -1,0 +1,57 @@
+@startuml System_Architecture_Diagram
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam roundCorner 10
+
+title **Smart Waste Collection Optimization — System Architecture**
+
+package "IoT Layer" #E3F2FD {
+    component [Bin Sensor 1\n(ESP32 + Ultrasonic)] as S1
+    component [Bin Sensor 2\n(ESP32 + Ultrasonic)] as S2
+    component [Bin Sensor N\n(ESP32 + Ultrasonic)] as SN
+}
+
+package "Data Layer" #FFF3E0 {
+    database "Dataset\n(CSV / Database)" as DB
+    component [Feature Engineering\n---\nTime, Location, Weather,\nHistorical Fill Patterns] as FE
+}
+
+package "ML Pipeline — Stage 1: Prediction" #E8F5E9 {
+    component [Random Forest\nClassifier\n---\nn_estimators = 100\nmax_depth = 12] as RF
+    component [Predicted Full Bins\n---\nList with GPS\nCoordinates] as PRED
+}
+
+package "ML Pipeline — Stage 2: Optimization" #FCE4EC {
+    component [K-Means Clustering\n---\nGroup nearby\nfull bins] as KM
+    component [Nearest Neighbor\nRoute Optimization\n---\nShortest path\nper cluster] as NN
+    component [Optimized Routes\n---\nPer cluster\nwith distance] as ROUTE
+}
+
+package "Application Layer" #F3E5F5 {
+    component [Admin Dashboard\n(NitollWaat Web App)] as DASH
+    component [Driver Mobile App\n(Route Navigation)] as APP
+    component [Visualizations\n(Maps, Charts, Reports)] as VIZ
+}
+
+S1 -down-> DB
+S2 -down-> DB
+SN -down-> DB
+
+DB -down-> FE
+FE -down-> RF
+RF -down-> PRED
+
+PRED -down-> KM
+KM -right-> NN
+NN -right-> ROUTE
+
+ROUTE -down-> DASH
+ROUTE -down-> APP
+
+RF -down-> VIZ
+KM -down-> VIZ
+
+@enduml
