@@ -22,12 +22,12 @@ Goa's garbage trucks follow the same route every day, regardless of whether a bi
 
 ---
 
-## Architecture
+## System Architecture & Workflow
 
+### Architecture Diagram
 ![System Architecture](Architecture.svg)
 
 The system follows a four-layer architecture:
-
 1. **Hardware Layer** — ESP8266 microcontroller reads VL53L0X (Time-of-Flight distance), HX711 + load cell (weight), and potentiometer (lid angle). Sensor data is transmitted over Wi-Fi to the backend.
 2. **Backend Layer** — Node.js + Express server with PostgreSQL. Receives sensor readings via REST, pushes real-time updates over Socket.IO, and runs the AI engines (prediction, routing, anomaly detection).
 3. **Web Dashboard** — React (TypeScript) + Vite admin panel with Leaflet maps for bin locations and ApexCharts/Recharts for analytics. Admins manage bins, wards, drivers, and monitor the fleet.
@@ -35,12 +35,10 @@ The system follows a four-layer architecture:
 
 ---
 
-## Flowchart
-
+### Flowchart
 ![System Flowchart](Flowchart.svg)
 
-**Data flow summary:**
-
+**Data Flow Summary:**
 1. Sensors read fill level, weight, and lid angle → ESP8266 transmits to backend.
 2. Backend validates readings and persists to PostgreSQL.
 3. **Anomaly Detector** cross-references fill vs. weight — if fill spikes but weight doesn't change, it flags a blocked sensor (not a full bin).
@@ -50,31 +48,75 @@ The system follows a four-layer architecture:
 
 ---
 
-## Project Structure
+## 📸 Screenshots & Application Showcase
 
-```text
-Nitoll_Waat/
-├── Backend_Server/          # Node.js + Express API server
-│   └── src/
-│       ├── controllers/     # Route handlers (bin, fleet, auth, analytics, etc.)
-│       ├── services/        # Core AI engines
-│       │   ├── predictionEngine.js    # Overflow time forecasting
-│       │   ├── routeEngine.js         # Nearest Neighbor route optimisation
-│       │   ├── boundaryValidator.js   # Geofence / ward boundary checks
-│       │   └── notificationService.js # FCM push notifications
-│       ├── routes/          # Express route definitions
-│       ├── middleware/      # JWT auth, RBAC
-│       └── config/          # DB connection, env
-├── UI_website/              # React + Vite admin dashboard & public portal
-│   └── src/
-├── UI_App/                  # Android driver app (Java/Kotlin)
-│   └── app/
-├── Hardware/                # ESP8266 firmware (Arduino C++)
-│   └── Esp.txt
-├── Architecture.svg         # System architecture diagram
-├── Flowchart.svg            # Data flow diagram
-└── IMAGE/                   # Screenshots and demo photos
-```
+### 1. Admin Web Dashboard
+*Real-time monitoring of city-wide waste infrastructure, bin fill levels, and analytical charts.*
+
+![Admin Dashboard](output/Dashboard.png)
+
+*Geospatial map view (Leaflet) displaying live bin statuses and ward distributions across Goa.*
+
+![Live Bin Map](output/MapsBins.png)
+
+*Dark Mode Interface Support for reduced glare during night shift operations.*
+
+![Dark Mode Dashboard](output/DarkMode.png)
+
+---
+
+### 2. Smart Route Optimization & Fleet Management
+*Dynamic collection route generated using priority-weighted scoring for >80% full bins.*
+
+![Route Optimization](output/Routes.png)
+
+*Detailed fleet assignment and route breakdown for drivers.*
+
+![Fleet Route Details](output/Routes-fleetdetails.png)
+
+*Vehicle management roster displaying compactors, tippers, and assignment statuses.*
+
+![Vehicle Roster](output/vehicles.png)
+
+---
+
+### 3. Public Citizen Portal & Localization
+*Public-facing portal enabling citizens to check bin statuses and lodge overflow complaints.*
+
+![Public Portal](output/public_home1.png)
+
+*Multi-language support for regional accessibility (Konkani, Hindi, Marathi).*
+
+| Konkani | Hindi | Marathi |
+| :---: | :---: | :---: |
+| ![Konkani UI](output/konkani.png) | ![Hindi UI](output/Hindi.png) | ![Marathi UI](output/Marathi.png) |
+
+---
+
+### 4. Driver Mobile Application & Alerts
+*Android application interface for collection drivers to track assigned pickup routes.*
+
+![Mobile Driver App](output/act-1.png)
+
+*Real-time alert notifications system for overflow warnings and blocked sensor flags.*
+
+![System Alerts](output/Messages.png)
+
+---
+
+### 5. Authentication & Security
+*Secure JWT-based login and OTP verification for administrators and drivers.*
+
+| Admin Login | OTP Verification |
+| :---: | :---: |
+| ![Login Screen](output/Login.png) | ![OTP Auth](output/OTP-auth.png) |
+
+---
+
+### 6. Database ER Diagram
+*Complete PostgreSQL database schema showing relationships between bins, wards, readings, vehicles, drivers, and alerts.*
+
+![Database ERD](output/ERD.png)
 
 ---
 
@@ -118,6 +160,34 @@ Nitoll_Waat/
 - **Public Complaint System**: Citizens can report overflowing bins or missed collections directly through the portal.
 - **Vehicle Management**: Track the status, type (Compactors, Tippers, etc.), and assignment of the collection fleet.
 - **Detailed Analytics**: Heatmaps and charts showing waste collection efficiency and area-wise performance.
+
+---
+
+## Project Structure
+
+```text
+Nitoll_Waat/
+├── Backend_Server/          # Node.js + Express API server
+│   └── src/
+│       ├── controllers/     # Route handlers (bin, fleet, auth, analytics, etc.)
+│       ├── services/        # Core AI engines
+│       │   ├── predictionEngine.js    # Overflow time forecasting
+│       │   ├── routeEngine.js         # Nearest Neighbor route optimisation
+│       │   ├── boundaryValidator.js   # Geofence / ward boundary checks
+│       │   └── notificationService.js # FCM push notifications
+│       ├── routes/          # Express route definitions
+│       ├── middleware/      # JWT auth, RBAC
+│       └── config/          # DB connection, env
+├── UI_website/              # React + Vite admin dashboard & public portal
+│   └── src/
+├── UI_App/                  # Android driver app (Java/Kotlin)
+│   └── app/
+├── Hardware/                # ESP8266 firmware (Arduino C++)
+│   └── Esp.txt
+├── Architecture.svg         # System architecture diagram
+├── Flowchart.svg            # Data flow diagram
+└── output/                  # Application screenshots and diagrams
+```
 
 ---
 
